@@ -23,8 +23,8 @@
     "resources": {
         "media": [
             {
-                "file": "images/sm_45down.png",
-                "name": "IMAGE_DOWN45_SM",
+                "file": "images/up.png",
+                "name": "IMAGE_UP",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -32,8 +32,8 @@
                 "type": "png"
             },
             {
-                "file": "images/sm_45up.png",
-                "name": "IMAGE_UP45_SM",
+                "file": "images/upup.png",
+                "name": "IMAGE_UPUP",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -41,8 +41,8 @@
                 "type": "png"
             },
             {
-                "file": "images/sm_doubledown.png",
-                "name": "IMAGE_DOWNDOWN_SM",
+                "file": "images/up45.png",
+                "name": "IMAGE_UP45",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -50,17 +50,8 @@
                 "type": "png"
             },
             {
-                "file": "images/sm_down.png",
-                "name": "IMAGE_DOWN_SM",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/sm_upup.png",
-                "name": "IMAGE_UPUP_SM",
+                "file": "images/stoplightcolor.png",
+                "name": "IMAGE_STOP_LIGHT",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -77,8 +68,8 @@
                 "type": "png"
             },
             {
-                "file": "images/gauge.png",
-                "name": "IMAGE_GAUGE",
+                "file": "images/sm_upup.png",
+                "name": "IMAGE_UPUP_SM",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -86,26 +77,8 @@
                 "type": "png"
             },
             {
-                "file": "images/clouduirain.png",
-                "name": "IMAGE_RCVROFF",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/cloudui.png",
-                "name": "IMAGE_RCVRON",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/antenna.png",
-                "name": "IMAGE_BROKEN_ANTENNA",
+                "file": "images/sm_stop.png",
+                "name": "IMAGE_SM_STOP_LIGHT",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -131,8 +104,8 @@
                 "type": "png"
             },
             {
-                "file": "images/sm_stop.png",
-                "name": "IMAGE_SM_STOP_LIGHT",
+                "file": "images/sm_drop.png",
+                "name": "IMAGE_SM_BLOOD_DROP",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -140,8 +113,17 @@
                 "type": "png"
             },
             {
-                "file": "images/sm_drop.png",
-                "name": "IMAGE_SM_BLOOD_DROP",
+                "file": "images/sm_down.png",
+                "name": "IMAGE_DOWN_SM",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/sm_doubledown.png",
+                "name": "IMAGE_DOWNDOWN_SM",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -158,8 +140,8 @@
                 "type": "png"
             },
             {
-                "file": "images/Question.png",
-                "name": "IMAGE_QUESTION_MARKS",
+                "file": "images/sm_45up.png",
+                "name": "IMAGE_UP45_SM",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -167,98 +149,8 @@
                 "type": "png"
             },
             {
-                "file": "images/hourglass.png",
-                "name": "IMAGE_HOURGLASS",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/stoplightcolor.png",
-                "name": "IMAGE_STOP_LIGHT",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/drop.png",
-                "name": "IMAGE_BLOOD_DROP",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/pixel.png",
-                "name": "IMAGE_PIXEL",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/LOGO.png",
-                "name": "IMAGE_LOGO",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/club100.png",
-                "name": "IMAGE_CLUB100",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/club55.png",
-                "name": "IMAGE_CLUB55",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/down.png",
-                "name": "IMAGE_DOWN",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/down45.png",
-                "name": "IMAGE_DOWN45",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/downdown.png",
-                "name": "IMAGE_DOWNDOWN",
-                "targetPlatforms": [
-                    "basalt",
-                    "chalk"
-                ],
-                "type": "png"
-            },
-            {
-                "file": "images/flat.png",
-                "name": "IMAGE_FLAT",
+                "file": "images/sm_45down.png",
+                "name": "IMAGE_DOWN45_SM",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -275,8 +167,8 @@
                 "type": "png"
             },
             {
-                "file": "images/up.png",
-                "name": "IMAGE_UP",
+                "file": "images/pixel.png",
+                "name": "IMAGE_PIXEL",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -284,8 +176,8 @@
                 "type": "png"
             },
             {
-                "file": "images/up45.png",
-                "name": "IMAGE_UP45",
+                "file": "images/hourglass.png",
+                "name": "IMAGE_HOURGLASS",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -293,8 +185,116 @@
                 "type": "png"
             },
             {
-                "file": "images/upup.png",
-                "name": "IMAGE_UPUP",
+                "file": "images/gauge.png",
+                "name": "IMAGE_GAUGE",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/flat.png",
+                "name": "IMAGE_FLAT",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/drop.png",
+                "name": "IMAGE_BLOOD_DROP",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/down.png",
+                "name": "IMAGE_DOWN",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/downdown.png",
+                "name": "IMAGE_DOWNDOWN",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/down45.png",
+                "name": "IMAGE_DOWN45",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/club55.png",
+                "name": "IMAGE_CLUB55",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/club100.png",
+                "name": "IMAGE_CLUB100",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/cloudui.png",
+                "name": "IMAGE_RCVRON",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/clouduirain.png",
+                "name": "IMAGE_RCVROFF",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/antenna.png",
+                "name": "IMAGE_BROKEN_ANTENNA",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/Question.png",
+                "name": "IMAGE_QUESTION_MARKS",
+                "targetPlatforms": [
+                    "basalt",
+                    "chalk"
+                ],
+                "type": "png"
+            },
+            {
+                "file": "images/LOGO.png",
+                "name": "IMAGE_LOGO",
                 "targetPlatforms": [
                     "basalt",
                     "chalk"
@@ -312,6 +312,6 @@
     "uuid": "508f3568-f402-4b17-91c2-3611d56fe2f4",
     "versionLabel": "1.1",
     "watchapp": {
-        "watchface": false
+        "watchface": true
     }
 }

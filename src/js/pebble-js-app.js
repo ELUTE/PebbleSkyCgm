@@ -156,6 +156,7 @@ function fetchCgmData() {
                     // putting NOT COMPUTABLE first because that's most common and can get out fastest
                     switch (currentDirection) {
                       case "NOT COMPUTABLE": currentIcon = "8"; break;
+                      case "NOT_COMPUTABLE": currentIcon = "8"; break;
                       case "NONE": currentIcon = "0"; break;
                       case "DoubleUp": currentIcon = "1"; break;
                       case "SingleUp": currentIcon = "2"; break;
@@ -524,7 +525,7 @@ Pebble.addEventListener("appmessage",
 
 Pebble.addEventListener("showConfiguration", function(e) {
                         console.log("Showing Configuration", JSON.stringify(e));
-                        Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/testconfig.html');
+                        Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/cgmdevconfig.html');
                         });
 
 Pebble.addEventListener("webviewclosed", function(e) {
