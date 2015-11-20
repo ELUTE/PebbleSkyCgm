@@ -1084,11 +1084,15 @@ void inbox_dropped_handler_cgm(AppMessageResult appmsg_indrop_error, void *conte
 // incoming appmessage send back from Pebble app dropped; no data received
   // have never seen handler get called, think because AppSync is always used
   // just set log now to avoid crash, if see log then can go back to old handler
-  
+  DictionaryIterator *iter = NULL;
+  AppMessageResult inboxdrop_apperr = APP_MSG_OK;
+  DictionaryResult inboxdrop_dicterr = DICT_OK;
 // APPMSG IN DROP debug logs
 //APP_LOG(APP_LOG_LEVEL_INFO, "APPMSG IN DROP ERROR");
 APP_LOG(APP_LOG_LEVEL_DEBUG, "APPMSG IN DROP ERR, CODE: %i RES: %s", 
           appmsg_indrop_error, translate_app_error(appmsg_indrop_error));
+    sync_error_callback_cgm(inboxdrop_dicterr, inboxdrop_apperr, iter);
+
     
 } // end inbox_dropped_handler_cgm
 
@@ -1096,10 +1100,16 @@ void outbox_failed_handler_cgm(DictionaryIterator *failed, AppMessageResult appm
 // outgoing appmessage send failed to deliver to Pebble
   // have never seen handler get called, think because AppSync is always used
   // just set log now to avoid crash, if see log then can go back to old handler
+   DictionaryIterator *iter = NULL;
+  AppMessageResult outboxfail_apperr = APP_MSG_OK;
+  DictionaryResult outboxfail_dicterr = DICT_OK;
   // APPMSG OUT FAIL debug logs
   //APP_LOG(APP_LOG_LEVEL_INFO, "APPMSG OUT FAIL ERROR");
+  
   APP_LOG(APP_LOG_LEVEL_DEBUG, "APPMSG OUT FAIL ERR, CODE: %i RES: %s", 
           appmsg_outfail_error, translate_app_error(appmsg_outfail_error));
+    sync_error_callback_cgm(outboxfail_dicterr, outboxfail_apperr, iter);
+
  
 } // end outbox_failed_handler_cgm
 
@@ -1263,7 +1273,6 @@ if (specvalue_alert == 100) {
      alert_handler_cgm(DOUBLEDOWN_VIBE);
      DoubleDownAlert = 111;
         text_layer_set_background_color(tophalf_layer, GColorRed); 
-        layer_mark_dirty(text_layer_get_layer(tophalf_layer)); 
       #ifdef PBL_PLATFORM_CHALK
         set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWNDOWN_ICON_INDX], GPoint(68, 125));
         text_layer_set_text(time_watch_layer, " ");
@@ -1271,6 +1280,8 @@ if (specvalue_alert == 100) {
         set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWNDOWN_ICON_INDX], GPoint(48, 125));
       #endif
         create_update_bitmap(&icon_bitmap_chart, icon_layer_chart, SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX]);  
+        layer_mark_dirty(text_layer_get_layer(tophalf_layer)); 
+
    }       
       } 
       else {
@@ -2845,6 +2856,8 @@ static void send_cmd_cgm(void) {
   DictionaryIterator *iter = NULL;
   AppMessageResult sendcmd_openerr = APP_MSG_OK;
   AppMessageResult sendcmd_senderr = APP_MSG_OK;
+  DictionaryResult sendcmd_dicterr = DICT_OK;
+
   
   //APP_LOG(APP_LOG_LEVEL_INFO, "SEND CMD IN, ABOUT TO OPEN APP MSG OUTBOX");
   sendcmd_openerr = app_message_outbox_begin(&iter);
@@ -2853,6 +2866,8 @@ static void send_cmd_cgm(void) {
   if (sendcmd_openerr != APP_MSG_OK) {
      //APP_LOG(APP_LOG_LEVEL_INFO, "WATCH SENDCMD OPEN ERROR");
      APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD OPEN ERR CODE: %i RES: %s", sendcmd_openerr, translate_app_error(sendcmd_openerr));
+     sync_error_callback_cgm(sendcmd_dicterr, sendcmd_openerr, iter);
+
      return;
   }
 
@@ -2862,6 +2877,8 @@ static void send_cmd_cgm(void) {
   if (sendcmd_senderr != APP_MSG_OK) {
      //APP_LOG(APP_LOG_LEVEL_INFO, "WATCH SENDCMD SEND ERROR");
      APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD SEND ERR CODE: %i RES: %s", sendcmd_senderr, translate_app_error(sendcmd_senderr));
+         sync_error_callback_cgm(sendcmd_dicterr, sendcmd_senderr, iter);
+
   }
 
   //APP_LOG(APP_LOG_LEVEL_INFO, "SEND CMD OUT, SENT MSG TO APP");

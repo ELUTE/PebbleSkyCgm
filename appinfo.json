@@ -18,7 +18,7 @@
         "configurable"
     ],
     "companyName": "Dexterity",
-    "longName": "SKYwf",
+    "longName": "CGMsky",
     "projectType": "native",
     "resources": {
         "media": [
@@ -304,12 +304,12 @@
         ]
     },
     "sdkVersion": "3",
-    "shortName": "SKYwf",
+    "shortName": "CGMsky",
     "targetPlatforms": [
         "basalt",
         "chalk"
     ],
-    "uuid": "508f3568-f402-4b17-91c2-3611d56fe2f4",
+    "uuid": "64ec0168-18d3-461d-8d29-a26005028bc2",
     "versionLabel": "1.1",
     "watchapp": {
         "watchface": true
