@@ -1250,7 +1250,7 @@ if (specvalue_alert == 100) {
       set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN45_ICON_INDX], GPoint(102, 105));
       #endif
       create_update_bitmap(&icon_bitmap_chart, icon_layer_chart, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX]); 
-      //text_layer_set_background_color(tophalf_layer, GColorPictonBlue);
+      text_layer_set_background_color(tophalf_layer, GColorPictonBlue);
       //layer_mark_dirty(text_layer_get_layer(tophalf_layer)); 
     DoubleDownAlert = 100;
       }
@@ -1262,7 +1262,7 @@ if (specvalue_alert == 100) {
         set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN_ICON_INDX], GPoint(58, 126));
       #endif
         create_update_bitmap(&icon_bitmap_chart, icon_layer_chart, SM_ARROW_ICONS[DOWN_SM_ICON_INDX]); 
-      //  text_layer_set_background_color(tophalf_layer, GColorPictonBlue);
+        text_layer_set_background_color(tophalf_layer, GColorPictonBlue);
       //  layer_mark_dirty(text_layer_get_layer(tophalf_layer));
 
    DoubleDownAlert = 100;
@@ -3302,7 +3302,7 @@ void window_load_cgm(Window *window_cgm) {
   
 // T1D NAME/IOB
   #ifdef PBL_PLATFORM_CHALK
-  t1dname_layer = text_layer_create(GRect(20, 125, 40, 28));
+  t1dname_layer = text_layer_create(GRect(22, 125, 50, 28));
   text_layer_set_text_color(t1dname_layer, GColorPictonBlue);
   text_layer_set_text_alignment(t1dname_layer, GTextAlignmentLeft);
   #else
@@ -3445,7 +3445,7 @@ layer_add_child(window_layer_cgm, bitmap_layer_get_layer(avatar_layer)); */
   
   // CGM TIME AGO ICON
   #ifdef PBL_PLATFORM_CHALK
-  cgmicon_layer = bitmap_layer_create(GRect(120, 110, 40, 24));
+  cgmicon_layer = bitmap_layer_create(GRect(125, 110, 40, 24));
   #else
   cgmicon_layer = bitmap_layer_create(GRect(70, 2, 40, 24));
   #endif
@@ -3456,7 +3456,7 @@ layer_add_child(window_layer_cgm, bitmap_layer_get_layer(avatar_layer)); */
   
   // CGM TIME AGO READING
   #ifdef PBL_PLATFORM_CHALK
-  cgmtime_layer = text_layer_create(GRect(110, 125, 50, 24));
+  cgmtime_layer = text_layer_create(GRect(108, 125, 50, 24));
   text_layer_set_text_color(cgmtime_layer, GColorPictonBlue);
   text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
   #else
