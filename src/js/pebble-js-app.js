@@ -538,8 +538,8 @@ Pebble.addEventListener("appmessage",
 Pebble.addEventListener("showConfiguration", function(e) {
                         console.log("Showing Configuration", JSON.stringify(e));
   
-                        Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/testconfig.html');
-                        });
+Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/cgmskyconfig1.html');
+});
 
 Pebble.addEventListener("webviewclosed", function(e) {
                         var opts = JSON.parse(decodeURIComponent(e.response));

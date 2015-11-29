@@ -17,7 +17,7 @@ Window *window_chart = NULL;
 
 Layer* canvas_layer_chart = NULL;
 ChartLayer* chart_layer = NULL;
-static int s_color_channels[3] = { 255, 255, 255 }; //was 85 85 85 changed by kate oct 22
+static int s_color_channels[3] = { 255, 255, 255 };
 static int b_color_channels[3] = { 0, 0, 0 };
 
 // MAIN WINDOW LAYER
@@ -61,6 +61,7 @@ BitmapLayer *icon_layer = NULL;
 BitmapLayer *cgmicon_layer = NULL;
 BitmapLayer *perfectbg_layer = NULL;
 BitmapLayer *rig_icon_layer = NULL; 
+BitmapLayer *battery_layer = NULL;
 //BitmapLayer *avatar_layer = NULL;
 
 // main window layer
@@ -69,6 +70,7 @@ GBitmap *cgmicon_bitmap = NULL;
 GBitmap *specialvalue_bitmap = NULL;
 GBitmap *perfectbg_bitmap = NULL;
 GBitmap *rig_icon_bitmap = NULL; 
+GBitmap *battery_bitmap = NULL;
 static Layer *circle_layer;
 static Layer*rig_line_layer;
 static Layer *batteryGraphicsLayer;
@@ -926,31 +928,6 @@ void BT_timer_callback(void *data) {
 	bt_handler(bt_connected);
 } // end BT_timer_callback
 
-//WATCH BATTERY TEXT
-void handle_watch_battery_cgm(BatteryChargeState watch_charge_state) {
-  
-  static char watch_battery_text[] = " ";
-
-  if (watch_charge_state.is_charging) {
-    //create_update_bitmap(&battery_bitmap,battery_layer,BATTERY_IMAGES[CHRG0_ICON_INDX]);
-      text_layer_set_text(watch_battlevel_layer, "CHG");
-
-   // snprintf(watch_battery_text, sizeof(watch_battery_text), "chg", watch_charge_state.charge_percent);
-   // } else {
-      text_layer_set_text(watch_battlevel_layer," ");  
-    //snprintf(watch_battery_text, sizeof(watch_battery_text), "%d", watch_charge_state.charge_percent);
-    //if (watch_charge_state.charge_percent <=50) {
-      //text_layer_set_text_color(watch_battlevel_layer, GColorRed);
-   // }
-   // else {text_layer_set_text_color(watch_battlevel_layer, GColorMidnightGreen);}
-
-    
-    }
-//    charge_percent = watch_charge_state.charge_percent;
-    batteryLevel = watch_charge_state.charge_percent;
-    text_layer_set_text(watch_battlevel_layer, watch_battery_text);
-} 
-
 //WATCH BATTERY ICON 
 static void batteryGraphicsLayerDraw( Layer *layer, GContext *ctx ) {
    // Stroke the path:
@@ -958,7 +935,8 @@ static void batteryGraphicsLayerDraw( Layer *layer, GContext *ctx ) {
   gpath_draw_outline(ctx, batteryOutlinePath);
  
   // Signify the percentage:
-  if (batteryLevel <=50) {
+ 
+ if (batteryLevel <=50) {
       graphics_context_set_fill_color(ctx, GColorDarkCandyAppleRed);
       graphics_fill_rect( ctx, GRect( 0, 0, (batteryLevel/100.) * BATTERY_OUTLINE_WIDTH, BATTERY_OUTLINE_HEIGHT ), 0, 0 );
 }
@@ -967,6 +945,28 @@ static void batteryGraphicsLayerDraw( Layer *layer, GContext *ctx ) {
     graphics_fill_rect( ctx, GRect( 0, 0, (batteryLevel/100.) * BATTERY_OUTLINE_WIDTH, BATTERY_OUTLINE_HEIGHT ), 0, 0 );
     }
 }
+
+//WATCH BATTERY TEXT
+void handle_watch_battery_cgm(BatteryChargeState watch_charge_state) {
+  
+  static char watch_battery_text[] = " ";
+
+  if (watch_charge_state.is_charging) {
+//#ifdef PBL_ROUND
+    bitmap_layer_set_background_color(battery_layer, GColorMayGreen);
+  }
+else{
+     bitmap_layer_set_background_color(battery_layer, GColorClear);
+    
+    }
+//    charge_percent = watch_charge_state.charge_percent;
+    batteryLevel = watch_charge_state.charge_percent;
+    text_layer_set_text(watch_battlevel_layer, watch_battery_text);
+} 
+
+
+
+
 static void draw_date_from_app() {
  
   // VARIABLES
@@ -1390,8 +1390,8 @@ animate_perfectbg_layer = bitmap_layer_get_layer(perfectbg_layer);
     from_perfectbg_rect = GRect(144, 62, 135, 144);
     to_perfectbg_rect = GRect(-85, 62, 135, 144);    
 #else
-    from_perfectbg_rect = GRect(180, 60, 135, 144);
-    to_perfectbg_rect = GRect(-85, 60, 135, 144);   
+    from_perfectbg_rect = GRect(180, 63, 135, 144);
+    to_perfectbg_rect = GRect(-85, 63, 135, 144);   
 #endif
 //	destroy_perfectbg_animation(&perfectbg_animation);
 //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE BG, CREATE FRAME");
@@ -1660,8 +1660,8 @@ char happymsg_buffer42[26] = "THE MEANING OF LIFE?\0";
 char happymsg_buffer88[26] = "88MPH GREAT SCOTT\0";
 char happymsg_buffer143[26] = "FEELIN THE LOVE\0";
 char happymsg_buffer109[26] = "FEELIN FINE\0";
-char happymsg_buffer116[26] = "VICTORY LANE! RYAN REED\0";
-char happymsg_buffer207[26] = "HILO HILO OFF 2TEST U GO\0";
+char happymsg_buffer222[26] = "TOO SWEET!\0";
+char happymsg_buffer280[26] = "RELEASE THE KRAKEN\0";
 char happymsg_buffer314[26] = "NO PIE FOR YOU\0";
   
 // CODE START
@@ -1895,17 +1895,17 @@ else {
      animate_happymsg(happymsg_buffer109);
         } // animate happy msg layer @ 109 and 6.9
       
-        if ((currentBG_isMMOL == 100) && (current_bg == 116)) {
+        if ((currentBG_isMMOL == 100) && (current_bg == 222)) {
      // ANIMATE HAPPY MSG LAYER     
      //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-     animate_happymsg(happymsg_buffer116);
+     animate_happymsg(happymsg_buffer222);
         } // animate happy msg layer @ 116
       
-        if ( ((currentBG_isMMOL == 100) && (current_bg == 207)) || ((currentBG_isMMOL == 111) && (current_bg == 117)) ) {
+        if ( ((currentBG_isMMOL == 100) && (current_bg == 280)) || ((currentBG_isMMOL == 111) && (current_bg == 155)) ) {
      // ANIMATE HAPPY MSG LAYER     
      //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-     animate_happymsg(happymsg_buffer207);
-        } // animate happy msg layer @ 207
+     animate_happymsg(happymsg_buffer280);
+        } // animate happy msg layer @ 280 
         if ( ((currentBG_isMMOL == 100) && (current_bg == 88)) || ((currentBG_isMMOL == 111) && (current_bg == 88)) ) {
      // ANIMATE HAPPY MSG LAYER     
      //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
@@ -1917,7 +1917,7 @@ else {
        animate_happymsg(happymsg_buffer42);            
      } // animate happy msg layer @ 42 
         
-        if (HardCodeAllAnimations == 111) {
+      if (HardCodeAllAnimations == 111) {
           // extra animations for those that want them
      if ((currentBG_isMMOL == 100) && (current_bg == 314)) {
        // ANIMATE HAPPY MSG LAYER     
@@ -3259,6 +3259,17 @@ void window_load_cgm(Window *window_cgm) {
   layer_add_child( window_get_root_layer(window_cgm), batteryGraphicsLayer );
   batteryOutlinePath = gpath_create(&BATTERY_OUTLINE);
  
+  // WATCH CHARGING ICON
+   #ifdef PBL_PLATFORM_CHALK
+   battery_layer = bitmap_layer_create(GRect(83, 172, 13, 5));
+  #else
+   battery_layer = bitmap_layer_create(GRect(110, 155, 21, 9));
+  #endif
+  bitmap_layer_set_background_color(battery_layer, GColorClear);
+  bitmap_layer_set_alignment(battery_layer, GTextAlignmentCenter);
+  bitmap_layer_set_compositing_mode(battery_layer, GCompOpSet);
+  layer_add_child(window_layer_cgm, bitmap_layer_get_layer(battery_layer));
+  
   //RIG BATTERY ICON
   #ifdef PBL_PLATFORM_CHALK
   rig_icon_layer = bitmap_layer_create(GRect(0, 93, 65, 56));
@@ -3273,11 +3284,7 @@ void window_load_cgm(Window *window_cgm) {
   rig_line_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
   layer_add_child(window_layer_cgm, rig_line_layer);
   
-  // WATCH BATTERY ICON
- /* battery_layer = bitmap_layer_create(GRect(85, 148, 72, 22));
-  bitmap_layer_set_background_color(battery_layer, GColorClear);
-  bitmap_layer_set_alignment(battery_layer, GTextAlignmentRight);
-  layer_add_child(window_layer_cgm, bitmap_layer_get_layer(battery_layer)); */
+  
 /*
   batteryLayer = text_layer_create( GRect(144, 110, 30, 20) );
   text_layer_set_background_color( batteryLayer, GColorWhite );
@@ -3368,18 +3375,6 @@ layer_add_child(window_layer_cgm, bitmap_layer_get_layer(avatar_layer)); */
   //text_layer_set_font(bg_layer, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
   text_layer_set_text_alignment(bg_layer, GTextAlignmentCenter);
   layer_add_child(window_layer_cgm, text_layer_get_layer(bg_layer));
-
-  // HAPPY MSG LAYER
-  #ifdef PBL_PLATFORM_CHALK
-  happymsg_layer = text_layer_create(GRect(19, -3, 144, 80));
-  #else
-  happymsg_layer = text_layer_create(GRect(-1, -3, 144, 80));
-  #endif
-  text_layer_set_text_color(happymsg_layer, GColorOxfordBlue);
-  text_layer_set_background_color(happymsg_layer, GColorClear);
-  text_layer_set_font(happymsg_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-  text_layer_set_text_alignment(happymsg_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer_cgm, text_layer_get_layer(happymsg_layer));
   
   // DELTA BG / MESSAGE LAYER
   #ifdef PBL_PLATFORM_CHALK
@@ -3468,6 +3463,18 @@ layer_add_child(window_layer_cgm, bitmap_layer_get_layer(avatar_layer)); */
   text_layer_set_background_color(cgmtime_layer, GColorClear);
   text_layer_set_font(cgmtime_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   layer_add_child(window_layer_cgm, text_layer_get_layer(cgmtime_layer));
+   
+    // HAPPY MSG LAYER
+  #ifdef PBL_PLATFORM_CHALK
+  happymsg_layer = text_layer_create(GRect(19, -3, 144, 80));
+  #else
+  happymsg_layer = text_layer_create(GRect(-1, -3, 144, 80));
+  #endif
+  text_layer_set_text_color(happymsg_layer, GColorOxfordBlue);
+  text_layer_set_background_color(happymsg_layer, GColorClear);
+  text_layer_set_font(happymsg_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
+  text_layer_set_text_alignment(happymsg_layer, GTextAlignmentCenter);
+  layer_add_child(window_layer_cgm, text_layer_get_layer(happymsg_layer));
   
   layer_set_update_proc(circle_layer, circle_update_proc);
   
@@ -3512,9 +3519,10 @@ void window_unload_cgm(Window *window_cgm) {
   destroy_null_GBitmap(&cgmicon_bitmap);
   destroy_null_GBitmap(&specialvalue_bitmap);
   destroy_null_GBitmap(&perfectbg_bitmap);
-  //destroy_null_GBitmap(&battery_bitmap); 
   //destroy_null_GBitmap(&avatar_bitmap); 
   destroy_null_GBitmap(&rig_icon_bitmap); 
+  destroy_null_GBitmap(&battery_bitmap); 
+
   layer_destroy(circle_layer);
   layer_destroy(rig_line_layer);  
   layer_destroy( batteryGraphicsLayer );
@@ -3524,7 +3532,7 @@ void window_unload_cgm(Window *window_cgm) {
  //  destroy_null_BitmapLayer(&avatar_layer);
   destroy_null_BitmapLayer(&cgmicon_layer);
   destroy_null_BitmapLayer(&perfectbg_layer);
-  //destroy_null_BitmapLayer(&battery_layer); 
+  destroy_null_BitmapLayer(&battery_layer); 
   destroy_null_BitmapLayer(&rig_icon_layer); 
   //destroy_null_BitmapLayer(&avatar_layer);
 
