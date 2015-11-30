@@ -1444,7 +1444,7 @@ void happymsg_animation_stopped(Animation *animation, bool finished, void *data)
 //APP_LOG(APP_LOG_LEVEL_INFO, "HAPPY MSG ANIMATE, ANIMATION STOPPED ROUTINE");
 // set BG delta / message layer
 //APP_LOG(APP_LOG_LEVEL_DEBUG, "HAPPY MSG ANIMATE, ANIMATION STOPPED, SET TO BG DELTA);
-  load_bg_delta();
+  //load_bg_delta();
   load_cgmtime();
   load_apptime();
   load_rig_battlevel();
