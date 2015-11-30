@@ -1431,12 +1431,11 @@ void happymsg_animation_started(Animation *animation, void *data) {
 
 //APP_LOG(APP_LOG_LEVEL_INFO, "HAPPY MSG ANIMATE, ANIMATION STARTED ROUTINE, CLEAR OUT BG DELTA");
   
-// clear out BG delta / message layer
-  //text_layer_set_text(message_layer, "");
+  text_layer_set_text(message_layer, current_bg_delta);
   text_layer_set_text(cgmtime_layer, "");
   text_layer_set_text(rig_battlevel_layer, "");
   create_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);   
-  create_update_bitmap(&cgmicon_bitmap,cgmicon_layer_chart, TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
+ // create_update_bitmap(&cgmicon_bitmap,cgmicon_layer_chart, TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
   
 } // end happymsg_animation_started
 
@@ -2002,13 +2001,13 @@ else {
       } // else if "NORMAL RANGE" BG
  
     } // else if current bg <= 0
-if (current_bg > bg_ptr[HIGH_BG_INDX]){//added NOV10
-text_layer_set_text_color(bg_layer, GColorOrange); //added NOV10
+if (current_bg > bg_ptr[HIGH_BG_INDX]){
+text_layer_set_text_color(bg_layer, GColorOrange); 
  // text_layer_set_text_color(bg_layer_chart, GColorOrange);
   layer_mark_dirty(text_layer_get_layer(bg_layer));
 }
   else if (current_bg < bg_ptr[LOW_BG_INDX]){//added NOV10
-    text_layer_set_text_color(bg_layer, GColorDarkCandyAppleRed);//added NOV10
+    text_layer_set_text_color(bg_layer, GColorDarkCandyAppleRed);
   layer_mark_dirty(text_layer_get_layer(bg_layer));
 
   //  text_layer_set_text_color(bg_layer_chart, GColorDarkCandyAppleRed);
