@@ -538,7 +538,7 @@ Pebble.addEventListener("appmessage",
 Pebble.addEventListener("showConfiguration", function(e) {
                         console.log("Showing Configuration", JSON.stringify(e));
   
-Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/cgmskyconfig1.html');
+Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skyshareconfigV1.html');
 });
 
 Pebble.addEventListener("webviewclosed", function(e) {
