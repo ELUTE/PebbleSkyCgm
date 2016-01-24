@@ -1,14 +1,130 @@
+var hasTimeline = 1;
+var topic = "not_set";
+var fix = 0;
+var defaultId = 99;
+var logging = 1;
 // main function to retrieve, format, and send cgm data
 function fetchCgmData() {
   
     //console.log ("START fetchCgmData");
-                
+    console.log("fetchCgmData 1");            
+    // declare local variables for message data
+   // var response, responsebgs, responsecals, message;
+   var opts = [ ].slice.call(arguments).pop( );
+   opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
+   console.log("fetchCgmData 2");
+   switch (opts.mode) {
+          case "Nightscout":
+            console.log("Nightscout data to be loaded");
+         //   subscribeBy(opts.endpoint);
+            
+      //      opts.endpoint = opts.endpoint.replace("/pebble?units=mmol","");
+      //      opts.endpoint = opts.endpoint.replace("/pebble/","");
+     //       opts.endpoint = opts.endpoint.replace("/pebble","");
+ 
+    //        if(opts.raw) {
+    //            getNightscoutCalRecord(opts);
+     //       } else {
+               console.log("fetchCgmData 3");
+               nightscout(opts); 
+              //var thisline = new Error().lineNumber;
+              console.log("fetchCgmData 4");
+    //        }
+            
+             break;
+
+        case "US_Share":
+        case "Non_US_Share":
+            console.log("Share data to be loaded");
+            subscribeBy(opts.accountName);
+            share(opts);
+            break;
+            
+         default:
+         Pebble.sendAppMessage({
+                    "vibe": 1, 	
+                    "bg": "set",		
+                    "icon": 0,	
+                    "alert": 4,
+                    "dlta": "setup up required",
+                    "id": defaultId,
+                   // "tcgm": defaultId,
+
+                    "time_delta_int": -1,
+                  
+                });
+         break;
+    }
+    console.log("fetchCgmData 5");
+} // end fetchCgmData
+
+/*function getNightscoutCalRecord(options){
+
+    var url = options.api + "/api/v1/entries/cal.json?count=1";
+    var http = new XMLHttpRequest();
+    console.log("getNightscoutCalRecord 1");
+    http.open("GET", url, true);
+    console.log("getNightscoutCalRecord 2");
+    http.onload = function (e) {
+        console.log("getNightscoutCalRecord 3");     
+        if (http.status == 200) {
+            var data = JSON.parse(http.responseText);
+            console.log("getNightscoutCalRecord 4");
+            //console.log("response: " + http.responseText);
+             
+            if (data.length === 0) {               
+                options.raw = 0;
+                console.log("getNightscoutCalRecord 5");
+                nightscout(options);
+                console.log("getNightscoutCalRecord 6");
+            } else { 
+                options.cal = {
+                    'slope' : parseInt(data[0].slope, 10),
+                    'intercept' : parseInt(data[0].intercept,10),
+                    'scale' :  data[0].scale                  
+                };
+                console.log("getNightscoutCalRecord 7");
+                nightscout(options);
+                console.log("getNightscoutCalRecord 8");
+            }
+
+        } else {
+           sendUnknownError("data err");
+        }
+    };
+    console.log("getNightscoutCalRecord 9");
+    http.onerror = function () {  
+        console.log("getNightscoutCalRecord 10");
+        sendServerError();
+    };
+    http.ontimeout = function () {
+        console.log("getNightscoutCalRecord 11");
+        sendTimeOutError();
+        console.log("getNightscoutCalRecord 12");
+    };
+
+    try {
+        console.log("getNightscoutCalRecord 13");
+        http.send();
+        console.log("getNightscoutCalRecord 14");
+    }
+    catch (e) {
+        sendUnknownError("invalid url");
+    }
+    
+    
+}*/
+
+function nightscout(opts)
+{
+   //console.log ("START fetchCgmData");
+     console.log("nightscout 1");           
     // declare local variables for message data
     var response, responsebgs, responsecals, message;
 
     //get options from configuration window
-    var opts = [ ].slice.call(arguments).pop( );
-    opts = JSON.parse(window.localStorage.getItem('cgmPebble'));
+  //  var opts = [ ].slice.call(arguments).pop( );
+    //opts = JSON.parse(localStorage.getItem('cgmPebble'));
 
 	// check if endpoint exists
     if (!opts.endpoint) {
@@ -25,49 +141,48 @@ function fetchCgmData() {
           vals: " ",
           clrw: " ",
           rwuf: " ",
-		      bgsx: " ",
-		      bgty: " ",
           noiz: 0
         };
-        
+        console.log("nightscout 2"); 
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
         MessageQueue.sendAppMessage(message);
+         console.log("nightscout 3"); 
         return;
     } // if (!opts.endpoint)
 	
     // show current options
     //console.log("fetchCgmData IN OPTIONS = " + JSON.stringify(opts));
   
-   // declare XML request
+    // call XML
     var req = new XMLHttpRequest();
- 
-    // set timeout function
-    var myCGMTimeout = setTimeout (function () {
-      req.abort();
-      message = {
-        dlta: "OFF"
-      };          
-      console.log("TIMEOUT, DATA OFFLINE JS message", JSON.stringify(message));
-      MessageQueue.sendAppMessage(message);
-    }, 59000 ); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds  
-  
+     console.log("nightscout 4"); 
+    // get cgm data
+    req.open('GET', opts.endpoint, true);
+     console.log("nightscout 5"); 
+    req.setRequestHeader('Cache-Control', 'no-cache');
+	  console.log("nightscout 6"); 
     req.onload = function(e) {
 
+       console.log("nightscout 7"); 
         if (req.readyState == 4) {
 
+           console.log("nightscout 8"); 
             if(req.status == 200) {
-                
+                 console.log("nightscout 9"); 
                 // clear the XML timeout
                 clearTimeout(myCGMTimeout);
-              
+                console.log("nightscout 10"); 
                 // Load response   
+                console.log(req.responseText);
                 response = JSON.parse(req.responseText);
+              console.log("nightscout 11: " + response); 
                 responsebgs = response.bgs;
                 responsecals = response.cals;
                 
                 // check response data
                 if (responsebgs && responsebgs.length > 0) {
 
+                   console.log("nightscout 12"); 
                     // response data is good; send log with response 
                     // console.log('got response', JSON.stringify(response));
 
@@ -85,8 +200,8 @@ function fetchCgmData() {
                     calibrationValue = false,
 
                     // get timezone offset
-                   // timezoneDate = new Date(), NEED FOR APLITE
-                    //timezoneOffset = timezoneDate.getTimezoneOffset(), NEED FOR APLITE
+                   // timezoneDate = new Date(),
+                   // timezoneOffset = timezoneDate.getTimezoneOffset(),
                         
                     // get CGM time delta and format
                     readingTime = new Date(responsebgs[0].datetime).getTime(),
@@ -123,27 +238,23 @@ function fetchCgmData() {
                     currentIntercept = "undefined",
                     currentSlope = "undefined",
                     currentScale = "undefined",
-                    currentRatio = 0,
-					
-					          // chart fields
-					          currentBGArrayX = " ",
-					          currentBGTimeArrayY = " ";
-  
+                    currentRatio = 0;
+    console.log("nightscout 13"); 
                     // get name of T1D; if iob (case insensitive), use IOB
                     if ( (NameofT1DPerson.toUpperCase() === "IOB") && 
                     ((typeof currentIOB != "undefined") && (currentIOB !== null)) ) {
-                      NameofT1DPerson = currentIOB + ".u";
+                      NameofT1DPerson = "IOB:" + currentIOB;
                     }
                     else {
                       NameofT1DPerson = opts.t1name;
                     }
-  
+   console.log("nightscout 14"); 
                     if (responsecals && responsecals.length > 0) {
                       currentIntercept = responsecals[0].intercept;
                       currentSlope = responsecals[0].slope;
                       currentScale = responsecals[0].scale;
                     }
-                  
+                 console.log("nightscout 15");   
                     //currentDirection = "NONE";
 
                     // set some specific flags needed for later
@@ -156,12 +267,11 @@ function fetchCgmData() {
                       if (currentBG == 0.3) { calibrationValue = true; }
                       currentConvBG = (Math.round(currentBG * 18.018).toFixed(0));                                                                   
                     }
-              
+               console.log("nightscout 16"); 
                     // convert arrow to a number string; sending number string to save memory
                     // putting NOT COMPUTABLE first because that's most common and can get out fastest
                     switch (currentDirection) {
                       case "NOT COMPUTABLE": currentIcon = "8"; break;
-                      case "NOT_COMPUTABLE": currentIcon = "8"; break;
                       case "NONE": currentIcon = "0"; break;
                       case "DoubleUp": currentIcon = "1"; break;
                       case "SingleUp": currentIcon = "2"; break;
@@ -179,7 +289,7 @@ function fetchCgmData() {
                     if ( (typeof currentBattery == "undefined") || (currentBattery === null) ) {
                       currentBattery = " ";  
                     }
-                  
+                   console.log("nightscout 17"); 
                     // assign bg delta string
                     formatBGDelta = ((currentBGDelta > 0 ? '+' : '') + currentBGDelta);
 
@@ -203,7 +313,7 @@ function fetchCgmData() {
                           //console.log("Normal BG Calculated Raw: " + currentCalcRaw);
                         }          
                     } // if currentIntercept                  
-
+ console.log("nightscout 18"); 
                     // assign raw sensor values if they exist
                     if ( (typeof currentRawUnfilt != "undefined") && (currentRawUnfilt !== null) ) {
                       
@@ -250,14 +360,14 @@ function fetchCgmData() {
                         //console.log("Format Unfiltered: " + formatRawUnfilt);
                       }
                     } // if currentRawUnfilt 
-                  
+                   console.log("nightscout 19"); 
                     //console.log("Calculated Raw To Be Sent: " + formatCalcRaw);
-                    
+                  
                     // assign blank noise if it doesn't exist
                     if ( (typeof currentNoise == "undefined") || (currentNoise === null) ) {
                       currentNoise = 0;  
                     }
-                  
+                    
                     if (opts.radio == "mgdl_form") {
                       values = "0";  //mgdl selected
                     } else {
@@ -281,7 +391,7 @@ function fetchCgmData() {
                     } else {
                       values += ",0";  // Do not vibrate on raw value when in special values                        
                     }
-                    
+                     console.log("nightscout 20"); 
                     //console.log("Current Value: " + values);
                     //console.log("Current rawvibrate: " + opts.rawvibrate);
                     //console.log("Current currentCalcRaw: " + currentCalcRaw);
@@ -296,11 +406,7 @@ function fetchCgmData() {
                     //console.log("current BG delta: " + currentBGDelta);
                     //console.log("current Formatted Delta: " + formatBGDelta);              
                     //console.log("current Battery: " + currentBattery);
-
-                    // get chart data
-                    currentBGArrayX = currentBG;
-					          currentBGTimeArrayY = formatReadTime;
-					
+                    
                     // load message data  
                     message = {
                       icon: currentIcon,
@@ -313,15 +419,13 @@ function fetchCgmData() {
                       vals: values,
                       clrw: formatCalcRaw,
                       rwuf: formatRawUnfilt,
-                      noiz: currentNoise,
-					            bgsx: currentBGArrayX,
-					            bgty: currentBGTimeArrayY
+                      noiz: currentNoise
                     };
                     
                     // send message data to log and to watch
                     console.log("JS send message: " + JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
-
+ console.log("nightscout 21"); 
                 // response data is not good; format error message and send to watch
                 // have to send space in BG field for logo to show up on screen				
                 } else {
@@ -334,27 +438,505 @@ function fetchCgmData() {
                     console.log("DATA OFFLINE JS message", JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
                 }
-               } else {
-              console.log("XMLHttpRequest error, not 200: " + req.statusText);
             } // end req.status == 200
         } // end req.readyState == 4
-    }; // end req.onload
+    }; // req.onload
   
-  req.onerror = function (e) {
-      console.log("XMLHttpRequest error: " + req.statusText);
-    }; // end req.onerror
- 
-    // set rest of req
-    req.open('GET', opts.endpoint, true);  
-    req.setRequestHeader('Cache-Control', 'no-cache');  
-    req.timeout = 59000; // Set timeout to 59 seconds (59000 milliseconds); can not go beyond 59 seconds
-    req.ontimeout = myCGMTimeout;
-    
-    // get cgm data
+   console.log("nightscout 22"); 
     req.send(null);
-  
-} // end fetchCgmData
+    var myCGMTimeout = setTimeout (function () {
+      req.abort();
+      message = {
+        dlta: "OFF"
+      };          
+       console.log("nightscout 23"); 
+      console.log("DATA OFFLINE JS message", JSON.stringify(message));
+      MessageQueue.sendAppMessage(message); console.log("nightscout 2"); 
+       console.log("nightscout 23"); 
+    }, 59000 ); // timeout in ms; set at 45 seconds; can not go beyond 59 seconds   
+}
 
+function subscribeBy(base) {
+    try {        
+        topic = hashCode(base).toString();
+        logging("hashcode:" + topic);
+        Pebble.getTimelineToken(
+            function (token) {
+                //console.log('My timeline token is: ' + token);
+            },
+            function (error) {
+                //console.log('Error getting timeline token: ' + error);
+                hasTimeline = 0;
+            }
+            );
+        Pebble.timelineSubscribe(topic,
+            function () {
+                //console.log('Subscribed to: ' + topic);
+            },
+            function (errorString) {
+                //console.log('Error subscribing to topic: ' + errorString);
+                hasTimeline = 0;
+            }
+            );
+    } catch (err) {
+        //console.log('Error: ' + err.message);
+        hasTimeline = 0;
+    }
+    
+    if (hasTimeline)
+        cleanupSubscriptions();
+
+}
+
+
+//use D's share API------------------------------------------//
+function share(options) {
+
+    if (options.unit == "mgdl" || options.unit == "mg/dL")
+    {
+        fix = 0;
+        options.conversion = 1;
+        options.unit = "mg/dL";
+        
+    } else {
+        fix = 1;
+        options.conversion = 0.0555;       
+        options.unit = "mmol/L";
+    }
+    options.vibe = parseInt(options.vibe, 10);
+    
+    var server = getShareServerName(options);
+  
+    var defaults = {
+        "applicationId": "d89443d2-327c-4a6f-89e5-496bbb0317db",
+        "agent": "Dexcom Share/3.0.2.11 CFNetwork/711.2.23 Darwin/14.0.0",
+        login: 'https://' + server + '/ShareWebServices/Services/General/LoginPublisherAccountByName',
+      //  login: 'https://share1.dexcom.com/ShareWebServices/Services/General/LoginPublisherAccountByName',
+        accept: 'application/json',
+        'content-type': 'application/json',
+        LatestGlucose: "https://" + server + "/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues"
+      //  LatestGlucose: "https://share1.dexcom.com/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues"
+    };
+   // console.log("Login: " + defaults.login + " Latest Glucose: " + defaults.LatestGlucose);
+    authenticateShare(options, defaults);
+}
+function getShareServerName(options)
+{
+  var mode = options.mode.toLowerCase();
+  var server = "";
+  
+  if(mode == "us_share")
+    {
+      server = "share1.dexcom.com";
+    }
+  else if(mode == "non_us_share")
+    {
+      server = "shareous1.dexcom.com";
+    }
+  else
+    {
+      console.log("Option not supported");
+      server = "";
+    }
+  console.log("Server to use:" + server);
+  return server;
+}
+function authenticateShare(options, defaults) {   
+ 
+    var body = {
+        "password": options.password,
+        "applicationId": options.applicationId || defaults.applicationId,
+        "accountName": options.accountName
+    };
+
+    var http = new XMLHttpRequest();
+    var url = defaults.login;
+    http.open("POST", url, true);
+    http.setRequestHeader("User-Agent", defaults.agent);
+    http.setRequestHeader("Content-type", defaults['content-type']);
+    http.setRequestHeader('Accept', defaults.accept);
+    
+    var data;
+    http.onload = function (e) {
+        if (http.status == 200) {
+            data = getShareGlucoseData(http.responseText.replace(/['"]+/g, ''), defaults, options);
+        } else {
+                sendAuthError();           
+        }
+    };
+    
+       http.ontimeout = function () {
+        sendTimeOutError();
+    };
+    
+    http.onerror = function () {
+        sendServerError();
+    };
+
+    http.send(JSON.stringify(body));
+
+}
+function sendAuthError() {
+    Pebble.sendAppMessage({
+                    "vibe": 1, 	
+                    "bg": "log",		
+                    "icon": 0,	
+                    "alert": 4,
+                    "dlta": "login err",
+                    "id": defaultId,
+                   // "tcgm": defaultId,
+                    "time_delta_int": -1,
+                });
+}
+
+function sendTimeOutError(options) {
+     Pebble.sendAppMessage({
+            "vibe": parseInt(options.vibe_temp,10),
+            "bg": "tot",
+            "icon": 0,
+            "alert": 4,
+            "dlta": "tout-err",
+            "id": defaultId,
+            //"tcgm": defaultId,
+            "time_delta_int": -1,
+        });
+}
+
+function sendServerError(options) {
+    Pebble.sendAppMessage({
+            "vibe": parseInt(options.vibe_temp,10),
+            "bg": "svr",
+            "icon": 0,
+            "alert": 4,
+            "dlta": "net-err",
+            "id": defaultId,
+            //"tcgm": defaultId,
+            "time_delta_int": -1,
+        });
+}
+
+function sendUnknownError(msg) {
+    Pebble.sendAppMessage({
+                "dlta": msg,
+                "bg": "exc",
+                "icon": 0,
+                "alert": 4,
+                "vibe": 0,
+                "id": defaultId,
+               // "tcgm": defaultId,
+                "time_delta_int": -1,
+            }); 
+}
+
+
+function getShareGlucoseData(sessionId, defaults, options) {
+    var now = new Date();
+    var http = new XMLHttpRequest();
+    var url = defaults.LatestGlucose + '?sessionID=' + sessionId + '&minutes=' + 1440 + '&maxCount=' + 8;
+    http.open("POST", url, true);
+
+    //Send the proper header information along with the request
+    http.setRequestHeader("User-Agent", defaults.agent);
+    http.setRequestHeader("Content-type", defaults['content-type']);
+    http.setRequestHeader('Accept', defaults.accept);
+    http.setRequestHeader('Content-Length', 0);
+    var icon = null;
+    http.onload = function (e) {
+             
+        if (http.status == 200) {
+            var data = JSON.parse(http.responseText);
+           // console.log("response: " + http.responseText);
+            //handle arrays less than 2 in length
+            if (data.length === 0) {                
+                sendUnknownError("data err");
+            } else { 
+            
+                //TODO: calculate loss
+                var regex = /\((.*)\)/;
+              var wall = parseInt(data[0].WT.match(regex)[1]);
+
+               // var tcgm = (parseInt(data[0].WT.match(regex)[1])/1000);
+              console.log("Data: " + data);
+                var timeAgo = now.getTime() - wall;       
+              //  var timeAgo = now.getTime() - tcgm;       
+              var tcgm = (wall/1000);     
+  
+              var bg, dlta, convertedDelta;
+
+                if (data.length == 1) {
+                    dlta = "can't calc";
+                } else {
+                    var timeBetweenReads = parseInt(data[0].WT.match(regex)[1]) - parseInt(data[1].WT.match(regex)[1]);
+                    var minutesBetweenReads = (timeBetweenReads / (1000 * 60)).toFixed(1);                                               
+                    var deltaZero = data[0].Value * options.conversion;
+                    var deltaOne = data[1].Value * options.conversion;
+                    convertedDelta = (deltaZero - deltaOne);                   
+                    dlta = ((convertedDelta/minutesBetweenReads) * 5).toFixed(fix);
+                    console.log("dlta: " + dlta);
+                }
+
+              var convertedEgv = null;
+                //Manage HIGH & LOW
+                if (data[0].Value < 40) {
+                    bg = "low";
+                    dlta = "check bg";
+                    icon = 0;
+                    console.log("---------------LOW");
+                } else if (data[0].Value > 400) {
+                    bg = "hgh";
+                    dlta = "check bg";
+                    icon = 0;
+                    logging("---------------HIGH");
+                } else {
+                    convertedEgv = (data[0].Value * options.conversion);
+                    bg = (convertedEgv < 39 * options.conversion) ? parseFloat(Math.round(convertedEgv * 100) / 100).toFixed(1).toString() : convertedEgv.toFixed(fix).toString();
+                    dlta = (convertedEgv < 39 * options.conversion) ? parseFloat(Math.round(convertedDelta * 100) / 100).toFixed(1) : convertedDelta.toFixed(fix);
+                                  
+                    
+                    var deltaString = (dlta > 0) ? "+" + dlta.toString() : dlta.toString();
+			          	//dlta = deltaString + options.unit;	
+                  dlta = deltaString;
+                  //added to string
+                    icon = ((data[0].Trend > 7) ? 0 : data[0].Trend).toString();
+
+                    options.bg = data[0].Value;
+                    console.log("---------------HIGH");
+                }
+              var alert = calculateShareAlert(convertedEgv, wall, options);
+  
+              // var alert = calculateShareAlert(convertedEgv, tcgm, options);
+                var timeDeltaMinutes = Math.floor(timeAgo / 60000);              
+                var d = new Date(wall);
+                //var d = new Date(tcgm);
+                var n = d.getMinutes();
+                var pin_id_suffix = 5 * Math.round(n / 5);
+                var title = "[SPARK] " + bg + " " + options.unit;
+                var pin = {
+                    "id": "pin-egv" + topic + pin_id_suffix,
+                    "time": d.toISOString(),
+                    "duration": 5,
+                    "layout": {
+                        "type": "genericPin",
+                        "title": title,
+                        "body": "Dexcom Share",
+                        "tinyIcon": "system://images/GLUCOSE_MONITOR",
+                        "backgroundColor": "#FF5500"
+                    },
+                    "actions": [
+                        {
+                            "title": "Launch App",
+                            "type": "openWatchApp",
+                            "launchCode": 1
+                        }],
+
+                };
+                
+                console.log("dlta: " + dlta);
+                console.log("bg: " + bg);
+                console.log("icon: " + icon);
+                console.log("alert: " + alert);
+                console.log("vibe: " + options.vibe_temp);
+                console.log("id: " + wall);
+               // console.log("tcgm: " + tcgm);
+                console.log("time_delta_int: " + timeDeltaMinutes);
+                console.log("bgs: " + createShareBgArray(data));
+                console.log("bg_times: " + createShareBgTimeArray(data));
+
+  Pebble.sendAppMessage({
+                    "dlta": dlta,
+                    "bg": bg,	
+                    "icon": icon,	
+                    "alert": alert,	
+                    "tcgm": tcgm,
+                //    "vibe": options.vibe_temp,
+               //     "time_delta_int": timeDeltaMinutes,
+                 //   "bgs" : createShareBgArray(data),
+                 //   "bg_times" : createShareBgTimeArray(data)
+                });
+                options.id = wall;
+            //    window.localStorage.setItem('cgmPebbleDuo', JSON.stringify(options));
+                
+                if (hasTimeline) {
+                    insertUserPin(pin, topic, function (responseText) {
+                    console.log('Result: ' + responseText);
+                    });
+                }  
+            }
+
+        } else {
+            sendUnknownError("data err");
+        }
+    };
+    
+    http.onerror = function () { 
+        sendServerError();
+    };
+   http.ontimeout = function () {
+        sendTimeOutError();
+    };
+
+    http.send();
+}
+
+function createShareBgArray(data) {
+    var toReturn = "0,";
+    var regex = /\((.*)\)/;
+    var now = new Date();
+  console.log("Data:" + data.length);
+    for (var i = 0; i < data.length; i++) {
+        var wall = parseInt(data[i].WT.match(regex)[1]);
+        //var tcgm = parseInt(data[i].WT.match(regex)[1]);
+        var timeAgo = msToMinutes(now.getTime() - wall);
+       //var timeAgo = msToMinutes(now.getTime() - tcgm);
+
+   //    console.log("timeAgo:" + timeAgo);
+        if (timeAgo < 45) {  
+            toReturn = toReturn + data[i].Value.toString() + ",";
+        }
+    }
+    toReturn = toReturn.replace(/,\s*$/, "");  
+    return toReturn;
+}
+    
+
+function createShareBgTimeArray(data) {
+    var toReturn = "";
+    var regex = /\((.*)\)/;
+    var now = new Date();
+    
+    for (var i = 0; i < data.length; i++) {  
+        var wall = parseInt(data[i].WT.match(regex)[1]);
+       // var tcgm = parseInt(data[i].WT.match(regex)[1]);
+        
+      console.log("createShareBgTimeArray wall:" + wall);
+      //  console.log("createShareBgTimeArray tcgm:" + tcgm);
+        var timeAgo = msToMinutes(now.getTime() - wall);
+
+        //var timeAgo = msToMinutes(now.getTime() - tcgm);
+ //       console.log("timeago: " + timeAgo);
+        if (timeAgo < 45) {
+            toReturn = toReturn + (45-timeAgo).toString() + ",";
+        }
+    } 
+    toReturn = toReturn.replace(/,\s*$/, "");  
+    return toReturn;  
+}
+
+function msToMinutes(millisec) {
+    return (millisec / (1000 * 60)).toFixed(1);
+}
+
+function calculateShareAlert(bg, currentId, options) {
+    //console.log("comparing: " + currentId + " to " + options.id);
+    if (parseInt(options.id, 10) == parseInt(currentId, 10)) {
+        options.vibe_temp = 0;
+    } else {
+        options.vibe_temp = options.vibe + 1;
+    }
+
+    if (bg <= options.low){
+        return 2;
+    }
+
+    if (bg >= options.high) {
+        return 1;
+    }
+        
+    return 0;
+}
+function insertUserPin(pin, topic, callback) {
+    if (topic != "not_set")
+        timelineRequest(pin, topic, 'PUT', callback);
+}
+
+// The timeline public URL root
+var API_URL_ROOT = 'https://timeline-api.getpebble.com/';
+
+function timelineRequest(pin, topic, type, callback) {
+    
+    // User or shared?
+    //var url = API_URL_ROOT + 'v1/user/pins/' + pin.id;
+    var url = API_URL_ROOT + 'v1/shared/pins/' + pin.id;
+    // Create XHR
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function() {
+        //console.log('timeline: response received: ' + this.responseText);
+        callback(this.responseText);
+    };
+    
+    
+    xhr.open(type, url);
+
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('X-API-Key', '');
+    xhr.setRequestHeader('X-Pin-Topics', topic);
+
+    // Send
+    xhr.send(JSON.stringify(pin));
+    //console.log('timeline: request sent.');
+   
+    var xhrSb = new XMLHttpRequest();
+    xhrSb.onload = function() {
+        //console.log('timeline: response received: ' + this.responseText);
+        callback(this.responseText);
+    };
+    xhrSb.open(type, url);
+   
+    xhrSb.setRequestHeader('Content-Type', 'application/json');
+    xhrSb.setRequestHeader('X-API-Key', '');
+    xhrSb.setRequestHeader('X-Pin-Topics', topic); 
+    
+    xhrSb.send(JSON.stringify(pin));
+    //console.log('timeline: SB request sent.');
+   
+}
+
+
+function cleanupSubscriptions() {
+    Pebble.timelineSubscriptions(
+        function (topics) {
+            console.log('Subscribed to ' + topics.join(','));
+            //console.log("subs: " + topics);
+            for (var i = 0; i < topics.length; i++) {
+                //console.log("topic: " + topic)
+                //console.log("topics[i]: " + topics[i])
+                if (topic != topics[i]) {
+                    Pebble.timelineUnsubscribe(topics[i],
+                        function () {
+                            //console.log('Unsubscribed from: ' + topics[i]);
+                        },
+                        function (errorString) {
+                            //console.log('Error unsubscribing from topic: ' + errorString);
+                        }
+                        );
+                }
+            }
+
+        },
+        function (errorString) {
+            //console.log('Error getting subscriptions: ' + errorString);
+            return ",";
+        }
+        );
+}
+
+
+function hashCode(base) {
+    var hash = 0, i, chr, len;
+    if (base.length === 0) return hash;
+    for (i = 0, len = base.length; i < len; i++) {
+        chr = base.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+}
+
+function logging(message)
+{
+  if(logging)
+    console.log(message);
+}
 // message queue-ing to pace calls from C function on watch
 var MessageQueue = (function () {
                     
@@ -490,38 +1072,30 @@ var MessageQueue = (function () {
                     
                     }
                     
-                    }()); // end MessageQueue
+                    }());					
 
-function createBgArray(data) {
-    var toReturn = "";
-	
-    for (var i = 0; i < data.length ; i++) {
-         if (i <= 5 && i <= data.length-1) {
-             toReturn = toReturn + data[i].sgv + ",";
-         } 
-    }
-    toReturn = toReturn.replace(/,\s*$/, "");  
-    return toReturn;
-} // end createBgArray
-    
+function clear_defaults(opts) {
+   console.log ("START clear_defaults");
 
-function createBgTimeArray(data) {
-	var bgHour = "00";
-	var bgMin = "00";
-	var toReturn = "";
-	
-     for (var i = 0; i < data.length ; i++) {
-         if (i <= 5 && i <= data.length-1) {
-             bgHour = new Date(data[i].datetime).getHours();
-             bgMin = new Date(data[i].datetime).getMinutes();
-             toReturn = toReturn + bgHour + bgMin + ",";
-         } 
-    } 
-    toReturn = toReturn.replace(/,\s*$/, "");  
-    return toReturn;  
-} // end createBgTimeArray	
-					
-					
+   // clear out the variables of the other setting if you switch
+   switch (opts.mode) {
+          case "Nightscout":
+              opts.accountName = " ";
+              opts.password = " ";
+          break;
+
+          case "US_Share":
+          case "Non_US_Share":
+             opts.endpoint = " ";
+            break;
+            
+         default:
+           console.log ("clear_defaults - Mode not selected");
+            // could clear all opts here.
+       break;
+  }
+}
+
 // pebble specific calls with watch
 Pebble.addEventListener("ready",
                         function(e) {
@@ -537,15 +1111,22 @@ Pebble.addEventListener("appmessage",
 
 Pebble.addEventListener("showConfiguration", function(e) {
                         console.log("Showing Configuration", JSON.stringify(e));
-  
-Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skyshareconfigV1.html');
-});
+                        Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skyshareconfigV1.html');
+                        //Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/share_nightscout_V1.html');
+                     //   Pebble.openURL('http://cgmwatch.azurewebsites.net/config.2.html');
+ 
+                        });
 
 Pebble.addEventListener("webviewclosed", function(e) {
                         var opts = JSON.parse(decodeURIComponent(e.response));
+
+                          // clear non-selected parameters from the storage item
+                        clear_defaults(opts);
+  
                         console.log("CLOSE CONFIG OPTIONS = " + JSON.stringify(opts));
+                        
                         // store endpoint in local storage
-                        window.localStorage.setItem('cgmPebble', JSON.stringify(opts));                      
+                        localStorage.setItem('cgmPebble_new', JSON.stringify(opts));                      
                         });
 
 
