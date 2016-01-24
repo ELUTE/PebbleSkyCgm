@@ -11,7 +11,9 @@
   #define BATTERY_OUTLINE_WIDTH 20
   #define BATTERY_OUTLINE_HEIGHT 8
 #endif
-  
+
+
+
 Window *window_cgm = NULL;
 Window *window_chart = NULL;
 
@@ -523,7 +525,7 @@ currentBG_isMMOL = 100;
 } // end myBGAtoi
 
 static void load_values(){
-  //APP_LOG(APP_LOG_LEVEL_DEBUG,"Loaded Values: %s", current_values);
+  APP_LOG(APP_LOG_LEVEL_DEBUG,"Loaded Values: %s", current_values);
 
   int num_a_items = 0;
   char *o;
@@ -735,7 +737,7 @@ else {
 
 static void alert_handler_cgm(uint8_t alertValue) {
 //APP_LOG(APP_LOG_LEVEL_INFO, "ALERT HANDLER");
-//APP_LOG(APP_LOG_LEVEL_DEBUG, "ALERT CODE: %d", alertValue);
+APP_LOG(APP_LOG_LEVEL_DEBUG, "ALERT CODE: %d", alertValue);
 // CONSTANTS
 // constants for vibrations patterns; has to be uint32_t, measured in ms, maximum duration 10000ms
 // Vibe pattern: ON, OFF, ON, OFF; ON for 500ms, OFF for 100ms, ON for 100ms; 
@@ -1097,7 +1099,9 @@ APP_LOG(APP_LOG_LEVEL_DEBUG, "APPMSG IN DROP ERR, CODE: %i RES: %s",
 } // end inbox_dropped_handler_cgm
 
 void outbox_failed_handler_cgm(DictionaryIterator *failed, AppMessageResult appmsg_outfail_error, void *context) {
-// outgoing appmessage send failed to deliver to Pebble
+// outgoin
+  
+   //appmessage send failed to deliver to Pebble
   // have never seen handler get called, think because AppSync is always used
   // just set log now to avoid crash, if see log then can go back to old handler
    DictionaryIterator *iter = NULL;
@@ -1802,7 +1806,7 @@ if (bg_layer_chart != NULL) { text_layer_set_text(bg_layer_chart, "ERR");
     #ifdef PBL_PLATFORM_CHALK   
      set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(76, 52));
    #else
-     set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(57, 50));
+     set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(57, 57));
    #endif     
      create_update_bitmap(&icon_bitmap_chart, icon_layer_chart, SM_SPECIAL_VALUE_ICONS[SM_HOURGLASS_ICON_INDX]);
    layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
@@ -2179,7 +2183,7 @@ static void load_cgmtime() {
 } // end load_cgmtime
 
 static void load_apptime(){
-    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, READ APP TIME FUNCTION START");
+    APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, READ APP TIME FUNCTION START");
 // VARIABLES
 uint32_t current_app_timeago = 0;
 int app_timeago_diff = 0;
@@ -2189,11 +2193,11 @@ int app_timeago_diff = 0;
        
       app_time_now = time(NULL);
       
-      //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD APPTIME, TIME NOW: %lu", app_time_now);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD APPTIME, TIME NOW: %lu", app_time_now);
   
       current_app_timeago = abs(app_time_now - current_app_time);
       
- //     APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD APPTIME, CURRENT APP TIMEAGO: %lu", current_app_timeago);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD APPTIME, CURRENT APP TIMEAGO: %lu", current_app_timeago);
       
  app_timeago_diff = (current_app_timeago / MINUTEAGO);
  if ((current_app_timeago < TWOYEARSAGO) && (app_timeago_diff >= PHONEOUT_WAIT_MIN)) {
@@ -2204,7 +2208,7 @@ int app_timeago_diff = 0;
         create_update_bitmap(&cgmicon_bitmap_chart,cgmicon_layer_chart,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
         init_loading_cgm_timeago = 111;
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD APPTIME, SET init_loading_cgm_timeago: %i", init_loading_cgm_timeago);
- //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, CHECK IF HAVE TO VIBRATE");
+ APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, CHECK IF HAVE TO VIBRATE");
  // Vibrate if we need to
  if ((BluetoothAlert == 100) && (PhoneOffAlert == 100) && 
           (ClearedOutage == 100) //&& (ClearedBTOutage == 100)
@@ -2227,7 +2231,7 @@ int app_timeago_diff = 0;
       PhoneOffAlert = 100;
     }
     //} // else init code 
-//APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, FUNCTION OUT");
+APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, FUNCTION OUT");
 } // end load_apptime
 
 static void load_bg_delta() {
@@ -2240,7 +2244,7 @@ const uint8_t BGDELTA_FORMATTED_SIZE = 14;
   // VARIABLES
   static char formatted_bg_delta[14] = {0};
   
-  //char delta_label_buffer[14] = {0};
+  char delta_label_buffer[14] = {0}; //added back for delta
 
 // CODE START
 // check bluetooth connection
@@ -2598,7 +2602,7 @@ static void load_noise() {
 } // end load_noise
 
 void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
-//APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE");
+APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE");
   // VARIABLES
   uint8_t need_to_reset_outage_flag = 100;
   uint8_t get_new_cgm_time = 100;
@@ -2618,21 +2622,21 @@ const uint8_t VALUE_MSGSTR_SIZE = 25;
 switch (key) {
 
 case CGM_ICON_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: ICON ARROW");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: ICON ARROW");
       strncpy(current_icon, new_tuple->value->cstring, ICON_MSGSTR_SIZE);
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, ICON VALUE: %s ", current_icon);
       load_icon();
       break; // break for CGM_ICON_KEY
 
 case CGM_BG_KEY:;
- //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG CURRENT");
+ APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG CURRENT");
       strncpy(last_bg, new_tuple->value->cstring, BG_MSGSTR_SIZE);
- //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BG VALUE: %s ", last_bg);
+// APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BG VALUE: %s ", last_bg);
       load_bg();
       break; // break for CGM_BG_KEY
 
 case CGM_TCGM_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ CGM TIME");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ CGM TIME");
       current_cgm_time = new_tuple->value->uint32;
       cgm_time_now = time(NULL);
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CLEARED OUTAGE IN: %i ", ClearedOutage);
@@ -2687,38 +2691,38 @@ case CGM_TCGM_KEY:;
       break; // break for CGM_TCGM_KEY
 
 case CGM_TAPP_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ APP TIME NOW");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ APP TIME NOW");
       current_app_time = new_tuple->value->uint32;
-  //    APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, APP TIME VALUE: %lu ", current_app_time);
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, APP TIME VALUE: %lu ", current_app_time);
       load_apptime();    
       break; // break for CGM_TAPP_KEY
 
 case CGM_DLTA_KEY:;
-   	 //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG DELTA");
+   	 APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG DELTA");
  strncpy(current_bg_delta, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
    	 //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BG DELTA VALUE: %s ", current_bg_delta);
  load_bg_delta();
  break; // break for CGM_DLTA_KEY
 case CGM_UBAT_KEY:;
-   	 //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: UPLOADER BATTERY LEVEL");
+   	 APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: UPLOADER BATTERY LEVEL");
       strncpy(last_battlevel, new_tuple->value->cstring, BATTLEVEL_MSGSTR_SIZE);
    	 //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BATTERY LEVEL VALUE: %s ", last_battlevel);
       load_rig_battlevel();
       break; // break for CGM_UBAT_KEY
 
 case CGM_NAME_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: T1D NAME");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: T1D NAME");
       text_layer_set_text(t1dname_layer, new_tuple->value->cstring);
       break; // break for CGM_NAME_KEY
     
   case CGM_VALS_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: VALUES");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: VALUES");
       strncpy(current_values, new_tuple->value->cstring, VALUE_MSGSTR_SIZE);
       load_values();
       break; // break for CGM_VALS_KEY
     
   case CGM_CLRW_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: CALCULATED RAW");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: CALCULATED RAW");
       strncpy(last_calc_raw, new_tuple->value->cstring, BG_MSGSTR_SIZE);
       if ( (strcmp(last_calc_raw, "0") == 0) || (strcmp(last_calc_raw, "0.0") == 0) ) {
         strncpy(last_calc_raw, " ", BG_MSGSTR_SIZE);
@@ -2729,7 +2733,7 @@ case CGM_NAME_KEY:;
       break; // break for CGM_CLRW_KEY
     
  	case CGM_RWUF_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: RAW UNFILTERED");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: RAW UNFILTERED");
       strncpy(last_raw_unfilt, new_tuple->value->cstring, BG_MSGSTR_SIZE);
       if ( (strcmp(last_raw_unfilt, "0") == 0) || (strcmp(last_raw_unfilt, "0.0") == 0) || (TurnOnUnfilteredRaw == 100) ) {
         strncpy(last_raw_unfilt, " ", BG_MSGSTR_SIZE);
@@ -2738,7 +2742,7 @@ case CGM_NAME_KEY:;
       break; // break for CGM_RWUF_KEY
      
   case CGM_BGSX_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BGS X AXIS");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BGS X AXIS");
  strncpy(last_bgsx, new_tuple->value->cstring, BG_MSGSTR_SIZE);
  if (strcmp(last_bgsx, " ") == 0) {
 // init code; initialize the array
@@ -2790,7 +2794,7 @@ conv_last_bgsx = myBGAtoi(last_bgsx);
     break; // break for CGM_BGSX_KEY
  
   case CGM_BGTY_KEY:;
-      //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG_TIMES Y AXIS");
+      APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG_TIMES Y AXIS");
  last_bgty = new_tuple->value->uint32;
  if (last_bgty == 0) {
 // init code; initialize the array
@@ -2836,6 +2840,9 @@ for (uint8_t n = 0; n < MAX_BG_ARRAY_SIZE; n += 1) {
       //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, NOISE: %i ", current_noise_value);
       load_noise();
       break; // break for CGM_NOIZ_KEY
+  default:
+        APP_LOG(APP_LOG_LEVEL_DEBUG, "new_tuple->value->cstring: %s" ,new_tuple->value->cstring);
+        break;
   }  // end switch(key)
 
       if (canvas_layer_chart) {
@@ -3603,8 +3610,8 @@ static void init_cgm(void) {
   app_message_register_outbox_failed(outbox_failed_handler_cgm);
   
   //APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, ABOUT TO CALL APP MSG OPEN"); 
-  //app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-    app_message_open(300, 300);
+ // app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+    app_message_open(300, 300); //Kate changed from 300, 300
 
 //  APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, APP MSG OPEN DONE");
   
