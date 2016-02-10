@@ -220,7 +220,7 @@ function nightscout(opts)
                     // get name of T1D; if iob (case insensitive), use IOB
                     if ( (NameofT1DPerson.toUpperCase() === "IOB") && 
                     ((typeof currentIOB != "undefined") && (currentIOB !== null)) ) {
-                      NameofT1DPerson = "IOB:" + currentIOB;
+                      NameofT1DPerson = currentIOB + "u";
                     }
                     else {
                       NameofT1DPerson = opts.t1name;
