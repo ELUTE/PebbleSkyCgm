@@ -3,16 +3,23 @@ var topic = "not_set";
 var fix = 0;
 var defaultId = 99;
 var logging = 1;
+
+// Error messages
+var servererror = "E_E3";// E3 - Server Error
+var timeouterror = "E_E2"; // E2 - Time out error
+var loginerror =  "E_E1"; // E1 - Login Error
+//var invalidurl = "invalid url";
+var dataerror = "E_E4";// E4 - Data Error
+
 // main function to retrieve, format, and send cgm data
 function fetchCgmData() {
   
     //console.log ("START fetchCgmData");
-    console.log("fetchCgmData 1");            
+          
     // declare local variables for message data
    // var response, responsebgs, responsecals, message;
    var opts = [ ].slice.call(arguments).pop( );
    opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
-   console.log("fetchCgmData 2");
    switch (opts.mode) {
           case "Nightscout":
             console.log("Nightscout data to be loaded");
@@ -25,10 +32,8 @@ function fetchCgmData() {
     //        if(opts.raw) {
     //            getNightscoutCalRecord(opts);
      //       } else {
-               console.log("fetchCgmData 3");
                nightscout(opts); 
               //var thisline = new Error().lineNumber;
-              console.log("fetchCgmData 4");
     //        }
             
              break;
@@ -48,8 +53,6 @@ function fetchCgmData() {
                     "alert": 4,
                     "dlta": "setup up required",
                     "id": defaultId,
-                   // "tcgm": defaultId,
-
                     "time_delta_int": -1,
                   
                 });
@@ -58,67 +61,52 @@ function fetchCgmData() {
     console.log("fetchCgmData 5");
 } // end fetchCgmData
 
-/*function getNightscoutCalRecord(options){
+function getNightscoutCalRecord(options){
 
     var url = options.api + "/api/v1/entries/cal.json?count=1";
     var http = new XMLHttpRequest();
-    console.log("getNightscoutCalRecord 1");
     http.open("GET", url, true);
-    console.log("getNightscoutCalRecord 2");
     http.onload = function (e) {
-        console.log("getNightscoutCalRecord 3");     
         if (http.status == 200) {
             var data = JSON.parse(http.responseText);
-            console.log("getNightscoutCalRecord 4");
             //console.log("response: " + http.responseText);
              
             if (data.length === 0) {               
                 options.raw = 0;
-                console.log("getNightscoutCalRecord 5");
                 nightscout(options);
-                console.log("getNightscoutCalRecord 6");
             } else { 
                 options.cal = {
                     'slope' : parseInt(data[0].slope, 10),
                     'intercept' : parseInt(data[0].intercept,10),
                     'scale' :  data[0].scale                  
                 };
-                console.log("getNightscoutCalRecord 7");
                 nightscout(options);
-                console.log("getNightscoutCalRecord 8");
             }
 
         } else {
-           sendUnknownError("data err");
+           sendUnknownError("dataerr");
         }
     };
-    console.log("getNightscoutCalRecord 9");
     http.onerror = function () {  
-        console.log("getNightscoutCalRecord 10");
         sendServerError();
     };
     http.ontimeout = function () {
-        console.log("getNightscoutCalRecord 11");
         sendTimeOutError();
-        console.log("getNightscoutCalRecord 12");
     };
 
     try {
-        console.log("getNightscoutCalRecord 13");
         http.send();
-        console.log("getNightscoutCalRecord 14");
     }
     catch (e) {
-        sendUnknownError("invalid url");
+        sendUnknownError("invalidurl");
     }
     
     
-}*/
+}
 
 function nightscout(opts)
 {
    //console.log ("START fetchCgmData");
-     console.log("nightscout 1");           
     // declare local variables for message data
     var response, responsebgs, responsecals, message;
 
@@ -142,11 +130,10 @@ function nightscout(opts)
           clrw: " ",
           rwuf: " ",
           noiz: 0
+
         };
-        console.log("nightscout 2"); 
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
         MessageQueue.sendAppMessage(message);
-         console.log("nightscout 3"); 
         return;
     } // if (!opts.endpoint)
 	
@@ -155,34 +142,25 @@ function nightscout(opts)
   
     // call XML
     var req = new XMLHttpRequest();
-     console.log("nightscout 4"); 
     // get cgm data
     req.open('GET', opts.endpoint, true);
-     console.log("nightscout 5"); 
     req.setRequestHeader('Cache-Control', 'no-cache');
-	  console.log("nightscout 6"); 
     req.onload = function(e) {
 
-       console.log("nightscout 7"); 
         if (req.readyState == 4) {
 
-           console.log("nightscout 8"); 
             if(req.status == 200) {
-                 console.log("nightscout 9"); 
                 // clear the XML timeout
                 clearTimeout(myCGMTimeout);
-                console.log("nightscout 10"); 
                 // Load response   
                 console.log(req.responseText);
                 response = JSON.parse(req.responseText);
-              console.log("nightscout 11: " + response); 
                 responsebgs = response.bgs;
                 responsecals = response.cals;
                 
                 // check response data
                 if (responsebgs && responsebgs.length > 0) {
 
-                   console.log("nightscout 12"); 
                     // response data is good; send log with response 
                     // console.log('got response', JSON.stringify(response));
 
@@ -239,7 +217,6 @@ function nightscout(opts)
                     currentSlope = "undefined",
                     currentScale = "undefined",
                     currentRatio = 0;
-    console.log("nightscout 13"); 
                     // get name of T1D; if iob (case insensitive), use IOB
                     if ( (NameofT1DPerson.toUpperCase() === "IOB") && 
                     ((typeof currentIOB != "undefined") && (currentIOB !== null)) ) {
@@ -248,13 +225,11 @@ function nightscout(opts)
                     else {
                       NameofT1DPerson = opts.t1name;
                     }
-   console.log("nightscout 14"); 
                     if (responsecals && responsecals.length > 0) {
                       currentIntercept = responsecals[0].intercept;
                       currentSlope = responsecals[0].slope;
                       currentScale = responsecals[0].scale;
                     }
-                 console.log("nightscout 15");   
                     //currentDirection = "NONE";
 
                     // set some specific flags needed for later
@@ -267,7 +242,6 @@ function nightscout(opts)
                       if (currentBG == 0.3) { calibrationValue = true; }
                       currentConvBG = (Math.round(currentBG * 18.018).toFixed(0));                                                                   
                     }
-               console.log("nightscout 16"); 
                     // convert arrow to a number string; sending number string to save memory
                     // putting NOT COMPUTABLE first because that's most common and can get out fastest
                     switch (currentDirection) {
@@ -289,7 +263,6 @@ function nightscout(opts)
                     if ( (typeof currentBattery == "undefined") || (currentBattery === null) ) {
                       currentBattery = " ";  
                     }
-                   console.log("nightscout 17"); 
                     // assign bg delta string
                     formatBGDelta = ((currentBGDelta > 0 ? '+' : '') + currentBGDelta);
 
@@ -313,7 +286,6 @@ function nightscout(opts)
                           //console.log("Normal BG Calculated Raw: " + currentCalcRaw);
                         }          
                     } // if currentIntercept                  
- console.log("nightscout 18"); 
                     // assign raw sensor values if they exist
                     if ( (typeof currentRawUnfilt != "undefined") && (currentRawUnfilt !== null) ) {
                       
@@ -360,7 +332,6 @@ function nightscout(opts)
                         //console.log("Format Unfiltered: " + formatRawUnfilt);
                       }
                     } // if currentRawUnfilt 
-                   console.log("nightscout 19"); 
                     //console.log("Calculated Raw To Be Sent: " + formatCalcRaw);
                   
                     // assign blank noise if it doesn't exist
@@ -391,22 +362,9 @@ function nightscout(opts)
                     } else {
                       values += ",0";  // Do not vibrate on raw value when in special values                        
                     }
-                     console.log("nightscout 20"); 
-                    //console.log("Current Value: " + values);
-                    //console.log("Current rawvibrate: " + opts.rawvibrate);
-                    //console.log("Current currentCalcRaw: " + currentCalcRaw);
                   
-                    // debug logs; uncomment when need to debug something
- 
-                    //console.log("current Direction: " + currentDirection);
-                    //console.log("current Icon: " + currentIcon);
-                    //console.log("current BG: " + currentBG);
-                    //console.log("now: " + formatAppTime);
-                    //console.log("readingtime: " + formatReadTime);
-                    //console.log("current BG delta: " + currentBGDelta);
-                    //console.log("current Formatted Delta: " + formatBGDelta);              
-                    //console.log("current Battery: " + currentBattery);
-                    
+                    var mode_switch = getModeAsInteger(opts);
+            
                     // load message data  
                     message = {
                       icon: currentIcon,
@@ -419,13 +377,14 @@ function nightscout(opts)
                       vals: values,
                       clrw: formatCalcRaw,
                       rwuf: formatRawUnfilt,
-                      noiz: currentNoise
+                      noiz: currentNoise,
+                      mode_switch: 3,
+
                     };
                     
                     // send message data to log and to watch
                     console.log("JS send message: " + JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
- console.log("nightscout 21"); 
                 // response data is not good; format error message and send to watch
                 // have to send space in BG field for logo to show up on screen				
                 } else {
@@ -442,18 +401,37 @@ function nightscout(opts)
         } // end req.readyState == 4
     }; // req.onload
   
-   console.log("nightscout 22"); 
     req.send(null);
     var myCGMTimeout = setTimeout (function () {
       req.abort();
       message = {
         dlta: "OFF"
       };          
-       console.log("nightscout 23"); 
       console.log("DATA OFFLINE JS message", JSON.stringify(message));
       MessageQueue.sendAppMessage(message); console.log("nightscout 2"); 
        console.log("nightscout 23"); 
     }, 59000 ); // timeout in ms; set at 45 seconds; can not go beyond 59 seconds   
+}
+
+function getModeAsInteger(opts)
+{
+  console.log("getModeAsInteger");
+	var mode_switch = 0; 
+	var mode = opts.mode.toLowerCase();
+  console.log("getModeAsInteger: mode: " + mode);
+	if(mode == "us_share")
+	{
+		mode_switch = 1;
+	}
+    else if(mode == "non_us_share")
+    {
+        mode_switch = 2;
+    }
+    else
+    {
+        mode_switch = 3;
+    } 
+  return mode_switch;
 }
 
 function subscribeBy(base) {
@@ -541,6 +519,7 @@ function getShareServerName(options)
   console.log("Server to use:" + server);
   return server;
 }
+
 function authenticateShare(options, defaults) {   
  
     var body = {
@@ -561,7 +540,7 @@ function authenticateShare(options, defaults) {
         if (http.status == 200) {
             data = getShareGlucoseData(http.responseText.replace(/['"]+/g, ''), defaults, options);
         } else {
-                sendAuthError();           
+                sendAuthError();// =============================GKY THIS SHOULD BE CHANGED TO EXPLAIN WHY THERE IS AN ERRPR WITH LOGIN 
         }
     };
     
@@ -577,19 +556,23 @@ function authenticateShare(options, defaults) {
 
 }
 function sendAuthError() {
+   console.log("===============ERROR: sendAuthError");
+
     Pebble.sendAppMessage({
                     "vibe": 1, 	
                     "bg": "log",		
                     "icon": 0,	
-                    "alert": 4,
-                    "dlta": "login err",
-                    "id": defaultId,
+                   // "alert": 4,
+                    "dlta": "loginerr",
+                  //  "id": defaultId,
                    // "tcgm": defaultId,
-                    "time_delta_int": -1,
+                   // "time_delta_int": -1,
                 });
 }
 
 function sendTimeOutError(options) {
+    console.log("===============ERROR: sendTimeOutError: " + JSON.stringify(options));
+
      Pebble.sendAppMessage({
             "vibe": parseInt(options.vibe_temp,10),
             "bg": "tot",
@@ -603,12 +586,14 @@ function sendTimeOutError(options) {
 }
 
 function sendServerError(options) {
+      console.log("===============ERROR: sendServerError");
+
     Pebble.sendAppMessage({
             "vibe": parseInt(options.vibe_temp,10),
             "bg": "svr",
             "icon": 0,
             "alert": 4,
-            "dlta": "net-err",
+            "dlta": "servererr",
             "id": defaultId,
             //"tcgm": defaultId,
             "time_delta_int": -1,
@@ -616,6 +601,8 @@ function sendServerError(options) {
 }
 
 function sendUnknownError(msg) {
+    console.log("===============ERROR: sendUnknownError: " + msg);
+
     Pebble.sendAppMessage({
                 "dlta": msg,
                 "bg": "exc",
@@ -648,7 +635,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
            // console.log("response: " + http.responseText);
             //handle arrays less than 2 in length
             if (data.length === 0) {                
-                sendUnknownError("data err");
+                sendUnknownError("dataerr");
             } else { 
             
                 //TODO: calculate loss
@@ -658,9 +645,13 @@ function getShareGlucoseData(sessionId, defaults, options) {
                // var tcgm = (parseInt(data[0].WT.match(regex)[1])/1000);
               console.log("Data: " + data);
                 var timeAgo = now.getTime() - wall;       
-              //  var timeAgo = now.getTime() - tcgm;       
+              //  add time       
               var tcgm = (wall/1000);     
-  
+              // add name
+              var name = options.t1name;
+              //add mode 
+              var mode_switch = getModeAsInteger(options);;
+           
               var bg, dlta, convertedDelta;
 
                 if (data.length == 1) {
@@ -702,6 +693,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     options.bg = data[0].Value;
                     console.log("---------------HIGH");
                 }
+
               var alert = calculateShareAlert(convertedEgv, wall, options);
   
               // var alert = calculateShareAlert(convertedEgv, tcgm, options);
@@ -737,17 +729,20 @@ function getShareGlucoseData(sessionId, defaults, options) {
                 console.log("alert: " + alert);
                 console.log("vibe: " + options.vibe_temp);
                 console.log("id: " + wall);
-               // console.log("tcgm: " + tcgm);
                 console.log("time_delta_int: " + timeDeltaMinutes);
                 console.log("bgs: " + createShareBgArray(data));
                 console.log("bg_times: " + createShareBgTimeArray(data));
+                console.log("mode#: " + mode_switch);
 
   Pebble.sendAppMessage({
                     "dlta": dlta,
                     "bg": bg,	
                     "icon": icon,	
-                    "alert": alert,	
+                   // "alert": alert,	
                     "tcgm": tcgm,
+                    "name": name,
+                    "mode_switch" : mode_switch,
+                    
                 //    "vibe": options.vibe_temp,
                //     "time_delta_int": timeDeltaMinutes,
                  //   "bgs" : createShareBgArray(data),
@@ -764,7 +759,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
             }
 
         } else {
-            sendUnknownError("data err");
+            sendUnknownError("dataerr"); // ANY ERROR if response is not 200
         }
     };
     
@@ -1101,6 +1096,16 @@ Pebble.addEventListener("ready",
                         function(e) {
                         "use strict";
                         console.log("Pebble JS ready");
+            						var opts = [ ].slice.call(arguments).pop( );
+            						opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
+            	
+            						var current_mode = getModeAsInteger(opts);
+                          console.log("opts: " + JSON.stringify(opts));
+            						// send message data  
+            						var message = { mode_switch: current_mode };
+            						
+            						// send message data to log and to watch
+            						Pebble.sendAppMessage(message);	
                         });
 
 Pebble.addEventListener("appmessage",
@@ -1112,9 +1117,6 @@ Pebble.addEventListener("appmessage",
 Pebble.addEventListener("showConfiguration", function(e) {
                         console.log("Showing Configuration", JSON.stringify(e));
                         Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skyshareconfigV1.html');
-                        //Pebble.openURL('http://ducks_cgm.bitbucket.org/cgm-pebble/share_nightscout_V1.html');
-                     //   Pebble.openURL('http://cgmwatch.azurewebsites.net/config.2.html');
- 
                         });
 
 Pebble.addEventListener("webviewclosed", function(e) {
