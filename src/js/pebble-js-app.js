@@ -470,7 +470,8 @@ function subscribeBy(base) {
 //use D's share API------------------------------------------//
 function share(options) {
 
-    if (options.unit == "mgdl" || options.unit == "mg/dL")
+    //if (options.unit == "mgdl" || options.unit == "mg/dL")
+  if (options.radio == "mgdl_form")
     {
         fix = 0;
         options.conversion = 1;
