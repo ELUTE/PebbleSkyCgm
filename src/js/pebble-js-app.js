@@ -246,6 +246,7 @@ function nightscout(opts)
                     // putting NOT COMPUTABLE first because that's most common and can get out fastest
                     switch (currentDirection) {
                       case "NOT COMPUTABLE": currentIcon = "8"; break;
+                      case "NOT_COMPUTABLE": currentIcon = "8"; break;
                       case "NONE": currentIcon = "0"; break;
                       case "DoubleUp": currentIcon = "1"; break;
                       case "SingleUp": currentIcon = "2"; break;
@@ -473,7 +474,8 @@ function share(options) {
     //if (options.unit == "mgdl" || options.unit == "mg/dL")
   if (options.radio == "mgdl_form")
     {
-        fix = 0;
+        //fix = 0;
+      values = 0;
         options.conversion = 1;
         options.unit = "mg/dL";
         
@@ -482,8 +484,8 @@ function share(options) {
         options.conversion = 0.0555;       
         options.unit = "mmol/L";
     }
-    options.vibe = parseInt(options.vibe, 10);
-    
+   // options.vibe = parseInt(options.vibe, 10);
+                   
     var server = getShareServerName(options);
   
     var defaults = {
@@ -493,7 +495,7 @@ function share(options) {
       //  login: 'https://share1.dexcom.com/ShareWebServices/Services/General/LoginPublisherAccountByName',
         accept: 'application/json',
         'content-type': 'application/json',
-        LatestGlucose: "https://" + server + "/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues"
+        LatestGlucose: "https://" + server + "/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues",
       //  LatestGlucose: "https://share1.dexcom.com/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues"
     };
    // console.log("Login: " + defaults.login + " Latest Glucose: " + defaults.LatestGlucose);
@@ -527,6 +529,7 @@ function authenticateShare(options, defaults) {
         "password": options.password,
         "applicationId": options.applicationId || defaults.applicationId,
         "accountName": options.accountName
+      
     };
 
     var http = new XMLHttpRequest();
@@ -645,14 +648,38 @@ function getShareGlucoseData(sessionId, defaults, options) {
 
                // var tcgm = (parseInt(data[0].WT.match(regex)[1])/1000);
               console.log("Data: " + data);
-                var timeAgo = now.getTime() - wall;       
+              var timeAgo = now.getTime() - wall;       
               //  add time       
               var tcgm = (wall/1000);     
               // add name
               var name = options.t1name;
               //add mode 
               var mode_switch = getModeAsInteger(options);;
-           
+
+              var values
+              if (options.radio == "mgdl_form") {
+                      values = "0";  //mgdl selected
+                    } else {
+                      values = "1"; //mmol selected
+                    }
+                    values += "," + options.lowbg;  //Low BG Level
+                    values += "," + options.highbg; //High BG Level                      
+                    values += "," + options.lowsnooze;  //LowSnooze minutes 
+                    values += "," + options.highsnooze; //HighSnooze minutes
+                    values += "," + options.lowvibe;  //Low Vibration 
+                    values += "," + options.highvibe; //High Vibration
+                    values += "," + options.vibepattern; //Vibration Pattern
+                    if (options.timeformat == "12"){
+                      values += ",0";  //Time Format 12 Hour  
+                    } else {
+                      values += ",1";  //Time Format 24 Hour  
+                    }
+                   // Vibrate on raw value in special value; Yes = 1; No = 0;
+                    if (options.rawvibrate == "1") {
+                      values += ",1";  // Vibrate on raw value when in special values  
+                    } else {
+                      values += ",0";  // Do not vibrate on raw value when in special values                        
+                    }
               var bg, dlta, convertedDelta;
 
                 if (data.length == 1) {
@@ -695,7 +722,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     console.log("---------------HIGH");
                 }
 
-              var alert = calculateShareAlert(convertedEgv, wall, options);
+             // var alert = calculateShareAlert(convertedEgv, wall, options);
   
               // var alert = calculateShareAlert(convertedEgv, tcgm, options);
                 var timeDeltaMinutes = Math.floor(timeAgo / 60000);              
@@ -727,19 +754,20 @@ function getShareGlucoseData(sessionId, defaults, options) {
                 console.log("dlta: " + dlta);
                 console.log("bg: " + bg);
                 console.log("icon: " + icon);
-                console.log("alert: " + alert);
-                console.log("vibe: " + options.vibe_temp);
-                console.log("id: " + wall);
-                console.log("time_delta_int: " + timeDeltaMinutes);
+                //console.log("alert: " + alert);
+               // console.log("vibe: " + options.vibe_temp);
+               // console.log("id: " + wall);
+               // console.log("time_delta_int: " + timeDeltaMinutes);
                 console.log("bgs: " + createShareBgArray(data));
                 console.log("bg_times: " + createShareBgTimeArray(data));
                 console.log("mode#: " + mode_switch);
+                console.log("vals: " + values);
 
   Pebble.sendAppMessage({
                     "dlta": dlta,
                     "bg": bg,	
                     "icon": icon,	
-                   // "alert": alert,	
+                    "vals": values,	
                     "tcgm": tcgm,
                     "name": name,
                     "mode_switch" : mode_switch,
@@ -1068,7 +1096,35 @@ var MessageQueue = (function () {
                     
                     }
                     
-                    }());					
+                    }());			
+function createBgArray(data) {
+    var toReturn = "";
+    
+    for (var i = 0; i < data.length ; i++) {
+         if (i <= 5 && i <= data.length-1) {
+             toReturn = toReturn + data[i].sgv + ",";
+         } 
+    }
+    toReturn = toReturn.replace(/,\s*$/, "");  
+    return toReturn;
+} // end createBgArray
+    
+ 
+function createBgTimeArray(data) {
+    var bgHour = "00";
+    var bgMin = "00";
+    var toReturn = "";
+    
+     for (var i = 0; i < data.length ; i++) {
+         if (i <= 5 && i <= data.length-1) {
+             bgHour = new Date(data[i].datetime).getHours();
+             bgMin = new Date(data[i].datetime).getMinutes();
+             toReturn = toReturn + bgHour + bgMin + ",";
+         } 
+    } 
+    toReturn = toReturn.replace(/,\s*$/, "");  
+    return toReturn;  
+} // end createBgTimeArray  
 
 function clear_defaults(opts) {
    console.log ("START clear_defaults");
