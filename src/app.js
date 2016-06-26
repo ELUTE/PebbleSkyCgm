@@ -1,8 +1,8 @@
-var hasTimeline = 1;
-var topic = "not_set";
+//var hasTimeline = 1;
+//var topic = "not_set";
 var fix = 0;
-var defaultId = 99;
-var logging = 1;
+//var defaultId = 99;
+//var logging = 1;
 
 // Error messages
 var servererror = "E_E3";// E3 - Server Error
@@ -23,25 +23,18 @@ function fetchCgmData() {
    switch (opts.mode) {
           case "Nightscout":
             console.log("Nightscout data to be loaded");
-         //   subscribeBy(opts.endpoint);
-            
-      //      opts.endpoint = opts.endpoint.replace("/pebble?units=mmol","");
-      //      opts.endpoint = opts.endpoint.replace("/pebble/","");
-     //       opts.endpoint = opts.endpoint.replace("/pebble","");
- 
-    //        if(opts.raw) {
-    //            getNightscoutCalRecord(opts);
-     //       } else {
-               nightscout(opts); 
-              //var thisline = new Error().lineNumber;
-    //        }
-            
+            //subscribeBy(opts.endpoint);
+            opts.endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
+            opts.endpoint = opts.endpoint.replace("/pebble/", "");
+            opts.endpoint = opts.endpoint.replace("/pebble", "");
+            nightscout(opts); 
+       
              break;
 
         case "US_Share":
         case "Non_US_Share":
             console.log("Share data to be loaded");
-            subscribeBy(opts.accountName);
+            //subscribeBy(opts.accountName);
             share(opts);
             break;
             
@@ -61,60 +54,19 @@ function fetchCgmData() {
     console.log("fetchCgmData 5");
 } // end fetchCgmData
 
-function getNightscoutCalRecord(options){
+function nightscout(opts){
+  
+    opts.endpoint = opts.endpoint + "/pebble"; 
 
-    var url = options.api + "/api/v1/entries/cal.json?count=1";
-    var http = new XMLHttpRequest();
-    http.open("GET", url, true);
-    http.onload = function (e) {
-        if (http.status == 200) {
-            var data = JSON.parse(http.responseText);
-            //console.log("response: " + http.responseText);
-             
-            if (data.length === 0) {               
-                options.raw = 0;
-                nightscout(options);
-            } else { 
-                options.cal = {
-                    'slope' : parseInt(data[0].slope, 10),
-                    'intercept' : parseInt(data[0].intercept,10),
-                    'scale' :  data[0].scale                  
-                };
-                nightscout(options);
-            }
-
-        } else {
-           sendUnknownError("dataerr");
-        }
-    };
-    http.onerror = function () {  
-        sendServerError();
-    };
-    http.ontimeout = function () {
-        sendTimeOutError();
-    };
-
-    try {
-        http.send();
-    }
-    catch (e) {
-        sendUnknownError("invalidurl");
-    }
-    
-    
-}
-
-function nightscout(opts)
-{
    //console.log ("START fetchCgmData");
     // declare local variables for message data
     var response, responsebgs, responsecals, message;
 
-    //get options from configuration window
-  //  var opts = [ ].slice.call(arguments).pop( );
-    //opts = JSON.parse(localStorage.getItem('cgmPebble'));
-
+  //get options from configuration window
 	// check if endpoint exists
+  
+
+
     if (!opts.endpoint) {
         // endpoint doesn't exist, return no endpoint to watch
 		// " " (space) shows these are init values, not bad or null values
@@ -129,7 +81,7 @@ function nightscout(opts)
           vals: " ",
           clrw: " ",
           rwuf: " ",
-          noiz: 0
+          noiz: 0,  
 
         };
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
@@ -142,9 +94,21 @@ function nightscout(opts)
   
     // call XML
     var req = new XMLHttpRequest();
+
+    //req.open('GET', opts.endpoint, true);
+    //req.setRequestHeader('Cache-Control', 'no-cache');
+    
+  // set timeout function JUNE 23 V
+    var myCGMTimeout = setTimeout (function () {
+      req.abort();
+      message = {
+        dlta: "OFF"
+      };          
+      console.log("TIMEOUT, DATA OFFLINE JS message", JSON.stringify(message));
+      MessageQueue.sendAppMessage(message);
+    }, 59000 ); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds JUNE 23 ^
+  
     // get cgm data
-    req.open('GET', opts.endpoint, true);
-    req.setRequestHeader('Cache-Control', 'no-cache');
     req.onload = function(e) {
 
         if (req.readyState == 4) {
@@ -220,7 +184,7 @@ function nightscout(opts)
                     // get name of T1D; if iob (case insensitive), use IOB
                     if ( (NameofT1DPerson.toUpperCase() === "IOB") && 
                     ((typeof currentIOB != "undefined") && (currentIOB !== null)) ) {
-                      NameofT1DPerson = currentIOB + "u";
+                      NameofT1DPerson = currentIOB + "u" ;
                     }
                     else {
                       NameofT1DPerson = opts.t1name;
@@ -245,8 +209,8 @@ function nightscout(opts)
                     // convert arrow to a number string; sending number string to save memory
                     // putting NOT COMPUTABLE first because that's most common and can get out fastest
                     switch (currentDirection) {
+                      case "NOT_COMPUTABLE": currentIcon = "8"; break;  
                       case "NOT COMPUTABLE": currentIcon = "8"; break;
-                      case "NOT_COMPUTABLE": currentIcon = "8"; break;
                       case "NONE": currentIcon = "0"; break;
                       case "DoubleUp": currentIcon = "1"; break;
                       case "SingleUp": currentIcon = "2"; break;
@@ -380,6 +344,8 @@ function nightscout(opts)
                       rwuf: formatRawUnfilt,
                       noiz: currentNoise,
                       mode_switch: 3,
+                    //  bgsx: " ", //graph
+		                //  bgty: " ", //graph
 
                     };
                     
@@ -398,21 +364,26 @@ function nightscout(opts)
                     console.log("DATA OFFLINE JS message", JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
                 }
+               } else {
+              console.log("XMLHttpRequest error, not 200: " + req.statusText);
             } // end req.status == 200
         } // end req.readyState == 4
     }; // req.onload
   
-    req.send(null);
-    var myCGMTimeout = setTimeout (function () {
-      req.abort();
-      message = {
-        dlta: "OFF"
-      };          
-      console.log("DATA OFFLINE JS message", JSON.stringify(message));
-      MessageQueue.sendAppMessage(message); console.log("nightscout 2"); 
-       console.log("nightscout 23"); 
-    }, 59000 ); // timeout in ms; set at 45 seconds; can not go beyond 59 seconds   
-}
+   req.onerror = function (e) {
+      console.log("XMLHttpRequest error: " + req.statusText);
+    }; // end req.onerror
+ 
+    // set rest of req
+    req.open('GET', opts.endpoint, true);  
+    req.setRequestHeader('Cache-Control', 'no-cache');  
+    req.timeout = 59000; // Set timeout to 59 seconds (59000 milliseconds); can not go beyond 59 seconds
+    req.ontimeout = myCGMTimeout;
+    
+    // get cgm data
+  
+    req.send(null); 
+}//END CGM TIMEOUT
 
 function getModeAsInteger(opts)
 {
@@ -434,8 +405,8 @@ function getModeAsInteger(opts)
     } 
   return mode_switch;
 }
-
-function subscribeBy(base) {
+//TAKEN OUT TO SAVE SPACE
+/*function subscribeBy(base) {
     try {        
         topic = hashCode(base).toString();
         logging("hashcode:" + topic);
@@ -459,19 +430,19 @@ function subscribeBy(base) {
             );
     } catch (err) {
         //console.log('Error: ' + err.message);
-        hasTimeline = 0;
+         hasTimeline = 0;
     }
     
     if (hasTimeline)
         cleanupSubscriptions();
 
-}
+}*/
 
+//TAKEN OUT TO SAVE SPACE
 
 //use D's share API------------------------------------------//
 function share(options) {
-
-    //if (options.unit == "mgdl" || options.unit == "mg/dL")
+//if (options.unit == "mgdl" || options.unit == "mg/dL")
   if (options.radio == "mgdl_form")
     {
         //fix = 0;
@@ -484,8 +455,8 @@ function share(options) {
         options.conversion = 0.0555;       
         options.unit = "mmol/L";
     }
-   // options.vibe = parseInt(options.vibe, 10);
-                   
+    options.vibe = parseInt(options.vibe, 10);
+    
     var server = getShareServerName(options);
   
     var defaults = {
@@ -495,7 +466,7 @@ function share(options) {
       //  login: 'https://share1.dexcom.com/ShareWebServices/Services/General/LoginPublisherAccountByName',
         accept: 'application/json',
         'content-type': 'application/json',
-        LatestGlucose: "https://" + server + "/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues",
+        LatestGlucose: "https://" + server + "/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues"
       //  LatestGlucose: "https://share1.dexcom.com/ShareWebServices/Services/Publisher/ReadPublisherLatestGlucoseValues"
     };
    // console.log("Login: " + defaults.login + " Latest Glucose: " + defaults.LatestGlucose);
@@ -529,7 +500,6 @@ function authenticateShare(options, defaults) {
         "password": options.password,
         "applicationId": options.applicationId || defaults.applicationId,
         "accountName": options.accountName
-      
     };
 
     var http = new XMLHttpRequest();
@@ -579,10 +549,10 @@ function sendTimeOutError(options) {
 
      Pebble.sendAppMessage({
             "vibe": parseInt(options.vibe_temp,10),
-            "bg": "tot",
+            "bg": " ",
             "icon": 0,
-            "alert": 4,
-            "dlta": "tout-err",
+            //"alert": 4,
+            "dlta": "NODT",
             "id": defaultId,
             //"tcgm": defaultId,
             "time_delta_int": -1,
@@ -594,10 +564,10 @@ function sendServerError(options) {
 
     Pebble.sendAppMessage({
             "vibe": parseInt(options.vibe_temp,10),
-            "bg": "svr",
+            "bg": " ",
             "icon": 0,
-            "alert": 4,
-            "dlta": "servererr",
+            //"alert": 4,
+            "dlta": "NODT",
             "id": defaultId,
             //"tcgm": defaultId,
             "time_delta_int": -1,
@@ -608,10 +578,10 @@ function sendUnknownError(msg) {
     console.log("===============ERROR: sendUnknownError: " + msg);
 
     Pebble.sendAppMessage({
-                "dlta": msg,
-                "bg": "exc",
+                "dlta": "ERR",
+                "bg": " ",
                 "icon": 0,
-                "alert": 4,
+                //"alert": 4,
                 "vibe": 0,
                 "id": defaultId,
                // "tcgm": defaultId,
@@ -647,15 +617,14 @@ function getShareGlucoseData(sessionId, defaults, options) {
               var wall = parseInt(data[0].WT.match(regex)[1]);
 
                // var tcgm = (parseInt(data[0].WT.match(regex)[1])/1000);
-              console.log("Data: " + data);
-              var timeAgo = now.getTime() - wall;       
+              //console.log("Data: " + data);
+                var timeAgo = now.getTime() - wall;       
               //  add time       
               var tcgm = (wall/1000);     
               // add name
               var name = options.t1name;
               //add mode 
               var mode_switch = getModeAsInteger(options);;
-
               var values
               if (options.radio == "mgdl_form") {
                       values = "0";  //mgdl selected
@@ -680,6 +649,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     } else {
                       values += ",0";  // Do not vibrate on raw value when in special values                        
                     }
+ 
               var bg, dlta, convertedDelta;
 
                 if (data.length == 1) {
@@ -705,7 +675,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     bg = "hgh";
                     dlta = "check bg";
                     icon = 0;
-                    logging("---------------HIGH");
+                    //logging("---------------HIGH");
                 } else {
                     convertedEgv = (data[0].Value * options.conversion);
                     bg = (convertedEgv < 39 * options.conversion) ? parseFloat(Math.round(convertedEgv * 100) / 100).toFixed(1).toString() : convertedEgv.toFixed(fix).toString();
@@ -720,12 +690,13 @@ function getShareGlucoseData(sessionId, defaults, options) {
 
                     options.bg = data[0].Value;
                     console.log("---------------HIGH");
-                }
+                } 
 
-             // var alert = calculateShareAlert(convertedEgv, wall, options);
+            //  var alert = calculateShareAlert(convertedEgv, wall, options);
   
               // var alert = calculateShareAlert(convertedEgv, tcgm, options);
-                var timeDeltaMinutes = Math.floor(timeAgo / 60000);              
+              /*
+              var timeDeltaMinutes = Math.floor(timeAgo / 60000);              
                 var d = new Date(wall);
                 //var d = new Date(tcgm);
                 var n = d.getMinutes();
@@ -749,42 +720,41 @@ function getShareGlucoseData(sessionId, defaults, options) {
                             "launchCode": 1
                         }],
 
-                };
+                }; */
                 
                 console.log("dlta: " + dlta);
                 console.log("bg: " + bg);
                 console.log("icon: " + icon);
                 //console.log("alert: " + alert);
-               // console.log("vibe: " + options.vibe_temp);
-               // console.log("id: " + wall);
-               // console.log("time_delta_int: " + timeDeltaMinutes);
-                console.log("bgs: " + createShareBgArray(data));
-                console.log("bg_times: " + createShareBgTimeArray(data));
+                //console.log("vibe: " + options.vibe_temp);
+                //console.log("id: " + wall);
+                //console.log("time_delta_int: " + timeDeltaMinutes);
+                //console.log("bgs: " + createShareBgArray(data));
+                //console.log("bg_times: " + createShareBgTimeArray(data));
                 console.log("mode#: " + mode_switch);
-                console.log("vals: " + values);
-
+                console.log("values: " + values);             
   Pebble.sendAppMessage({
                     "dlta": dlta,
                     "bg": bg,	
                     "icon": icon,	
-                    "vals": values,	
+                    //"alert": alert,	
                     "tcgm": tcgm,
                     "name": name,
                     "mode_switch" : mode_switch,
-                    
+                    "vals" : values
                 //    "vibe": options.vibe_temp,
                //     "time_delta_int": timeDeltaMinutes,
-                 //   "bgs" : createShareBgArray(data),
-                 //   "bg_times" : createShareBgTimeArray(data)
+               //     "bgsx" : createShareBgArray(data),
+               //     "bgty" : createShareBgTimeArray(data)
                 });
                 options.id = wall;
             //    window.localStorage.setItem('cgmPebbleDuo', JSON.stringify(options));
                 
-                if (hasTimeline) {
+               /* if (hasTimeline) {
                     insertUserPin(pin, topic, function (responseText) {
                     console.log('Result: ' + responseText);
                     });
-                }  
+                } */  
             }
 
         } else {
@@ -801,7 +771,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
 
     http.send();
 }
-
+/*
 function createShareBgArray(data) {
     var toReturn = "0,";
     var regex = /\((.*)\)/;
@@ -835,12 +805,12 @@ function createShareBgTimeArray(data) {
       console.log("createShareBgTimeArray wall:" + wall);
       //  console.log("createShareBgTimeArray tcgm:" + tcgm);
         var timeAgo = msToMinutes(now.getTime() - wall);
-
+//kate removed 02.08
         //var timeAgo = msToMinutes(now.getTime() - tcgm);
  //       console.log("timeago: " + timeAgo);
-        if (timeAgo < 45) {
-            toReturn = toReturn + (45-timeAgo).toString() + ",";
-        }
+     //   if (timeAgo < 45) {
+       //     toReturn = toReturn + (45-timeAgo).toString() + ",";
+       // }
     } 
     toReturn = toReturn.replace(/,\s*$/, "");  
     return toReturn;  
@@ -875,7 +845,8 @@ function insertUserPin(pin, topic, callback) {
 
 // The timeline public URL root
 var API_URL_ROOT = 'https://timeline-api.getpebble.com/';
-
+*/
+/*
 function timelineRequest(pin, topic, type, callback) {
     
     // User or shared?
@@ -915,7 +886,8 @@ function timelineRequest(pin, topic, type, callback) {
    
 }
 
-
+*/
+/*
 function cleanupSubscriptions() {
     Pebble.timelineSubscriptions(
         function (topics) {
@@ -943,7 +915,7 @@ function cleanupSubscriptions() {
         }
         );
 }
-
+*/
 
 function hashCode(base) {
     var hash = 0, i, chr, len;
@@ -996,7 +968,7 @@ var MessageQueue = (function () {
                     
                     setTimeout(function () {
                                sendNextMessage();
-                               }, 1);
+                               }, 2);//JUNE 23
                     
                     return true;
                     }
@@ -1029,13 +1001,13 @@ var MessageQueue = (function () {
                     return true;
                     
                     function validValue(value) {
-                    switch (typeof(value)) {
+                    switch (typeof value) {
                     case 'string':
                     return true;
                     case 'number':
                     return true;
                     case 'object':
-                    if (toString.call(value) == '[object Array]') {
+                    if (toString.call(value) === '[object Array]') {
                     return true;
                     }
                     }
@@ -1055,14 +1027,14 @@ var MessageQueue = (function () {
                     
                     timer = setTimeout(function () {
                                        timeout();
-                                       }, 1000);
+                                       }, 2000);
                     
                     function ack() {
                     clearTimeout(timer);
                     setTimeout(function () {
                                sending = false;
                                sendNextMessage();
-                               }, 200);
+                               }, 400);
                     if (message.ack) {
                     message.ack.apply(null, arguments);
                     }
@@ -1075,7 +1047,7 @@ var MessageQueue = (function () {
                     setTimeout(function () {
                                sending = false;
                                sendNextMessage();
-                               }, 200 * message.attempts);
+                               }, 400 * message.attempts);
                     }
                     else {
                     if (message.nack) {
@@ -1088,7 +1060,7 @@ var MessageQueue = (function () {
                     setTimeout(function () {
                                sending = false;
                                sendNextMessage();
-                               }, 1000);
+                               }, 2000);
                     if (message.ack) {
                     message.ack.apply(null, arguments);
                     }
@@ -1096,35 +1068,7 @@ var MessageQueue = (function () {
                     
                     }
                     
-                    }());			
-function createBgArray(data) {
-    var toReturn = "";
-    
-    for (var i = 0; i < data.length ; i++) {
-         if (i <= 5 && i <= data.length-1) {
-             toReturn = toReturn + data[i].sgv + ",";
-         } 
-    }
-    toReturn = toReturn.replace(/,\s*$/, "");  
-    return toReturn;
-} // end createBgArray
-    
- 
-function createBgTimeArray(data) {
-    var bgHour = "00";
-    var bgMin = "00";
-    var toReturn = "";
-    
-     for (var i = 0; i < data.length ; i++) {
-         if (i <= 5 && i <= data.length-1) {
-             bgHour = new Date(data[i].datetime).getHours();
-             bgMin = new Date(data[i].datetime).getMinutes();
-             toReturn = toReturn + bgHour + bgMin + ",";
-         } 
-    } 
-    toReturn = toReturn.replace(/,\s*$/, "");  
-    return toReturn;  
-} // end createBgTimeArray  
+                    }());					
 
 function clear_defaults(opts) {
    console.log ("START clear_defaults");

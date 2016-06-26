@@ -1,0 +1,240 @@
+{
+    "author": "Dexterity",
+    "dependencies": {},
+    "keywords": [],
+    "name": "cgmsky",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "CGMsky",
+        "enableMultiJS": false,
+        "messageKeys": {
+            "bg": 1,
+            "clrw": 8,
+            "dlta": 4,
+            "icon": 0,
+            "mode_switch": 11,
+            "name": 6,
+            "noiz": 10,
+            "rwuf": 9,
+            "tapp": 3,
+            "tcgm": 2,
+            "ubat": 5,
+            "vals": 7
+        },
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/IMAGE_LOGO",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_LOGO",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/up.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_UP",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/upup.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_UPUP",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/up45.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_UP45",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/stoplightcolor.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_STOP_LIGHT",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/Question.png",
+                    "name": "IMAGE_QUESTION_MARKS",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/pixel.png",
+                    "memoryFormat": "1Bit",
+                    "name": "IMAGE_PIXEL",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/hourglass.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_HOURGLASS",
+                    "targetPlatforms": [
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/gauge.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_GAUGE",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/flat.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_FLAT",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/drop.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_BLOOD_DROP",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/down.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_DOWN",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/downdown.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_DOWNDOWN",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/down45.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_DOWN45",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/club55.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_CLUB55",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/club100.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_CLUB100",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/cloudui.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_RCVRON",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/clouduirain.png",
+                    "memoryFormat": "Smallest",
+                    "name": "IMAGE_RCVROFF",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/antenna.png",
+                    "name": "IMAGE_BROKEN_ANTENNA",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "basalt",
+            "chalk"
+        ],
+        "uuid": "64ec0168-18d3-461d-8d29-a26005028bc2",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.6.0"
+}
