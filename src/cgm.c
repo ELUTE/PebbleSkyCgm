@@ -11,16 +11,16 @@
 #define BATTERY_OUTLINE_HEIGHT 8
 #endif
 
-#define ROUGE PBL_IF_COLOR_ELSE(GColorDarkCandyAppleRed , GColorBlack)
+#define ROUGE PBL_IF_COLOR_ELSE(GColorDarkCandyAppleRed , GColorDarkGray)
 #define DARK PBL_IF_COLOR_ELSE(GColorOxfordBlue, GColorBlack)
 #define LIGHT PBL_IF_COLOR_ELSE(GColorPictonBlue, GColorWhite)
 #define MED PBL_IF_COLOR_ELSE(GColorChromeYellow , GColorLightGray)
 #define INRANGE PBL_IF_COLOR_ELSE(GColorMidnightGreen  , GColorDarkGray)
 
 //global variable for mode share
-#ifdef PBL_COLOR
+////#ifdef PBL_COLOR
 uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
-#endif
+////#endif
 Window *window_cgm = NULL;
 Layer  *window_layer_cgm = NULL;
 
@@ -30,7 +30,9 @@ TextLayer *bg_layer = NULL;
 TextLayer *cgmtime_layer = NULL;
 TextLayer *message_layer = NULL;    // BG DELTA & MESSAGE LAYER
 TextLayer *watch_battlevel_layer = NULL;
+#ifdef PBL_BW
 TextLayer *rig_battlevel_layer = NULL;
+#endif
 TextLayer *t1dname_layer = NULL;
 TextLayer *time_watch_layer = NULL;
 TextLayer *date_app_layer = NULL;
@@ -101,8 +103,11 @@ uint8_t AppSyncErrAlert = 100;
 // CGM message is 170 bytes
 // Pebble needs additional 62 Bytes?!? Total 232; Pad with additional 60 bytes
 //static uint8_t sync_buffer_cgm[292];
+#ifdef PBL_BW
 static uint8_t sync_buffer_cgm[200];//CHRISTINE
-
+#else
+static uint8_t sync_buffer_cgm[292];
+#endif
 // variables for timers and time
 AppTimer *timer_cgm = NULL;
 AppTimer *BT_timer = NULL;
@@ -378,14 +383,14 @@ static const uint8_t RCVROFF_ICON_INDX = 2;
 
 
 //ADD SHARE LOCATION VARIABLES
-#ifdef PBL_COLOR
+//#ifdef PBL_COLOR
 uint8_t Vertical = 80;
 uint8_t Horizontal =35;
 static const uint8_t SHARE_MODE = 1;
 static const uint8_t SHARE_NON_US_MODE = 2;
 static const uint8_t NIGHTSCOUT_MODE = 3;
 void load_mod();
-#endif
+//#endif
 
 static char *translate_app_error(AppMessageResult result) {
     switch (result) {
@@ -971,7 +976,7 @@ void handle_watch_battery_cgm(BatteryChargeState watch_charge_state) {
     batteryLevel = watch_charge_state.charge_percent;
     text_layer_set_text(watch_battlevel_layer, watch_battery_text);
 }
-
+//DATE
 static void draw_date_from_app() {
     
     // VARIABLES
@@ -1460,7 +1465,6 @@ void happymsg_animation_started(Animation *animation, void *data) {
     
     text_layer_set_text(message_layer, current_bg_delta);
     text_layer_set_text(cgmtime_layer, "");
-    text_layer_set_text(rig_battlevel_layer, "");
     create_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
     
 } // end happymsg_animation_started
@@ -1681,13 +1685,13 @@ static void load_bg() {
     // happy message; max message 24 characters
     // DO NOT GO OVER 24 CHARACTERS, INCLUDING SPACES OR YOU WILL CRASH
     // YOU HAVE BEEN WARNED
-    static char happymsg_buffer42[26] = "THE MEANING OF LIFE?\0";
-    static char happymsg_buffer88[26] = "88MPH GREAT SCOTT\0";
-    static char happymsg_buffer143[26] = "FEELIN THE LOVE\0";
-    static char happymsg_buffer109[26] = "FEELIN FINE\0";
-    static char happymsg_buffer222[26] = "TOO SWEET!\0";
-    static char happymsg_buffer280[26] = "RELEASE THE KRAKEN\0";
-    static char happymsg_buffer314[26] = "NO PIE FOR YOU\0";
+    static char happymsg_buffer126[26] = "C6-H12-O6 CUBE\0";
+    static char happymsg_buffer65[26] = "BEAM ME UP SCOTTY\0";
+    static char happymsg_buffer143[26] = "LOVE YA LOTS\0";
+    static char happymsg_buffer90[26] = "POWERED BY INSULIN\0";
+    static char happymsg_buffer180[26] = "CARB EH DIAM\0";
+    static char happymsg_buffer235[26] = "WATCH ME WHIP\0";
+    static char happymsg_buffer300[26] = "CALLING ALL THE MONSTERS\0";
     
     // CODE START
     
@@ -1819,7 +1823,7 @@ static void load_bg() {
 #ifdef PBL_PLATFORM_CHALK
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(59, 65));
 #else
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(39, 65));
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(39, 63));
 #endif
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, DONE");
             specvalue_alert = 111;
@@ -1870,40 +1874,38 @@ static void load_bg() {
                     
                     // EVERY TIME YOU DO A NEW MESSAGE, YOU HAVE TO ALLOCATE A NEW HAPPY MSG BUFFER AT THE TOP OF LOAD BG FUNCTION
                     
-                    if ( ((currentBG_isMMOL == 100) && (current_bg == 109)) || ((currentBG_isMMOL == 111) && (current_bg == 69)) ) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg == 126)) || ((currentBG_isMMOL == 111) && (current_bg == 40)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer109);
+                        animate_happymsg(happymsg_buffer126);
                     } // animate happy msg layer @ 109 and 6.9
                     
-                    if ((currentBG_isMMOL == 100) && (current_bg == 222)) {
+                    if (((currentBG_isMMOL == 100) && (current_bg == 65)) || ((currentBG_isMMOL == 111) && (current_bg == 37)) ){
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer222);
+                        animate_happymsg(happymsg_buffer65);
                     } // animate happy msg layer @ 116
                     
-                    if ( ((currentBG_isMMOL == 100) && (current_bg == 280)) || ((currentBG_isMMOL == 111) && (current_bg == 155)) ) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg == 90)) || ((currentBG_isMMOL == 111) && (current_bg == 58)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer280);
+                        animate_happymsg(happymsg_buffer90);
                     } // animate happy msg layer @ 280
-                    if ( ((currentBG_isMMOL == 100) && (current_bg == 88)) || ((currentBG_isMMOL == 111) && (current_bg == 88)) ) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg == 180)) || ((currentBG_isMMOL == 111) && (current_bg == 100)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer88);
+                        animate_happymsg(happymsg_buffer180);
                     } // animate happy msg layer @ 88
-                    if ( ((currentBG_isMMOL == 100) && (current_bg == 42)) || ((currentBG_isMMOL == 111) && (current_bg == 42)) ) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg == 235)) || ((currentBG_isMMOL == 111) && (current_bg == 140)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer42);
+                        animate_happymsg(happymsg_buffer235);
                     } // animate happy msg layer @ 42
-                    
-                    if (HardCodeAllAnimations == 111) {
-                        // extra animations for those that want them
-                        if ((currentBG_isMMOL == 100) && (current_bg == 314)) {
+                                            // extra animations for those that want them
+                        if (((currentBG_isMMOL == 100) && (current_bg == 300))|| ((currentBG_isMMOL == 111) && (current_bg == 180))) {
                             // ANIMATE HAPPY MSG LAYER
                             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                            animate_happymsg(happymsg_buffer314);
+                        animate_happymsg(happymsg_buffer300);
                         } // animate happy msg layer @ 314
                         
                         if (((currentBG_isMMOL == 100) && (current_bg == 143))|| ((currentBG_isMMOL == 111) && (current_bg == 143)))  {
@@ -1912,7 +1914,6 @@ static void load_bg() {
                             animate_happymsg(happymsg_buffer143);
                         }  // animate happy msg layer @ 143
                         
-                    } // HardCodeAllAnimations
                     
                 } // HardCodeNoAnimations; end all animation code
                 
@@ -2415,7 +2416,9 @@ static void load_rig_battlevel() {
     if (strcmp(last_battlevel, " ") == 0) {
         // Init code or no battery, can't do battery; set text layer & icon to empty value
         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, NO BATTERY");
+      #ifdef PBL_BW
         text_layer_set_text(rig_battlevel_layer, "");
+      #endif
         LowBatteryAlert = 100;
         return;
     }
@@ -2423,7 +2426,9 @@ static void load_rig_battlevel() {
     if (strcmp(last_battlevel, "0") == 0) {
         // Zero battery level; set here, so if we get zero later we know we have an error instead
         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, ZERO BATTERY, SET STRING");
+      #ifdef PBL_BW
         text_layer_set_text(rig_battlevel_layer, "0%");
+      #endif
         
         //layer_set_hidden((Layer *)inv_rig_battlevel_layer, false);
         if (LowBatteryAlert == 100) {
@@ -2440,8 +2445,9 @@ static void load_rig_battlevel() {
     if ((current_battlevel <= 0) || (current_battlevel > 100) || (last_battlevel[0] == '-')) {
         // got a negative or out of bounds or error battery level
         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, UNKNOWN, ERROR BATTERY");
+      #ifdef PBL_BW
         text_layer_set_text(rig_battlevel_layer, "ERR\0");
-        
+      #endif
         //layer_set_hidden((Layer *)inv_rig_battlevel_layer, false);
         return;
     }
@@ -2453,7 +2459,9 @@ static void load_rig_battlevel() {
     else { strncpy(formatted_battlevel, " ", BATTLEVEL_LABEL_SIZE); }
     snprintf(battlevel_percent, BATTLEVEL_PERCENT_SIZE, "%i%%", current_battlevel);
     strcat(formatted_battlevel, battlevel_percent);
+  #ifdef PBL_BW
     text_layer_set_text(rig_battlevel_layer, formatted_battlevel);
+  #endif
 #ifdef PBL_COLOR
     create_update_bitmap(&rig_icon_bitmap,rig_icon_layer,SPECIAL_VALUE_ICONS[GAUGE_ICON_INDX]);
     //rig_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_GAUGE);
@@ -2746,7 +2754,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                 load_noise();
                 break; // break for CGM_NOIZ_KEY
                 //add mode share
-#ifdef PBL_COLOR
+        //#ifdef PBL_COLOR
             case CGM_MODE_SWITCH_KEY:;
                 current_mode_value= new_tuple->value->uint8;
                 //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, MODE: %i ", current_mode_value);
@@ -2759,7 +2767,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                     layer_set_bounds(text_layer_get_layer(t1dname_layer), GRect(Vertical, Horizontal, 75, 28));
                 }
                 break;
-#endif
+           //#endif
             default:
                 //APP_LOG(APP_LOG_LEVEL_DEBUG, "new_tuple->value->cstring: %s" ,new_tuple->value->cstring);
                 break;
@@ -2876,7 +2884,7 @@ void handle_minute_tick_cgm(struct tm* tick_time_cgm, TimeUnits units_changed_cg
     
 } // end handle_minute_tick_cgm
 
-#ifdef PBL_COLOR
+//#ifdef PBL_COLOR
 //SHARE NIGHTSCOUT NAME SWITCH LOCATION
 void load_mod(){
     
@@ -2902,7 +2910,7 @@ void load_mod(){
     }
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d, Vertical: %d Horizontal: %d", current_mode_value, Vertical, Horizontal);
 }
-#endif
+//#endif
 
 //CIRCLE UPDATE PROC
 static void circle_update_proc(Layer *this_layer, GContext *ctx) {
@@ -2949,9 +2957,9 @@ void window_cgm_add_bitmap_layer (BitmapLayer **cgm_bitmap_layer, GRect cgm_bmap
 void window_load_cgm(Window *window_cgm) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW LOAD");
     // VARIABLES
-#ifdef PBL_COLOR
+//#ifdef PBL_COLOR
     load_mod();
-#endif
+//#endif
     //Layer *window_layer_cgm = window_get_root_layer(window_cgm);
     window_layer_cgm = window_get_root_layer(window_cgm);
     
@@ -3021,9 +3029,9 @@ void window_load_cgm(Window *window_cgm) {
     //text_layer_set_font(noise_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
     //text_layer_set_text_alignment(noise_layer, GTextAlignmentCenter);
     //layer_add_child(window_layer_cgm, text_layer_get_layer(noise_layer));
-    
+   #ifdef PBL_BW 
     // RIG BATTERY LEVEL
-    window_cgm_add_text_layer(&rig_battlevel_layer, GRect(0, 132, 40, 50), FONT_KEY_GOTHIC_14_BOLD);
+    window_cgm_add_text_layer(&rig_battlevel_layer, GRect(3, 120, 45, 50), FONT_KEY_GOTHIC_24_BOLD);
     
     // rig_battlevel_layer = text_layer_create(GRect(0, 132, 40, 50));
     text_layer_set_text_color(rig_battlevel_layer, DARK);
@@ -3031,7 +3039,7 @@ void window_load_cgm(Window *window_cgm) {
     //text_layer_set_font(rig_battlevel_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
     //text_layer_set_text_alignment(rig_battlevel_layer, GTextAlignmentRight);
     //layer_add_child(window_layer_cgm, text_layer_get_layer(rig_battlevel_layer));
-    
+    #endif
     //WATCH BATTERY ICON LAYER
 #ifdef PBL_PLATFORM_CHALK
     
@@ -3055,6 +3063,7 @@ void window_load_cgm(Window *window_cgm) {
     // bitmap_layer_set_compositing_mode(battery_layer, GCompOpSet);
     //layer_add_child(window_layer_cgm, bitmap_layer_get_layer(battery_layer));
 #ifdef PBL_COLOR
+  
     //RIG BATTERY ICON
 #ifdef PBL_PLATFORM_CHALK
     window_cgm_add_bitmap_layer(&rig_icon_layer, GRect(0, 93, 65, 56), GAlignCenter);
@@ -3088,13 +3097,13 @@ void window_load_cgm(Window *window_cgm) {
     //layer_add_child(window_layer_cgm, text_layer_get_layer(watch_battlevel_layer));
     
     // T1D NAME/IOB
-#ifdef PBL_COLOR
+//#ifdef PBL_COLOR
     window_cgm_add_text_layer(&t1dname_layer, GRect(Vertical, Horizontal, 140, 140), FONT_KEY_GOTHIC_24_BOLD);
     //t1dname_layer = text_layer_create(GRect(Vertical, Horizontal, 140, 140));
-#else
-    window_cgm_add_text_layer(&t1dname_layer, GRect(90, 123, 50, 300), FONT_KEY_GOTHIC_24_BOLD);
+//#else
+ //   window_cgm_add_text_layer(&t1dname_layer, GRect(90, 120, 50, 300), FONT_KEY_GOTHIC_24_BOLD);
     // t1dname_layer = text_layer_create(GRect(90, 123, 50, 30));
-#endif
+//#endif
 #ifdef PBL_ROUND
     text_layer_set_text_color(t1dname_layer, LIGHT);
     text_layer_set_text_alignment(t1dname_layer, GTextAlignmentLeft);
@@ -3295,9 +3304,9 @@ void window_load_cgm(Window *window_cgm) {
         TupletCString(CGM_CLRW_KEY, " "),
         TupletCString(CGM_RWUF_KEY, " "),
         TupletInteger(CGM_NOIZ_KEY, 0),
-#ifdef PBL_COLOR
+//#ifdef PBL_COLOR
         TupletInteger(CGM_MODE_SWITCH_KEY, 0), //add share mode
-#endif
+//#endif
     };
     
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW LOAD, ABOUT TO CALL APP SYNC INIT");
@@ -3352,7 +3361,9 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&bg_layer);
     destroy_null_TextLayer(&cgmtime_layer);
     destroy_null_TextLayer(&message_layer);
+  #ifdef PBL_BW
     destroy_null_TextLayer(&rig_battlevel_layer);
+  #endif
     destroy_null_TextLayer(&watch_battlevel_layer);
     destroy_null_TextLayer(&t1dname_layer);
     destroy_null_TextLayer(&time_watch_layer);
@@ -3400,9 +3411,9 @@ static void init_cgm(void) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, ABOUT TO CALL APP MSG OPEN");
     //app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 #ifdef PBL_COLOR
-    app_message_open(300, 300);
+    app_message_open(400, 400);
 #else
-    app_message_open(100, 100);
+    app_message_open(200, 200);
 #endif
     //  APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, APP MSG OPEN DONE");
     

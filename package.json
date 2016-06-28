@@ -107,6 +107,7 @@
                     "memoryFormat": "Smallest",
                     "name": "IMAGE_HOURGLASS",
                     "targetPlatforms": [
+                        "aplite",
                         "basalt",
                         "chalk"
                     ],
@@ -228,6 +229,7 @@
         },
         "sdkVersion": "3",
         "targetPlatforms": [
+            "aplite",
             "basalt",
             "chalk"
         ],

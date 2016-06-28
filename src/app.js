@@ -553,7 +553,7 @@ function sendTimeOutError(options) {
             "icon": 0,
             //"alert": 4,
             "dlta": "NODT",
-            "id": defaultId,
+            //"id": defaultId,
             //"tcgm": defaultId,
             "time_delta_int": -1,
         });
@@ -568,7 +568,7 @@ function sendServerError(options) {
             "icon": 0,
             //"alert": 4,
             "dlta": "NODT",
-            "id": defaultId,
+            //"id": defaultId,
             //"tcgm": defaultId,
             "time_delta_int": -1,
         });
@@ -582,8 +582,8 @@ function sendUnknownError(msg) {
                 "bg": " ",
                 "icon": 0,
                 //"alert": 4,
-                "vibe": 0,
-                "id": defaultId,
+                //"vibe": 0,
+                //"id": defaultId,
                // "tcgm": defaultId,
                 "time_delta_int": -1,
             }); 
