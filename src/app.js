@@ -40,20 +40,17 @@ function fetchCgmData() {
             
          default:
          Pebble.sendAppMessage({
-                    "vibe": 1, 	
-                    "bg": "set",		
-                    "icon": 0,	
-                    "alert": 4,
-                    "dlta": "setup up required",
-                    "id": defaultId,
-                    "time_delta_int": -1,
-                  
+                "icon": " ",
+                "bg": " ",
+                "tcgm": 0,
+                "tapp": 0,
+                "dlta": "NOEP",
                 });
          break;
     }
     console.log("fetchCgmData 5");
 } // end fetchCgmData
-
+//**********************NIGHTSCOUT**********************//
 function nightscout(opts){
   
     opts.endpoint = opts.endpoint + "/pebble"; 
@@ -65,8 +62,6 @@ function nightscout(opts){
   //get options from configuration window
 	// check if endpoint exists
   
-
-
     if (!opts.endpoint) {
         // endpoint doesn't exist, return no endpoint to watch
 		// " " (space) shows these are init values, not bad or null values
@@ -384,7 +379,7 @@ function nightscout(opts){
   
     req.send(null); 
 }//END CGM TIMEOUT
-
+//Mode
 function getModeAsInteger(opts)
 {
   console.log("getModeAsInteger");
@@ -405,42 +400,8 @@ function getModeAsInteger(opts)
     } 
   return mode_switch;
 }
-//TAKEN OUT TO SAVE SPACE
-/*function subscribeBy(base) {
-    try {        
-        topic = hashCode(base).toString();
-        logging("hashcode:" + topic);
-        Pebble.getTimelineToken(
-            function (token) {
-                //console.log('My timeline token is: ' + token);
-            },
-            function (error) {
-                //console.log('Error getting timeline token: ' + error);
-                hasTimeline = 0;
-            }
-            );
-        Pebble.timelineSubscribe(topic,
-            function () {
-                //console.log('Subscribed to: ' + topic);
-            },
-            function (errorString) {
-                //console.log('Error subscribing to topic: ' + errorString);
-                hasTimeline = 0;
-            }
-            );
-    } catch (err) {
-        //console.log('Error: ' + err.message);
-         hasTimeline = 0;
-    }
-    
-    if (hasTimeline)
-        cleanupSubscriptions();
 
-}*/
-
-//TAKEN OUT TO SAVE SPACE
-
-//use D's share API------------------------------------------//
+//*****************SHARE*****************//
 function share(options) {
 //if (options.unit == "mgdl" || options.unit == "mg/dL")
   if (options.radio == "mgdl_form")
@@ -533,14 +494,10 @@ function sendAuthError() {
    console.log("===============ERROR: sendAuthError");
 
     Pebble.sendAppMessage({
-                    "vibe": 1, 	
                     "bg": "log",		
                     "icon": 0,	
-                   // "alert": 4,
                     "dlta": "loginerr",
-                  //  "id": defaultId,
-                   // "tcgm": defaultId,
-                   // "time_delta_int": -1,
+
                 });
 }
 
@@ -548,14 +505,10 @@ function sendTimeOutError(options) {
     console.log("===============ERROR: sendTimeOutError: " + JSON.stringify(options));
 
      Pebble.sendAppMessage({
-            "vibe": parseInt(options.vibe_temp,10),
             "bg": " ",
             "icon": 0,
-            //"alert": 4,
             "dlta": "NODT",
-            //"id": defaultId,
-            //"tcgm": defaultId,
-            "time_delta_int": -1,
+
         });
 }
 
@@ -563,14 +516,9 @@ function sendServerError(options) {
       console.log("===============ERROR: sendServerError");
 
     Pebble.sendAppMessage({
-            "vibe": parseInt(options.vibe_temp,10),
             "bg": " ",
             "icon": 0,
-            //"alert": 4,
             "dlta": "NODT",
-            //"id": defaultId,
-            //"tcgm": defaultId,
-            "time_delta_int": -1,
         });
 }
 
@@ -581,11 +529,6 @@ function sendUnknownError(msg) {
                 "dlta": "ERR",
                 "bg": " ",
                 "icon": 0,
-                //"alert": 4,
-                //"vibe": 0,
-                //"id": defaultId,
-               // "tcgm": defaultId,
-                "time_delta_int": -1,
             }); 
 }
 
@@ -689,72 +632,27 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     icon = ((data[0].Trend > 7) ? 0 : data[0].Trend).toString();
 
                     options.bg = data[0].Value;
-                    console.log("---------------HIGH");
                 } 
 
-            //  var alert = calculateShareAlert(convertedEgv, wall, options);
-  
-              // var alert = calculateShareAlert(convertedEgv, tcgm, options);
-              /*
-              var timeDeltaMinutes = Math.floor(timeAgo / 60000);              
-                var d = new Date(wall);
-                //var d = new Date(tcgm);
-                var n = d.getMinutes();
-                var pin_id_suffix = 5 * Math.round(n / 5);
-                var title = "[SPARK] " + bg + " " + options.unit;
-                var pin = {
-                    "id": "pin-egv" + topic + pin_id_suffix,
-                    "time": d.toISOString(),
-                    "duration": 5,
-                    "layout": {
-                        "type": "genericPin",
-                        "title": title,
-                        "body": "Dexcom Share",
-                        "tinyIcon": "system://images/GLUCOSE_MONITOR",
-                        "backgroundColor": "#FF5500"
-                    },
-                    "actions": [
-                        {
-                            "title": "Launch App",
-                            "type": "openWatchApp",
-                            "launchCode": 1
-                        }],
-
-                }; */
-                
+      
                 console.log("dlta: " + dlta);
                 console.log("bg: " + bg);
                 console.log("icon: " + icon);
-                //console.log("alert: " + alert);
-                //console.log("vibe: " + options.vibe_temp);
-                //console.log("id: " + wall);
-                //console.log("time_delta_int: " + timeDeltaMinutes);
-                //console.log("bgs: " + createShareBgArray(data));
-                //console.log("bg_times: " + createShareBgTimeArray(data));
                 console.log("mode#: " + mode_switch);
                 console.log("values: " + values);             
   Pebble.sendAppMessage({
                     "dlta": dlta,
                     "bg": bg,	
                     "icon": icon,	
-                    //"alert": alert,	
                     "tcgm": tcgm,
                     "name": name,
                     "mode_switch" : mode_switch,
                     "vals" : values
-                //    "vibe": options.vibe_temp,
-               //     "time_delta_int": timeDeltaMinutes,
-               //     "bgsx" : createShareBgArray(data),
-               //     "bgty" : createShareBgTimeArray(data)
+                
                 });
                 options.id = wall;
-            //    window.localStorage.setItem('cgmPebbleDuo', JSON.stringify(options));
                 
-               /* if (hasTimeline) {
-                    insertUserPin(pin, topic, function (responseText) {
-                    console.log('Result: ' + responseText);
-                    });
-                } */  
+               
             }
 
         } else {
@@ -771,151 +669,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
 
     http.send();
 }
-/*
-function createShareBgArray(data) {
-    var toReturn = "0,";
-    var regex = /\((.*)\)/;
-    var now = new Date();
-  console.log("Data:" + data.length);
-    for (var i = 0; i < data.length; i++) {
-        var wall = parseInt(data[i].WT.match(regex)[1]);
-        //var tcgm = parseInt(data[i].WT.match(regex)[1]);
-        var timeAgo = msToMinutes(now.getTime() - wall);
-       //var timeAgo = msToMinutes(now.getTime() - tcgm);
 
-   //    console.log("timeAgo:" + timeAgo);
-        if (timeAgo < 45) {  
-            toReturn = toReturn + data[i].Value.toString() + ",";
-        }
-    }
-    toReturn = toReturn.replace(/,\s*$/, "");  
-    return toReturn;
-}
-    
-
-function createShareBgTimeArray(data) {
-    var toReturn = "";
-    var regex = /\((.*)\)/;
-    var now = new Date();
-    
-    for (var i = 0; i < data.length; i++) {  
-        var wall = parseInt(data[i].WT.match(regex)[1]);
-       // var tcgm = parseInt(data[i].WT.match(regex)[1]);
-        
-      console.log("createShareBgTimeArray wall:" + wall);
-      //  console.log("createShareBgTimeArray tcgm:" + tcgm);
-        var timeAgo = msToMinutes(now.getTime() - wall);
-//kate removed 02.08
-        //var timeAgo = msToMinutes(now.getTime() - tcgm);
- //       console.log("timeago: " + timeAgo);
-     //   if (timeAgo < 45) {
-       //     toReturn = toReturn + (45-timeAgo).toString() + ",";
-       // }
-    } 
-    toReturn = toReturn.replace(/,\s*$/, "");  
-    return toReturn;  
-}
-
-function msToMinutes(millisec) {
-    return (millisec / (1000 * 60)).toFixed(1);
-}
-
-function calculateShareAlert(bg, currentId, options) {
-    //console.log("comparing: " + currentId + " to " + options.id);
-    if (parseInt(options.id, 10) == parseInt(currentId, 10)) {
-        options.vibe_temp = 0;
-    } else {
-        options.vibe_temp = options.vibe + 1;
-    }
-
-    if (bg <= options.low){
-        return 2;
-    }
-
-    if (bg >= options.high) {
-        return 1;
-    }
-        
-    return 0;
-}
-function insertUserPin(pin, topic, callback) {
-    if (topic != "not_set")
-        timelineRequest(pin, topic, 'PUT', callback);
-}
-
-// The timeline public URL root
-var API_URL_ROOT = 'https://timeline-api.getpebble.com/';
-*/
-/*
-function timelineRequest(pin, topic, type, callback) {
-    
-    // User or shared?
-    //var url = API_URL_ROOT + 'v1/user/pins/' + pin.id;
-    var url = API_URL_ROOT + 'v1/shared/pins/' + pin.id;
-    // Create XHR
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        //console.log('timeline: response received: ' + this.responseText);
-        callback(this.responseText);
-    };
-    
-    
-    xhr.open(type, url);
-
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('X-API-Key', '');
-    xhr.setRequestHeader('X-Pin-Topics', topic);
-
-    // Send
-    xhr.send(JSON.stringify(pin));
-    //console.log('timeline: request sent.');
-   
-    var xhrSb = new XMLHttpRequest();
-    xhrSb.onload = function() {
-        //console.log('timeline: response received: ' + this.responseText);
-        callback(this.responseText);
-    };
-    xhrSb.open(type, url);
-   
-    xhrSb.setRequestHeader('Content-Type', 'application/json');
-    xhrSb.setRequestHeader('X-API-Key', '');
-    xhrSb.setRequestHeader('X-Pin-Topics', topic); 
-    
-    xhrSb.send(JSON.stringify(pin));
-    //console.log('timeline: SB request sent.');
-   
-}
-
-*/
-/*
-function cleanupSubscriptions() {
-    Pebble.timelineSubscriptions(
-        function (topics) {
-            console.log('Subscribed to ' + topics.join(','));
-            //console.log("subs: " + topics);
-            for (var i = 0; i < topics.length; i++) {
-                //console.log("topic: " + topic)
-                //console.log("topics[i]: " + topics[i])
-                if (topic != topics[i]) {
-                    Pebble.timelineUnsubscribe(topics[i],
-                        function () {
-                            //console.log('Unsubscribed from: ' + topics[i]);
-                        },
-                        function (errorString) {
-                            //console.log('Error unsubscribing from topic: ' + errorString);
-                        }
-                        );
-                }
-            }
-
-        },
-        function (errorString) {
-            //console.log('Error getting subscriptions: ' + errorString);
-            return ",";
-        }
-        );
-}
-*/
 
 function hashCode(base) {
     var hash = 0, i, chr, len;

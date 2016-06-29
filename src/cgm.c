@@ -17,10 +17,7 @@
 #define MED PBL_IF_COLOR_ELSE(GColorChromeYellow , GColorLightGray)
 #define INRANGE PBL_IF_COLOR_ELSE(GColorMidnightGreen  , GColorDarkGray)
 
-//global variable for mode share
-////#ifdef PBL_COLOR
-uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
-////#endif
+
 Window *window_cgm = NULL;
 Layer  *window_layer_cgm = NULL;
 
@@ -104,7 +101,7 @@ uint8_t AppSyncErrAlert = 100;
 // Pebble needs additional 62 Bytes?!? Total 232; Pad with additional 60 bytes
 //static uint8_t sync_buffer_cgm[292];
 #ifdef PBL_BW
-static uint8_t sync_buffer_cgm[200];//CHRISTINE
+static uint8_t sync_buffer_cgm[200];
 #else
 static uint8_t sync_buffer_cgm[292];
 #endif
@@ -118,9 +115,9 @@ int timeformat = 0;
 // global variable for bluetooth connection
 bool bt_connected=true;
 // global variables for sync tuple functions
-static char current_icon[2] = {0};//June 24 add static
-static char last_bg[6] = {0};//June 24 add static
-static char last_battlevel[4] = {0};//June 24 add static
+static char current_icon[2] = {0};
+static char last_bg[6] = {0};
+static char last_battlevel[4] = {0};
 
 uint32_t current_cgm_time = 0;
 uint32_t stored_cgm_time = 0;
@@ -128,8 +125,10 @@ uint32_t current_cgm_timeago = 0;
 uint8_t init_loading_cgm_timeago = 111;
 //christineint cgm_timeago_diff = 0;
 //char cgm_label_buffer;
-static char cgm_label_buffer[6] = {0};//June 24
+static char cgm_label_buffer[6] = {0};
 
+//global variable for mode share
+uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
 
 // global variable for single state machine
 // sometimes we have to know we have cleared an outage, but the outage flags
@@ -138,21 +137,20 @@ uint8_t ClearedOutage = 100;
 uint8_t ClearedBTOutage = 100;
 
 uint32_t current_app_time = 0;
-static char current_bg_delta[10] = {0};//June 24 add static
-static char last_calc_raw[6] = {0};//June 24 add static
-static char last_raw_unfilt[6] = {0};//June 24 add static
+static char current_bg_delta[10] = {0};
+static char last_calc_raw[6] = {0};
+static char last_raw_unfilt[6] = {0};
 uint8_t current_noise_value = 0;
-static char last_calc_raw1[6] = {0};//June 24 add static
-static char last_calc_raw2[6] = {0};//June 24 add static
-static char last_calc_raw3[6] = {0};//June 24 add static
+static char last_calc_raw1[6] = {0};
+static char last_calc_raw2[6] = {0};
+static char last_calc_raw3[6] = {0};
 int current_bg = 0;
 int current_calc_raw = 0;
 int current_calc_raw1 = 0;
 uint8_t currentBG_isMMOL = 100;
 int converted_bgDelta = 0;
-static char current_values[25] = {0};//June 24 add static
+static char current_values[25] = {0};
 uint8_t HaveCalcRaw = 100;
-//static char current_t1dname[25] ={0};//added June 24
 
 // global BG snooze timer
 static uint8_t lastAlertTime = 0;
@@ -182,7 +180,6 @@ static uint8_t PhoneOffAlert = 100;
 
 // global constants for time durations; seconds
 static const uint8_t  MINUTEAGO = 60;
-
 static const uint32_t TWOYEARSAGO = 2*365*(24*60*60);
 static const uint16_t MS_IN_A_SECOND = 1000;
 
@@ -314,7 +311,7 @@ static const uint8_t BT_ALERT_WAIT_SECS = 45;
 
 // Message Timer & Animate Wait Times, in Seconds
 static const uint8_t WATCH_MSGSEND_SECS = 60;
-static const uint8_t LOADING_MSGSEND_SECS = 10;
+static const uint8_t LOADING_MSGSEND_SECS = 5;
 static const uint8_t PERFECTBG_ANIMATE_SECS = 10;
 static const uint8_t HAPPYMSG_ANIMATE_SECS = 10;
 
@@ -625,65 +622,7 @@ static void set_container_image(GBitmap **bmp_image, BitmapLayer *bmp_layer, con
     }
 }
 //END CONTAINER
-/* CHRISTINE V
- static void destroy_null_GBitmap(GBitmap **GBmp_image) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL GBITMAP: ENTER CODE");
- if (*GBmp_image != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL GBITMAP: POINTER EXISTS, DESTROY BITMAP IMAGE");
- gbitmap_destroy(*GBmp_image);
- if (*GBmp_image != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL GBITMAP: POINTER EXISTS, SET POINTER TO NULL");
- *GBmp_image = NULL;
- }
- }
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL GBITMAP: EXIT CODE");
- } // end destroy_null_GBitmap
- 
- 
- 
- 
- static void destroy_null_BitmapLayer(BitmapLayer **bmp_layer) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL BITMAP: ENTER CODE");
- if (*bmp_layer != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL BITMAP: POINTER EXISTS, DESTROY BITMAP LAYER");
- bitmap_layer_destroy(*bmp_layer);
- if (*bmp_layer != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL BITMAP: POINTER EXISTS, SET POINTER TO NULL");
- *bmp_layer = NULL;
- }
- }
- 
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL BITMAP: EXIT CODE");
- } // end destroy_null_BitmapLayer
- 
- static void destroy_null_TextLayer(TextLayer **txt_layer) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL TEXT LAYER: ENTER CODE");
- if (*txt_layer != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL TEXT LAYER: POINTER EXISTS, DESTROY TEXT LAYER");
- text_layer_destroy(*txt_layer);
- if (*txt_layer != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL TEXT LAYER: POINTER EXISTS, SET POINTER TO NULL");
- *txt_layer = NULL;
- }
- }
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL TEXT LAYER: EXIT CODE");
- } // end destroy_null_TextLayer
- 
- */
-//CHRISTINE ^
-
-/*static void destroy_null_Layer(Layer **layer) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL LAYER: ENTER CODE");
- if (*layer != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL LAYER: POINTER EXISTS, DESTROY LAYER");
- layer_destroy(*layer);
- if (*layer != NULL) {
- //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL LAYER: POINTER EXISTS, SET POINTER TO NULL");
- *layer = NULL;
- }
- }
- } // end destroy_null_Layer*/
-//CHRISTINE V
+//NULL AND CANCEL TIMER
 static void null_and_cancel_timer (AppTimer **timer_to_null, bool cancel_timer) {
     
     if (*timer_to_null != NULL) {
@@ -775,7 +714,7 @@ static void create_update_bitmap(GBitmap **bmp_image, BitmapLayer *bmp_layer, co
     }
     //APP_LOG(APP_LOG_LEVEL_INFO, " CREATE UPDATE BITMAP: EXIT CODE");
 } // end create_update_bitmap
-
+//CLEAR CGM TIME
 void clear_cgm_timeago () {
     
     // erase cgm timeago time
@@ -784,7 +723,7 @@ void clear_cgm_timeago () {
     
     // erase cgm icon
     create_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
-    
+
 } // end clear_cgm_timeago
 
 static void alert_handler_cgm(uint8_t alertValue) {
@@ -853,7 +792,6 @@ static void alert_handler_cgm(uint8_t alertValue) {
     } // switch alertValue
 } // end alert_handler_cgm
 
-//JUNE 23void BT_timer_callback(void *data);
 // forward declarations for bluetooth routines
 void BT_timer_callback(void *data);
 static void load_bg_delta();
@@ -870,7 +808,6 @@ void bt_handler(bool bt_connected) {
             //Already vibrated and set message; out
             return;
         }
-        
         // Check to see if the BT_timer needs to be set; if BT_timer is not null we're still waiting
         if (BT_timer == NULL) {
             // check to see if timer has popped
@@ -918,11 +855,10 @@ void bt_handler(bool bt_connected) {
             // no timer is set, so need to reset timer pop
             BT_timer_pop = 100;
         }
-      // clear NO BLUETOOTH message if still there JUNE 23 V
+      // clear NO BLUETOOTH message if still there 
     load_bg_delta();
     clear_cgm_timeago();
     load_cgmtime();
-      //JUNE23 ^
     }
     
     //APP_LOG(APP_LOG_LEVEL_INFO, "BluetoothAlert: %i", BluetoothAlert);
@@ -938,9 +874,9 @@ void BT_timer_callback(void *data) {
     // check bluetooth and call handler
     //handle_bluetooth_cgm(bluetooth_connection_service_peek());
     // bt_handler(bluetooth_connection_service_peek());
-    //bt_handler(bluetooth_connection_service_peek());JUNE 23
-  bt_connected = bluetooth_connection_service_peek();//JUNE 23
-  bt_handler(bt_connected);//JUNE 23
+    //bt_handler(bluetooth_connection_service_peek());
+  bt_connected = bluetooth_connection_service_peek();
+  bt_handler(bt_connected);
 } // end BT_timer_callback
 
 //WATCH BATTERY ICON
@@ -1006,7 +942,7 @@ static void draw_date_from_app() {
     }
     
 } // end draw_date_from_app
-//NULL DICT BUFFER June 23 V
+//NULL DICT BUFFER 
 static void null_dict_buffer (DictionaryIterator **iter_to_null) {
   
   if (*iter_to_null != NULL) {
@@ -1029,7 +965,7 @@ static void null_tuple_buffer (const Tuple **tuple_to_null) {
     *tuple_to_null = NULL;
   }
   
-} // null_tuple_buffer JUNE23 ^
+} // null_tuple_buffer 
 
 void sync_error_callback_cgm(DictionaryResult appsync_dict_error, AppMessageResult appsync_error, void *context) {
     
@@ -1041,10 +977,7 @@ void sync_error_callback_cgm(DictionaryResult appsync_dict_error, AppMessageResu
     //bool bt_connected_syncerror = false;
     
     // CODE START
-      null_dict_buffer(&iter); //June 23
-
-    //bt_connected_syncerror = bluetooth_connection_service_peek();June 23
-     //if (!bt_connected_syncerror) { JUNE 23
+      null_dict_buffer(&iter); 
     bt_connected = bluetooth_connection_service_peek();
   if (bt_connected == false) {
         // bluetooth is out, BT message already set; return out
@@ -1096,31 +1029,23 @@ void sync_error_callback_cgm(DictionaryResult appsync_dict_error, AppMessageResu
      return;
      } 
     
-    //CHRISTINE V
-    // check bluetooth again
-    //bluetooth_connected_syncerror = bluetooth_connection_service_peek();
-    //bt_connected_syncerror = bluetooth_connection_service_peek(); June 23
-  
-    //if (bt_connected_syncerror == false) {June 23
   bt_connected = bluetooth_connection_service_peek();
   if (bt_connected == false) {
   
         // bluetooth is out, BT message already set; return out
         return;
-    } //CHRISTINE ^
+    } 
     // set message to RESTART WATCH -> PHONE
     text_layer_set_text(message_layer, "RSTR\0");
     
     // reset appsync retries counter
     appsyncandmsg_retries_counter = 0;
     
-    // erase cgm and app ago times
-    //CHRISTINEtext_layer_set_text(cgmtime_layer, "");
-    //CHRISTINEinit_loading_cgm_timeago = 111;
+    // erase cgm times
+
     clear_cgm_timeago();
     
     // erase cgm icon
-    //CHRISTINEcreate_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
     
     // check if need to vibrate
     if (AppSyncErrAlert == 100) {
@@ -1321,7 +1246,6 @@ static void load_icon() {
             bt_connected = bluetooth_connection_service_peek();
             
             // check to see if we are in the loading screen
-            //if (!bt_connected) { June 23
           	if (bt_connected == false) {
 
                 // Bluetooth is out; in the loading screen so set logo
@@ -1998,8 +1922,7 @@ static void load_bg() {
         layer_mark_dirty(text_layer_get_layer(bg_layer));
     }
 } // end load_bg
-
-//ADD CHRISTINE V
+//SET CGM TIMEAGO
 static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_timeago_string, char *timeago_label) {
     
     // CONSTANTS
@@ -2017,8 +1940,7 @@ static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_ti
     }
     
 } // end set_cgm_timeago
-//ADD CHRISTINE ^
-
+//LOAD CGM TIME
 static void load_cgmtime() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
     
@@ -2048,10 +1970,8 @@ static void load_cgmtime() {
     if (current_cgm_time == 0) {
         // Init code or error code; set text layer & icon to empty value
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD CGMTIME, CGM TIME AGO INIT OR ERROR CODE: %s", cgm_label_buffer);
-        //CHRISTINE text_layer_set_text(cgmtime_layer, "");
-        //CHRISTINEcreate_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
-        //CHRISTINEinit_loading_cgm_timeago = 111;
-        clear_cgm_timeago(); //CHRISTINE
+        
+        clear_cgm_timeago();
         
     }
     else {
@@ -2108,38 +2028,25 @@ static void load_cgmtime() {
             
             if (current_cgm_timeago < MINUTEAGO) {
                 cgm_timeago_diff = 0;
-                //CHRISTINEstrncpy (formatted_cgm_timeago, "now", TIMEAGO_BUFFER_SIZE);
-                set_cgm_timeago("now", cgm_timeago_diff, true, "");//CHRISTINE
+                set_cgm_timeago("now", cgm_timeago_diff, true, "");
                 // We've cleared Check Rig, so make sure reset flag is set.
                 CGMOffAlert = 100;
             }
             else if (current_cgm_timeago < HOURAGO) {
                 cgm_timeago_diff = (current_cgm_timeago / MINUTEAGO);
-                //CHRISTINEsnprintf(formatted_cgm_timeago, TIMEAGO_BUFFER_SIZE, "%i", cgm_timeago_diff);
-                //CHRISTINEstrncpy(cgm_label_buffer, "m", LABEL_BUFFER_SIZE);
-                //CHRISTINEstrcat(formatted_cgm_timeago, cgm_label_buffer);
-                set_cgm_timeago("", cgm_timeago_diff, false, "m");//CHRISTINE
+                
+                set_cgm_timeago("", cgm_timeago_diff, false, "m");
             }
             else if (current_cgm_timeago < DAYAGO) {
                 cgm_timeago_diff = (current_cgm_timeago / HOURAGO);
-                //CHRISTINE snprintf(formatted_cgm_timeago, TIMEAGO_BUFFER_SIZE, "%i", cgm_timeago_diff);
-                //CHRISTINEstrncpy(cgm_label_buffer, "h", LABEL_BUFFER_SIZE);
-                //CHRISTINEstrcat(formatted_cgm_timeago, cgm_label_buffer);
-                set_cgm_timeago("", cgm_timeago_diff, false, "h"); //CHRISTINE
+                set_cgm_timeago("", cgm_timeago_diff, false, "h");
             }
             else if (current_cgm_timeago < WEEKAGO) {
                 cgm_timeago_diff = (current_cgm_timeago / DAYAGO);
-                set_cgm_timeago("", cgm_timeago_diff, false, "d");//CHRISTINE
-                //CHRISTINEsnprintf(formatted_cgm_timeago, TIMEAGO_BUFFER_SIZE, "%i", cgm_timeago_diff);
-                //CHRISTINE  strncpy(cgm_label_buffer, "d", LABEL_BUFFER_SIZE);
-                //CHRISTINE  strcat(formatted_cgm_timeago, cgm_label_buffer);
+                set_cgm_timeago("", cgm_timeago_diff, false, "d");
             }
             else {
-                //CHRISTINEstrncpy (formatted_cgm_timeago, "ERR", TIMEAGO_BUFFER_SIZE);
-                //CHRISTINEcreate_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
-                //CHRISTINEinit_loading_cgm_timeago = 111;
-                // clear cgm timeago icon and set init flag
-                clear_cgm_timeago();//CHRISTINE
+                clear_cgm_timeago();
             }
             //text_layer_set_text(cgmtime_layer, formatted_cgm_timeago);
         }
@@ -2202,10 +2109,8 @@ static void load_apptime(){
     if ((current_app_timeago < TWOYEARSAGO) && (app_timeago_diff >= PHONEOUT_WAIT_MIN)) {
         
         // erase cgm ago times and cgm icon
-        //CHRISTINEtext_layer_set_text(cgmtime_layer, "");
-        //CHRISTINEcreate_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
-        //CHRISTINEinit_loading_cgm_timeago = 111;
-        clear_cgm_timeago();//CHRISTINE
+        
+        clear_cgm_timeago();
         
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD APPTIME, SET init_loading_cgm_timeago: %i", init_loading_cgm_timeago);
         // APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, CHECK IF HAVE TO VIBRATE");
@@ -2278,8 +2183,6 @@ static void load_bg_delta() {
     //START AGAIN HERE WITH MESSAGE LAYER AND SPECIAL VALUE
     // check for special messages; if no string, set no message
     if (strcmp(current_bg_delta, "") == 0) {
-        //CHRISTINEstrncpy(formatted_bg_delta, "", MSGLAYER_BUFFER_SIZE);
-        //CHRISTINEtext_layer_set_text(message_layer, formatted_bg_delta);
         text_layer_set_text(message_layer, "\0");
 
         return;
@@ -2289,7 +2192,6 @@ static void load_bg_delta() {
     if (strcmp(current_bg_delta, "NOEP") == 0) {
         strncpy(formatted_bg_delta, "NOEP\0", MSGLAYER_BUFFER_SIZE);
         text_layer_set_text(message_layer, formatted_bg_delta);
-        // text_layer_set_text(bg_layer, "NOEP");
         specvalue_alert = 100;
         return;
     }
@@ -2790,18 +2692,16 @@ static void send_cmd_cgm(void) {
   //set iter pointer to null
   null_dict_buffer(&iter);
   
-    // check bluetooth ADDED JUNE 20 V
+    // check bluetooth 
         bt_connected = bluetooth_connection_service_peek();
         
         if (bt_connected == false) {
             //      Bluetooth is out; set BT message
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
-            //if (TurnOff_NOBLUETOOTH_Msg == 100) {
-              //     text_layer_set_text(message_layer, "NO BT\0");
+           
           return ;
-            //} // if turnoff nobluetooth msg
+            
         }// if !bluetooth connected
-      //ADDED JUNE 20 ^
     
     //APP_LOG(APP_LOG_LEVEL_INFO, "SEND CMD IN, ABOUT TO OPEN APP MSG OUTBOX");
     sendcmd_openerr = app_message_outbox_begin(&iter);
@@ -2810,7 +2710,7 @@ static void send_cmd_cgm(void) {
     if (sendcmd_openerr != APP_MSG_OK) {
         //APP_LOG(APP_LOG_LEVEL_INFO, "WATCH SENDCMD OPEN ERROR");
         APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD OPEN ERR CODE: %i RES: %s", sendcmd_openerr, translate_app_error(sendcmd_openerr));
-        null_dict_buffer(&iter);//June 23
+        null_dict_buffer(&iter);
         sync_error_callback_cgm(sendcmd_dicterr, sendcmd_openerr, iter);
         
         return;
@@ -2826,7 +2726,7 @@ static void send_cmd_cgm(void) {
         sync_error_callback_cgm(sendcmd_dicterr, sendcmd_senderr, iter);
         
     }
-  null_dict_buffer(&iter); //June 23
+  null_dict_buffer(&iter); 
 
     //APP_LOG(APP_LOG_LEVEL_INFO, "SEND CMD OUT, SENT MSG TO APP");
     
@@ -2891,7 +2791,7 @@ void load_mod(){
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d", current_mode_value);
     if (current_mode_value == NIGHTSCOUT_MODE) {
 #ifdef PBL_ROUND
-        Vertical = 5;
+        Vertical = 0;
         Horizontal = 57;
 #else
         Vertical = 35;
@@ -2901,7 +2801,7 @@ void load_mod(){
     else
     {
 #ifdef PBL_ROUND
-        Vertical = 27;
+        Vertical = 6;
         Horizontal = 11;
 #else
         Vertical = 11;
@@ -3106,11 +3006,11 @@ void window_load_cgm(Window *window_cgm) {
 //#endif
 #ifdef PBL_ROUND
     text_layer_set_text_color(t1dname_layer, LIGHT);
-    text_layer_set_text_alignment(t1dname_layer, GTextAlignmentLeft);
+    //text_layer_set_text_alignment(t1dname_layer, GTextAlignmentLeft);
     //   t1dname_layer = text_layer_create(GRect(22, 125, 50, 28));
 #else
     //    t1dname_layer = text_layer_create(GRect(60, 40, 40, 28));
-    text_layer_set_text_alignment(t1dname_layer, GTextAlignmentCenter);
+    //text_layer_set_text_alignment(t1dname_layer, GTextAlignmentCenter);
     text_layer_set_text_color(t1dname_layer, DARK);
 #endif
     //text_layer_set_background_color(t1dname_layer, GColorClear);
