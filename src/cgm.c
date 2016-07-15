@@ -57,6 +57,8 @@ GBitmap *icon_bitmap = NULL;
 GBitmap *icon_bitmap2 = NULL;
 
 GBitmap *specialvalue_bitmap = NULL;
+GBitmap *specialvalue_bitmap2 = NULL;
+
 GBitmap *perfectbg_bitmap = NULL;
 GBitmap *battery_bitmap = NULL;
 static Layer *circle_layer;
@@ -130,10 +132,20 @@ uint8_t ClearedBTOutage = 100;
 
 uint32_t current_app_time = 0;
 static char current_bg_delta[10] = {0};
+static char current_bg_delta2[10] = {0};
+
 static char last_calc_raw[6] = {0};
+static char last_calc_raw2[6] = {0};
+
 static char last_raw_unfilt[6] = {0};
+static char last_raw_unfilt2[6] = {0};
+
 uint8_t current_noise_value = 0;
+uint8_t current_noise_value2 = 0;
+
 int current_bg = 0;
+int current_bg2 = 0;
+
 int current_calc_raw = 0;
 int current_calc_raw2 = 0;
 
@@ -1493,7 +1505,7 @@ void bg_vibrator (uint16_t BG_BOTTOM_INDX, uint16_t BG_TOP_INDX, uint8_t BG_SNOO
     }
     
 } // end bg_vibrator
-
+//USER 1 LOAD_BG
 static void load_bg() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, FUNCTION START");
     // CONSTANTS
@@ -1894,7 +1906,398 @@ static void load_bg() {
         text_layer_set_text_color(bg_layer, INRANGE);
         layer_mark_dirty(text_layer_get_layer(bg_layer));
     }
-} // end load_bg
+} // end load_bg 1
+static void load_bg2() {
+    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, FUNCTION START");
+    // CONSTANTS
+    const uint8_t BG_BUFFER_SIZE = 6;
+    
+    // ARRAY OF BG CONSTANTS; MGDL
+    uint16_t BG_MGDL[] = {
+        SPECVALUE_BG_MGDL, //0
+        SHOWLOW_BG_MGDL, //1
+        HYPOLOW_BG_MGDL, //2
+        BIGLOW_BG_MGDL,  //3
+        MIDLOW_BG_MGDL,  //4
+        LOW_BG_MGDL, //5
+        HIGH_BG_MGDL,  //6
+        MIDHIGH_BG_MGDL, //7
+        BIGHIGH_BG_MGDL, //8
+        SHOWHIGH_BG_MGDL //9
+    };
+    // ARRAY OF BG CONSTANTS; MMOL
+    uint16_t BG_MMOL[] = {
+        SPECVALUE_BG_MMOL, //0
+        SHOWLOW_BG_MMOL, //1
+        HYPOLOW_BG_MMOL, //2
+        BIGLOW_BG_MMOL,  //3
+        MIDLOW_BG_MMOL,  //4
+        LOW_BG_MMOL, //5
+        HIGH_BG_MMOL,  //6
+        MIDHIGH_BG_MMOL, //7
+        BIGHIGH_BG_MMOL, //8
+        SHOWHIGH_BG_MMOL //9
+    };
+    
+    // INDEX FOR ARRAYS OF BG CONSTANTS
+    const uint8_t SPECVALUE_BG_INDX = 0;
+    const uint8_t SHOWLOW_BG_INDX = 1;
+    const uint8_t HYPOLOW_BG_INDX = 2;
+    const uint8_t BIGLOW_BG_INDX = 3;
+    const uint8_t MIDLOW_BG_INDX = 4;
+    const uint8_t LOW_BG_INDX = 5;
+    const uint8_t HIGH_BG_INDX = 6;
+    const uint8_t MIDHIGH_BG_INDX = 7;
+    const uint8_t BIGHIGH_BG_INDX = 8;
+    const uint8_t SHOWHIGH_BG_INDX = 9;
+    // MG/DL SPECIAL VALUE CONSTANTS ACTUAL VALUES
+    // mg/dL = mmol / .0555 OR mg/dL = mmol * 18.0182
+    const uint8_t SENSOR_NOT_ACTIVE_VALUE_MGDL = 1; // show stop light, ?SN
+    const uint8_t MINIMAL_DEVIATION_VALUE_MGDL = 2; // show stop light, ?MD
+    const uint8_t NO_ANTENNA_VALUE_MGDL = 3; // show broken antenna, ?NA
+    const uint8_t SENSOR_NOT_CALIBRATED_VALUE_MGDL = 5; // show blood drop, ?NC
+    const uint8_t STOP_LIGHT_VALUE_MGDL = 6;  // show stop light, ?CD
+    const uint8_t HOURGLASS_VALUE_MGDL = 9; // show hourglass, hourglass
+    const uint8_t QUESTION_MARKS_VALUE_MGDL = 10; // show ???, ???
+    const uint8_t BAD_RF_VALUE_MGDL = 12; // show broken antenna, ?RF
+    
+    // MMOL SPECIAL VALUE CONSTANTS ACTUAL VALUES
+    // mmol = mg/dL / 18.0182 OR mmol = mg/dL * .0555
+    const uint8_t SENSOR_NOT_ACTIVE_VALUE_MMOL = 1; // show stop light, ?SN (.06 -> .1)
+    const uint8_t MINIMAL_DEVIATION_VALUE_MMOL = 1; // show stop light, ?MD (.11 -> .1)
+    const uint8_t NO_ANTENNA_VALUE_MMOL = 2;  // show broken antenna, ?NA (.17 -> .2)
+    const uint8_t SENSOR_NOT_CALIBRATED_VALUE_MMOL = 3; // show blood drop, ?NC (.28 -> .3)
+    const uint8_t STOP_LIGHT_VALUE_MMOL = 4;  // show stop light, ?CD (.33 -> .3, set to .4 here)
+    const uint8_t HOURGLASS_VALUE_MMOL = 5; // show hourglass, hourglass (.50 -> .5)
+    const uint8_t QUESTION_MARKS_VALUE_MMOL = 6;  // show ???, ??? (.56 -> .6)
+    const uint8_t BAD_RF_VALUE_MMOL = 7;  // show broken antenna, ?RF (.67 -> .7)
+    // ARRAY OF SPECIAL VALUES CONSTANTS; MGDL
+    uint8_t SPECVALUE_MGDL[] = {
+        SENSOR_NOT_ACTIVE_VALUE_MGDL,  //0
+        MINIMAL_DEVIATION_VALUE_MGDL,  //1
+        NO_ANTENNA_VALUE_MGDL, //2
+        SENSOR_NOT_CALIBRATED_VALUE_MGDL,  //3
+        STOP_LIGHT_VALUE_MGDL, //4
+        HOURGLASS_VALUE_MGDL,  //5
+        QUESTION_MARKS_VALUE_MGDL, //6
+        BAD_RF_VALUE_MGDL  //7
+    };
+    // ARRAY OF SPECIAL VALUES CONSTANTS; MMOL
+    uint8_t SPECVALUE_MMOL[] = {
+        SENSOR_NOT_ACTIVE_VALUE_MMOL,  //0
+        MINIMAL_DEVIATION_VALUE_MMOL,  //1
+        NO_ANTENNA_VALUE_MMOL, //2
+        SENSOR_NOT_CALIBRATED_VALUE_MMOL,  //3
+        STOP_LIGHT_VALUE_MMOL, //4
+        HOURGLASS_VALUE_MMOL,  //5
+        QUESTION_MARKS_VALUE_MMOL, //6
+        BAD_RF_VALUE_MMOL  //7
+    };
+    // INDEX FOR ARRAYS OF SPECIAL VALUES CONSTANTS
+    const uint8_t SENSOR_NOT_ACTIVE_VALUE_INDX = 0;
+    const uint8_t MINIMAL_DEVIATION_VALUE_INDX = 1;
+    const uint8_t NO_ANTENNA_VALUE_INDX = 2;
+    const uint8_t SENSOR_NOT_CALIBRATED_VALUE_INDX = 3;
+    const uint8_t STOP_LIGHT_VALUE_INDX = 4;
+    const uint8_t HOURGLASS_VALUE_INDX = 5;
+    const uint8_t QUESTION_MARKS_VALUE_INDX = 6;
+    const uint8_t BAD_RF_VALUE_INDX = 7;
+    
+    // VARIABLES
+    
+    // pointers to be used to MGDL or MMOL values for parsing
+    uint16_t *bg_ptr2 = NULL;
+    uint8_t *specvalue_ptr2 = NULL;
+    
+    // happy message; max message 24 characters
+    // DO NOT GO OVER 24 CHARACTERS, INCLUDING SPACES OR YOU WILL CRASH
+    // YOU HAVE BEEN WARNED
+    static char happymsg_buffer126[26] = "C6-H12-O6 CUBE\0";
+    static char happymsg_buffer65[26] = "BEAM ME UP SCOTTY\0";
+    static char happymsg_buffer143[26] = "LOVE YA LOTS\0";
+    static char happymsg_buffer90[26] = "POWERED BY INSULIN\0";
+    static char happymsg_buffer180[26] = "CARB EH DIAM\0";
+    static char happymsg_buffer235[26] = "WATCH ME WHIP\0";
+    static char happymsg_buffer300[26] = "CALLING ALL THE MONSTERS\0";
+    
+    // CODE START
+    
+    // set special value alert to zero no matter what
+    specvalue_alert2 = 100;
+    
+    // see if we're doing MGDL or MMOL; get currentBG_isMMOL value in myBGAtoi
+    // convert BG value from string to int
+    
+    // FOR TESTING ONLY
+    //strncpy(last_bg2, "10", BG_BUFFER_SIZE);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, BGATOI IN, current_bg2: %d last_bg2: %s ", current_bg2, last_bg2);
+    current_bg2 = myBGAtoi(last_bg2);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, BG ATOI OUT, current_bg2: %d last_bg2: %s ", current_bg2, last_bg2);
+    
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "LAST BG2: %s", last_bg2);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "CURRENT BG2: %i", current_bg2);
+    
+    if (currentBG_isMMOL == 100) {
+        bg_ptr2 = BG_MGDL;
+        specvalue_ptr2 = SPECVALUE_MGDL;
+    }
+    else {
+        bg_ptr2 = BG_MMOL;
+        specvalue_ptr2 = SPECVALUE_MMOL;
+    }
+    // BG parse, check snooze, and set text
+    
+    // check for init code or error code
+    if ((current_bg2 <= 0) || (last_bg2[0] == '-')) {
+        lastAlertTime2 = 0;
+        
+        // check bluetooth
+        bt_connected = bluetooth_connection_service_peek();
+        
+        
+        if (bt_connected==false) {
+            //      Bluetooth is out; set BT message
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
+            if (TurnOff_NOBLUETOOTH_Msg == 100) {
+                //   text_layer_set_text(message_layer2, "NOBT");
+            } // if turnoff nobluetooth msg
+        }// if !bluetooth connected
+        else {
+            // if init code, we will set it right in message layer
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, UNEXPECTED BG: SET ERR ICON");
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, UNEXP BG, CURRENT_BG2: %d last_bg2: %s ", current_bg2, last_bg2);
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, "ERR"); }
+            specvalue_alert2 = 111;
+            //  }
+            
+        } // if current_bg2 <= 0
+        
+    }    else {
+        // valid BG
+        
+        // check for special value, if special value, then replace icon and blank BG; else send current BG
+        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BEFORE CREATE SPEC VALUE BITMAP");
+        if ((current_bg2 == specvalue_ptr2[NO_ANTENNA_VALUE_INDX]) || (current_bg2 == specvalue_ptr2[BAD_RF_VALUE_INDX])) {
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET BROKEN ANTENNA");
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, ""); }
+            text_layer_set_text(message_layer2, " ");
+            
+#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], GPoint(62, 55));
+#else
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], GPoint(42, 55));
+#endif
+            layer_mark_dirty(bitmap_layer_get_layer(icon_layer2));
+            
+            specvalue_alert2 = 111;
+        }
+        
+        else if (current_bg2 == specvalue_ptr2[SENSOR_NOT_CALIBRATED_VALUE_INDX]) {
+            // APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET BLOOD DROP");
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, ""); }
+            text_layer_set_text(message_layer2, "");
+            
+#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(75, 55));
+#else
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(55, 50));
+#endif
+            layer_mark_dirty(bitmap_layer_get_layer(icon_layer2));
+            
+            specvalue_alert2 = 111;
+        }
+        else if ((current_bg2 == specvalue_ptr2[SENSOR_NOT_ACTIVE_VALUE_INDX]) || (current_bg2 == specvalue_ptr2[MINIMAL_DEVIATION_VALUE_INDX])
+                 || (current_bg2 == specvalue_ptr2[STOP_LIGHT_VALUE_INDX])) {
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET STOP LIGHT");
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, ""); }
+            text_layer_set_text(message_layer2, "");
+            
+#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[STOP_LIGHT_ICON_INDX], GPoint(77, 56));
+#else
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[STOP_LIGHT_ICON_INDX], GPoint(59, 50));
+#endif
+            layer_mark_dirty(bitmap_layer_get_layer(icon_layer2));
+            
+            specvalue_alert2 = 111;
+        }
+        else if (current_bg2 == specvalue_ptr2[HOURGLASS_VALUE_INDX]) {
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET HOUR GLASS");
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, ""); }
+            text_layer_set_text(message_layer2, "");
+            
+#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(76, 52));
+#else
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(57, 57));
+#endif
+            layer_mark_dirty(bitmap_layer_get_layer(icon_layer2));
+            
+            specvalue_alert2 = 111;
+        }
+        else if (current_bg2 == specvalue_ptr2[QUESTION_MARKS_VALUE_INDX]) {
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, CLEAR TEXT");
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, ""); }
+            text_layer_set_text(message_layer2, "");
+            
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, SET BITMAP");
+#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(59, 65));
+#else
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(39, 63));
+#endif
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, DONE");
+            specvalue_alert2 = 111;
+            layer_mark_dirty(bitmap_layer_get_layer(icon_layer2));
+        }
+        else if (current_bg2 < bg_ptr2[SPECVALUE_BG_INDX]) {
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, UNEXPECTED SPECIAL VALUE: SET LOGO ICON");
+            if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, ""); }
+            text_layer_set_text(message_layer2, "");
+            
+#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX], GPoint(75, 60));
+#else
+            set_container_image(&specialvalue_bitmap2,icon_layer2,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX], GPoint(55, 60));
+#endif
+            layer_mark_dirty(bitmap_layer_get_layer(icon_layer2));
+            
+            specvalue_alert2 = 111;
+        } // end special value checks
+        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, AFTER CREATE SPEC VALUE BITMAP");
+        
+        if (specvalue_alert2 == 100) {
+            // we didn't find a special value, so set BG instead
+            // arrow icon already set separately
+            if (current_bg2 < bg_ptr2[SHOWLOW_BG_INDX]) {
+                //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG: SET TO LO");
+                if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, "LO");
+                    text_layer_set_text_color(bg_layer2, ROUGE);} //COLOUR BG LAYERS
+                
+            }
+            else if (current_bg2 > bg_ptr2[SHOWHIGH_BG_INDX]) {
+                //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG: SET TO HI");
+                if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, "HI");
+                    text_layer_set_text_color(bg_layer2, MED);} //COLOUR BG LAYERS
+            }
+            //}
+            else {
+                // else update with current BG
+                //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, SET TO BG: %s ", last_bg2);
+                if (bg_layer2 != NULL) { text_layer_set_text(bg_layer2, last_bg2); }
+                
+                if (HardCodeNoAnimations == 100) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg2 == 100)) || ((currentBG_isMMOL == 111) && (current_bg2 == 55)) ) {
+                        // PERFECT BG CLUB, ANIMATE BG
+                        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE PERFECT BG");
+                        animate_perfectbg();
+                    } // perfect bg club, animate BG
+                    
+                    // EVERY TIME YOU DO A NEW MESSAGE, YOU HAVE TO ALLOCATE A NEW HAPPY MSG BUFFER AT THE TOP OF LOAD BG FUNCTION
+                    
+                    if ( ((currentBG_isMMOL == 100) && (current_bg2 == 126)) || ((currentBG_isMMOL == 111) && (current_bg2 == 40)) ) {
+                        // ANIMATE HAPPY MSG LAYER
+                        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                        animate_happymsg(happymsg_buffer126);
+                    } // animate happy msg layer @ 109 and 6.9
+                    
+                    if (((currentBG_isMMOL == 100) && (current_bg2 == 65)) || ((currentBG_isMMOL == 111) && (current_bg2 == 37)) ){
+                        // ANIMATE HAPPY MSG LAYER
+                        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                        animate_happymsg(happymsg_buffer65);
+                    } // animate happy msg layer @ 116
+                    
+                    if ( ((currentBG_isMMOL == 100) && (current_bg2 == 90)) || ((currentBG_isMMOL == 111) && (current_bg2 == 58)) ) {
+                        // ANIMATE HAPPY MSG LAYER
+                        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                        animate_happymsg(happymsg_buffer90);
+                    } // animate happy msg layer @ 280
+                    if ( ((currentBG_isMMOL == 100) && (current_bg2 == 180)) || ((currentBG_isMMOL == 111) && (current_bg2 == 100)) ) {
+                        // ANIMATE HAPPY MSG LAYER
+                        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                        animate_happymsg(happymsg_buffer180);
+                    } // animate happy msg layer @ 88
+                    if ( ((currentBG_isMMOL == 100) && (current_bg2 == 235)) || ((currentBG_isMMOL == 111) && (current_bg2 == 140)) ) {
+                        // ANIMATE HAPPY MSG LAYER
+                        //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                        animate_happymsg(happymsg_buffer235);
+                    } // animate happy msg layer @ 42
+                                            // extra animations for those that want them
+                        if (((currentBG_isMMOL == 100) && (current_bg2 == 300))|| ((currentBG_isMMOL == 111) && (current_bg2 == 180))) {
+                            // ANIMATE HAPPY MSG LAYER
+                            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                        animate_happymsg(happymsg_buffer300);
+                        } // animate happy msg layer @ 314
+                        
+                        if (((currentBG_isMMOL == 100) && (current_bg2 == 143))|| ((currentBG_isMMOL == 111) && (current_bg2 == 143)))  {
+                            // ANIMATE HAPPY MSG LAYER
+                            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
+                            animate_happymsg(happymsg_buffer143);
+                        }  // animate happy msg layer @ 143
+                        
+                    
+                } // HardCodeNoAnimations; end all animation code
+                
+            }  } // end bg checks (if special_value_bitmap)
+        
+        // see if we're going to use the current bg or the calculated raw bg for vibrations
+        if ( ((current_bg2 > 0) && (current_bg2 < bg_ptr2[SPECVALUE_BG_INDX])) && (HaveCalcRaw == 111) ) {
+            
+            current_calc_raw2 = myBGAtoi(last_calc_raw2);
+            
+            //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, TurnOffVibrationsCalcRaw: %d", TurnOffVibrationsCalcRaw);
+            
+            if (TurnOffVibrationsCalcRaw == 100) {
+                // set current_bg2 to calculated raw so we can vibrate on that instead
+                current_bg2 = current_calc_raw2;
+                if (currentBG_isMMOL == 100) {
+                    bg_ptr2 = BG_MGDL;
+                    specvalue_ptr2 = SPECVALUE_MGDL;
+                }
+                else {
+                    bg_ptr2 = BG_MMOL;
+                    specvalue_ptr2 = SPECVALUE_MMOL;
+                }
+            } // TurnOffVibrationsCalcRaw
+            
+    
+        }
+        
+        
+        bg_vibrator (0, bg_ptr2[SPECVALUE_BG_INDX], SPECVALUE_SNZ_MIN, &specvalue_overwrite, SPECVALUE_VIBE);
+        bg_vibrator (bg_ptr2[SPECVALUE_BG_INDX], bg_ptr2[HYPOLOW_BG_INDX], HYPOLOW_SNZ_MIN, &hypolow_overwrite, HYPOLOWBG_VIBE);
+        bg_vibrator (bg_ptr2[HYPOLOW_BG_INDX], bg_ptr2[BIGLOW_BG_INDX], BIGLOW_SNZ_MIN, &biglow_overwrite, BIGLOWBG_VIBE);
+        bg_vibrator (bg_ptr2[BIGLOW_BG_INDX], bg_ptr2[MIDLOW_BG_INDX], MIDLOW_SNZ_MIN, &midlow_overwrite, LOWBG_VIBE);
+        bg_vibrator (bg_ptr2[MIDLOW_BG_INDX], bg_ptr2[LOW_BG_INDX], LOW_SNZ_MIN, &low_overwrite, LOWBG_VIBE);
+        bg_vibrator (bg_ptr2[HIGH_BG_INDX], bg_ptr2[MIDHIGH_BG_INDX], HIGH_SNZ_MIN, &high_overwrite, HIGHBG_VIBE);
+        bg_vibrator (bg_ptr2[MIDHIGH_BG_INDX], bg_ptr2[BIGHIGH_BG_INDX], MIDHIGH_SNZ_MIN, &midhigh_overwrite, HIGHBG_VIBE);
+        bg_vibrator (bg_ptr2[BIGHIGH_BG_INDX], 1000, BIGHIGH_SNZ_MIN, &bighigh_overwrite, BIGHIGHBG_VIBE);
+        
+        // else "normal" range or init code
+        if ( ((current_bg2 > bg_ptr2[LOW_BG_INDX]) && (current_bg2 < bg_ptr2[HIGH_BG_INDX]))
+            || (current_bg2 <= 0) ) {
+            
+            // do nothing; just reset snooze counter
+            lastAlertTime = 0;
+        } // else if "NORMAL RANGE" BG
+        
+    } // else if current bg <= 0
+    if (current_bg2 > bg_ptr2[HIGH_BG_INDX]){
+        text_layer_set_text_color(bg_layer2, GColorOrange);
+        layer_mark_dirty(text_layer_get_layer(bg_layer2));
+    }
+    else if (current_bg2 < bg_ptr2[LOW_BG_INDX]){
+        text_layer_set_text_color(bg_layer2, ROUGE);
+        layer_mark_dirty(text_layer_get_layer(bg_layer2));
+    }
+    
+    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, FUNCTION OUT");
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, FUNCTION OUT, SNOOZE VALUE: %d", lastAlertTime);
+    else{
+        text_layer_set_text_color(bg_layer2, INRANGE);
+        layer_mark_dirty(text_layer_get_layer(bg_layer2));
+    }
+} // end load_bg2
 //SET CGM TIMEAGO
 static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_timeago_string, char *timeago_label) {
     
@@ -2511,7 +2914,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG CURRENT");
             strncpy(last_bg2, new_tuple->value->cstring, BG_MSGSTR_SIZE);
             APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BG VALUE2: %s ", last_bg2);
-            load_bg();
+            load_bg2();
             break; // break for CGM_BG_KEY
       
         case CGM_TCGM_KEY:;
@@ -2812,7 +3215,7 @@ static void circle_update_proc(Layer *this_layer, GContext *ctx) {
     graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), 53);
     graphics_context_set_fill_color(ctx, DARK);
-    graphics_fill_rect(ctx, GRect(2, 2, 139, 69), 2, GCornerNone);  
+    graphics_fill_rect(ctx, GRect(2, 2, 140, 69), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), s_radius);
     graphics_context_set_fill_color(ctx, GColorWhite);
     //graphics_fill_circle(ctx, GPoint(90, 75), 46);
@@ -3107,6 +3510,8 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_GBitmap(&icon_bitmap2);
 
     destroy_null_GBitmap(&specialvalue_bitmap);
+    destroy_null_GBitmap(&specialvalue_bitmap2);
+
     destroy_null_GBitmap(&perfectbg_bitmap);
     destroy_null_GBitmap(&battery_bitmap);
     
