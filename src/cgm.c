@@ -1164,15 +1164,15 @@ static void load_icon() {
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD ICON, CURRENT ICON: %s", current_icon);
         if ( (strcmp(current_icon, NO_ARROW) == 0) || (strcmp(current_icon, NOTCOMPUTE_ICON) == 0) || (strcmp(current_icon, OUTOFRANGE_ICON) == 0) ) {
             create_update_bitmap(&icon_bitmap,icon_layer,ARROW_ICONS[PIXEL_ICON_INDX]);
-            text_layer_set_background_color(tophalf_layer, LIGHT);
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
             
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, DOUBLEUP_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UPUP_ICON_INDX], GPoint(67, 1));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UPUP_ICON_INDX], GPoint(130, 26));
 #else
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UPUP_ICON_INDX], GPoint(47, 1));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UPUP_ICON_INDX], GPoint(110, 26));
 #endif
             DoubleDownAlert = 100;
             text_layer_set_background_color(tophalf_layer, MED);
@@ -1181,54 +1181,54 @@ static void load_icon() {
         }
         else if (strcmp(current_icon, SINGLEUP_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP_ICON_INDX], GPoint(75, -1));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP_ICON_INDX], GPoint(130, 26));
 #else
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP_ICON_INDX], GPoint(55, -1));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP_ICON_INDX], GPoint(110, 26));
 #endif
-            text_layer_set_background_color(tophalf_layer, LIGHT);
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
             //layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, UP45_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP45_ICON_INDX],GPoint(124, 23));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP45_ICON_INDX],GPoint(130, 26));
 #else
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP45_ICON_INDX],GPoint(104, 23));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[UP45_ICON_INDX],GPoint(110, 26));
 #endif
-            text_layer_set_background_color(tophalf_layer, LIGHT);
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
             
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, FLAT_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[FLAT_ICON_INDX], GPoint(140, 61));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[FLAT_ICON_INDX], GPoint(120, 26));
 #else
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[FLAT_ICON_INDX], GPoint(120, 61));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[FLAT_ICON_INDX], GPoint(100, 26));
 #endif
-            text_layer_set_background_color(tophalf_layer, LIGHT);
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
             // layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, DOWN45_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN45_ICON_INDX], GPoint(122, 105));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN45_ICON_INDX], GPoint(120, 26));
 #else
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN45_ICON_INDX], GPoint(102, 105));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN45_ICON_INDX], GPoint(100, 26));
 #endif
-            text_layer_set_background_color(tophalf_layer, LIGHT);
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
             //layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, SINGLEDOWN_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN_ICON_INDX], GPoint(78, 126));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN_ICON_INDX], GPoint(120, 26));
             text_layer_set_text(time_watch_layer, " ");
 #else
-            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN_ICON_INDX], GPoint(58, 126));
+            set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWN_ICON_INDX], GPoint(100, 26));
 #endif
-            text_layer_set_background_color(tophalf_layer, LIGHT);
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
             //  layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             
             DoubleDownAlert = 100;
@@ -1240,10 +1240,10 @@ static void load_icon() {
                 DoubleDownAlert = 111;
                 text_layer_set_background_color(tophalf_layer, GColorRed);
 #ifdef PBL_PLATFORM_CHALK
-                set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWNDOWN_ICON_INDX], GPoint(68, 125));
+                set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWNDOWN_ICON_INDX], GPoint(120, 26));
                 text_layer_set_text(time_watch_layer, " ");
 #else
-                set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWNDOWN_ICON_INDX], GPoint(48, 125));
+                set_container_image(&icon_bitmap,icon_layer,ARROW_ICONS[DOWNDOWN_ICON_INDX], GPoint(100, 26));
 #endif
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
                 
@@ -3217,15 +3217,15 @@ static void circle_update_proc(Layer *this_layer, GContext *ctx) {
       graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
 
 #else
-  graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
+ // graphics_context_set_fill_color(ctx, GColorWhite);
+   // graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), 53);
     graphics_context_set_stroke_color(ctx, DARK);
-    graphics_fill_rect(ctx, GRect(2, 2, 140, 69), 2, GCornerNone);  
+    graphics_draw_rect(ctx, GRect(2, 2, 140, 69));  
   //graphics_fill_circle(ctx, GPoint(90, 75), s_radius);
     graphics_context_set_stroke_color(ctx, DARK);
     //graphics_fill_circle(ctx, GPoint(90, 75), 46);
-      graphics_fill_rect(ctx, GRect(2, 75, 140, 69), 2, GCornerNone);  
+      graphics_draw_rect(ctx, GRect(2, 75, 140, 69));  
     /*graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_circle(ctx, GPoint(70, 75), 53);
     graphics_context_set_fill_color(ctx, DARK);
