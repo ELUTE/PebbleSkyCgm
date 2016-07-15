@@ -28,10 +28,9 @@ TextLayer *bg_layer2 = NULL;
 
 TextLayer *cgmtime_layer = NULL;
 TextLayer *message_layer = NULL;    // BG DELTA & MESSAGE LAYER
+TextLayer *message_layer2 = NULL;    // BG DELTA & MESSAGE LAYER
 TextLayer *watch_battlevel_layer = NULL;
-//#ifdef PBL_BW
 TextLayer *rig_battlevel_layer = NULL;
-//#endif
 TextLayer *t1dname_layer = NULL;
 TextLayer *time_watch_layer = NULL;
 TextLayer *date_app_layer = NULL;
@@ -39,9 +38,6 @@ TextLayer *happymsg_layer = NULL;
 TextLayer *raw_calc_layer = NULL;
 TextLayer *raw_unfilt_layer = NULL;
 TextLayer *noise_layer = NULL;
-TextLayer *calcraw_last1_layer = NULL;
-TextLayer *calcraw_last2_layer = NULL;
-TextLayer *calcraw_last3_layer = NULL;
 
 //BATTERY CODE
 static const GPathInfo BATTERY_OUTLINE = {
@@ -51,29 +47,21 @@ static const GPathInfo BATTERY_OUTLINE = {
 
 // main window layer
 BitmapLayer *icon_layer = NULL;
-BitmapLayer *cgmicon_layer = NULL;
+BitmapLayer *icon_layer2 = NULL;
+
 BitmapLayer *perfectbg_layer = NULL;
-//#ifdef PBL_COLOR
-//BitmapLayer *rig_icon_layer = NULL;
-//#endif
 BitmapLayer *battery_layer = NULL;
 
 // main window layer
 GBitmap *icon_bitmap = NULL;
-GBitmap *cgmicon_bitmap = NULL;
+GBitmap *icon_bitmap2 = NULL;
+
 GBitmap *specialvalue_bitmap = NULL;
 GBitmap *perfectbg_bitmap = NULL;
-//GBitmap *rig_icon_bitmap = NULL;
 GBitmap *battery_bitmap = NULL;
 static Layer *circle_layer;
-//#ifdef PBL_COLOR
-//static Layer*rig_line_layer;
-//#endif
 static Layer *batteryGraphicsLayer;
 static GPath *batteryOutlinePath = NULL;
-
-//static GPoint s_center;
-static int s_radius = 51;
 
 static int batteryLevel = 0;
 //#ifdef PBL_COLOR
@@ -145,12 +133,13 @@ static char current_bg_delta[10] = {0};
 static char last_calc_raw[6] = {0};
 static char last_raw_unfilt[6] = {0};
 uint8_t current_noise_value = 0;
-static char last_calc_raw1[6] = {0};
-static char last_calc_raw2[6] = {0};
-static char last_calc_raw3[6] = {0};
 int current_bg = 0;
 int current_calc_raw = 0;
+int current_calc_raw2 = 0;
+
 int current_calc_raw1 = 0;
+int current_calc_raw12 = 0;
+
 uint8_t currentBG_isMMOL = 100;
 int converted_bgDelta = 0;
 static char current_values[25] = {0};
@@ -158,9 +147,12 @@ uint8_t HaveCalcRaw = 100;
 
 // global BG snooze timer
 static uint8_t lastAlertTime = 0;
+static uint8_t lastAlertTime2 = 0;
 
 // global special value alert
 static uint8_t specvalue_alert = 100;
+static uint8_t specvalue_alert2 = 100;
+
 // global overwrite variables for vibrating when hit a specific BG if already in a snooze
 static uint8_t specvalue_overwrite = 100;
 static uint8_t hypolow_overwrite = 100;
@@ -1388,7 +1380,6 @@ void happymsg_animation_started(Animation *animation, void *data) {
     
     text_layer_set_text(message_layer, current_bg_delta);
     //text_layer_set_text(cgmtime_layer, "");
-    //create_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
     
 } // end happymsg_animation_started
 
@@ -1862,24 +1853,8 @@ static void load_bg() {
             } // TurnOffVibrationsCalcRaw
             
             // use calculated raw values in BG field; if different cascade down so we have last three values
-            if (current_calc_raw != current_calc_raw1) {
-                strncpy(last_calc_raw3, last_calc_raw2, BG_BUFFER_SIZE);
-                strncpy(last_calc_raw2, last_calc_raw1, BG_BUFFER_SIZE);
-                strncpy(last_calc_raw1, last_calc_raw, BG_BUFFER_SIZE);
-                current_calc_raw1 = current_calc_raw;
-            }
+            
         }
-        else {
-            // if not in special values or don't have calculated raw, blank out the fields
-            strncpy(last_calc_raw1, " ", BG_BUFFER_SIZE);
-            strncpy(last_calc_raw2, " ", BG_BUFFER_SIZE);
-            strncpy(last_calc_raw3, " ", BG_BUFFER_SIZE);
-        }
-        
-        // set bg field accordingly for calculated raw layer
-        text_layer_set_text(calcraw_last1_layer, last_calc_raw1);
-        text_layer_set_text(calcraw_last2_layer, last_calc_raw2);
-        text_layer_set_text(calcraw_last3_layer, last_calc_raw3);
         
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, START VIBRATE, CURRENT_BG: %d LAST_BG: %s ", current_bg, last_bg);
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, START VIBRATE, CURRENT_CALC_RAW: %d LAST_CALC_RAW: %s ", current_calc_raw, last_calc_raw);
@@ -2837,11 +2812,11 @@ static void circle_update_proc(Layer *this_layer, GContext *ctx) {
     graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), 53);
     graphics_context_set_fill_color(ctx, DARK);
-    graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
+    graphics_fill_rect(ctx, GRect(2, 2, 139, 69), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), s_radius);
     graphics_context_set_fill_color(ctx, GColorWhite);
     //graphics_fill_circle(ctx, GPoint(90, 75), 46);
-      graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
+      graphics_fill_rect(ctx, GRect(4, 4, 136, 66), 2, GCornerNone);  
     /*graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_circle(ctx, GPoint(70, 75), 53);
     graphics_context_set_fill_color(ctx, DARK);
@@ -3041,29 +3016,6 @@ void window_load_cgm(Window *window_cgm) {
 #endif
     text_layer_set_text_color(message_layer, DARK);
     
-    // CALCULATED RAW INSTEAD OF BG - LAST VALUE (1) MOVED OFF SCREEN CAUSE IT WAS REDUNDANT
-#ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&calcraw_last1_layer, GRect(36, 10, 40, 2), FONT_KEY_GOTHIC_24_BOLD);
-    text_layer_set_text_alignment(calcraw_last1_layer, GTextAlignmentCenter);
-#else
-    window_cgm_add_text_layer(&calcraw_last1_layer, GRect(200, -7, 40, 25), FONT_KEY_GOTHIC_24_BOLD);
-    text_layer_set_text_alignment(calcraw_last1_layer, GTextAlignmentLeft);
-    
-#endif
- 
-    // CALCULATED RAW INSTEAD OF BG - 2ND LAST VALUE (2)
-#ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&calcraw_last2_layer, GRect(76, -4, 40, 25), FONT_KEY_GOTHIC_24_BOLD);
-#else
-    window_cgm_add_text_layer(&calcraw_last2_layer, GRect(15, 12, 40, 25), FONT_KEY_GOTHIC_24_BOLD);
-#endif
-  
-    // CALCULATED RAW INSTEAD OF BG - 3RD LAST VALUE (3)
-#ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&calcraw_last3_layer, GRect(118, 10, 40, 25), FONT_KEY_GOTHIC_24_BOLD);
-#else
-    window_cgm_add_text_layer(&calcraw_last3_layer, GRect(-1, -7, 40, 25), FONT_KEY_GOTHIC_24_BOLD);
-#endif
     
     // PERFECT BG
 #ifdef PBL_PLATFORM_CHALK
@@ -3072,14 +3024,7 @@ void window_load_cgm(Window *window_cgm) {
     window_cgm_add_bitmap_layer(&perfectbg_layer, GRect(-3, 53, 144, 80), GAlignTopLeft);
 #endif
     
-    // CGM TIME AGO ICON
-#ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_bitmap_layer(&cgmicon_layer, GRect(125, 110, 40, 24), GAlignRight);
-#else
-    window_cgm_add_bitmap_layer(&cgmicon_layer, GRect(70, 2, 40, 24), GAlignRight);
-#endif
-  
-    
+
     // CGM TIME AGO READING
 #ifdef PBL_PLATFORM_CHALK
     window_cgm_add_text_layer(&cgmtime_layer, GRect(108, 125, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
@@ -3159,26 +3104,21 @@ void window_unload_cgm(Window *window_cgm) {
     app_sync_deinit(&sync_cgm);
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW UNLOAD, DESTROY GBITMAPS IF EXIST");
     destroy_null_GBitmap(&icon_bitmap);
-    destroy_null_GBitmap(&cgmicon_bitmap);
+    destroy_null_GBitmap(&icon_bitmap2);
+
     destroy_null_GBitmap(&specialvalue_bitmap);
     destroy_null_GBitmap(&perfectbg_bitmap);
-//    destroy_null_GBitmap(&rig_icon_bitmap);
     destroy_null_GBitmap(&battery_bitmap);
     
     destroy_null_Layer(&circle_layer);
-//#ifdef PBL_COLOR
-//    destroy_null_Layer(&rig_line_layer);
-//#endif
     destroy_null_Layer(&batteryGraphicsLayer);
     gpath_destroy(batteryOutlinePath);
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW UNLOAD, DESTROY BITMAPS IF EXIST");
     destroy_null_BitmapLayer(&icon_layer);
-    destroy_null_BitmapLayer(&cgmicon_layer);
+    destroy_null_BitmapLayer(&icon_layer2);
+
     destroy_null_BitmapLayer(&perfectbg_layer);
     destroy_null_BitmapLayer(&battery_layer);
-//#ifdef PBL_COLOR
-  //  destroy_null_BitmapLayer(&rig_icon_layer);
-//#endif
     
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW UNLOAD, DESTROY TEXT LAYERS IF EXIST");
     destroy_null_TextLayer(&tophalf_layer);
@@ -3187,9 +3127,8 @@ void window_unload_cgm(Window *window_cgm) {
 
     destroy_null_TextLayer(&cgmtime_layer);
     destroy_null_TextLayer(&message_layer);
-  #ifdef PBL_BW
+    destroy_null_TextLayer(&message_layer2);
     destroy_null_TextLayer(&rig_battlevel_layer);
-  #endif
     destroy_null_TextLayer(&watch_battlevel_layer);
     destroy_null_TextLayer(&t1dname_layer);
     destroy_null_TextLayer(&time_watch_layer);
@@ -3198,9 +3137,7 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&raw_calc_layer);
     destroy_null_TextLayer(&raw_unfilt_layer);
     destroy_null_TextLayer(&noise_layer);
-    destroy_null_TextLayer(&calcraw_last1_layer);
-    destroy_null_TextLayer(&calcraw_last2_layer);
-    destroy_null_TextLayer(&calcraw_last3_layer);
+  
     //  APP_LOG(APP_LOG_LEVEL_INFO, "window_cgm_UNLOAD Heap Used: %d, Free: %d ", heap_bytes_used(), heap_bytes_free());
 }
 
