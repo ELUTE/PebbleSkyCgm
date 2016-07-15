@@ -108,10 +108,14 @@ int timeformat = 0;
 bool bt_connected=true;
 // global variables for sync tuple functions
 static char current_icon[2] = {0};
+static char current_icon2[2] = {0};
+
 static char last_bg[6] = {0};
 static char last_bg2[6] = {0};
 
 static char last_battlevel[4] = {0};
+static char last_battlevel2[4] = {0};
+
 
 uint32_t current_cgm_time = 0;
 uint32_t stored_cgm_time = 0;
@@ -154,6 +158,8 @@ int current_calc_raw12 = 0;
 
 uint8_t currentBG_isMMOL = 100;
 int converted_bgDelta = 0;
+int converted_bgDelta2 = 0;
+
 static char current_values[25] = {0};
 uint8_t HaveCalcRaw = 100;
 
@@ -2732,9 +2738,9 @@ static void load_rig_battlevel() {
     else { strncpy(formatted_battlevel, " ", BATTLEVEL_LABEL_SIZE); }
     snprintf(battlevel_percent, BATTLEVEL_PERCENT_SIZE, "%i%%", current_battlevel);
     strcat(formatted_battlevel, battlevel_percent);
-  #ifdef PBL_BW
+  //#ifdef PBL_BW
     text_layer_set_text(rig_battlevel_layer, formatted_battlevel);
-  #endif
+  //#endif
 /*#ifdef PBL_COLOR
    // create_update_bitmap(&rig_icon_bitmap,rig_icon_layer,SPECIAL_VALUE_ICONS[GAUGE_ICON_INDX]);
     //rig_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_GAUGE);
@@ -2866,7 +2872,7 @@ static void load_noise() {
             strncpy(formatted_noise, " ", NOISE_FORMATTED_SIZE);
             break;
         default:;
-            strncpy(formatted_noise, "ERR", NOISE_FORMATTED_SIZE);
+            strncpy(formatted_noise, " ", NOISE_FORMATTED_SIZE);
     }
     
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, NOISE: %s ", formatted_noise);
@@ -3214,12 +3220,12 @@ static void circle_update_proc(Layer *this_layer, GContext *ctx) {
   graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_rect(ctx, GRect(2, 2, 140, 70), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), 53);
-    graphics_context_set_fill_color(ctx, DARK);
+    graphics_context_set_stroke_color(ctx, DARK);
     graphics_fill_rect(ctx, GRect(2, 2, 140, 69), 2, GCornerNone);  
   //graphics_fill_circle(ctx, GPoint(90, 75), s_radius);
-    graphics_context_set_fill_color(ctx, GColorWhite);
+    graphics_context_set_stroke_color(ctx, DARK);
     //graphics_fill_circle(ctx, GPoint(90, 75), 46);
-      graphics_fill_rect(ctx, GRect(4, 4, 136, 66), 2, GCornerNone);  
+      graphics_fill_rect(ctx, GRect(2, 75, 140, 69), 2, GCornerNone);  
     /*graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_circle(ctx, GPoint(70, 75), 53);
     graphics_context_set_fill_color(ctx, DARK);
@@ -3299,15 +3305,15 @@ void window_load_cgm(Window *window_cgm) {
     
     // NOISE
 #ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&noise_layer, GRect(71, 10, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
+    window_cgm_add_text_layer(&noise_layer, GRect(71, -5, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
 #else
-    window_cgm_add_text_layer(&noise_layer, GRect(51, 13, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
+    window_cgm_add_text_layer(&noise_layer, GRect(51, -5, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
 #endif
     text_layer_set_text_color(noise_layer, DARK);
    //#ifdef PBL_BW 
   
 // RIG BATTERY LEVEL
-    window_cgm_add_text_layer(&rig_battlevel_layer, GRect(2, 120, 55, 50), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&rig_battlevel_layer, GRect(0, 53, 55, 25), FONT_KEY_GOTHIC_18_BOLD);
     text_layer_set_text_color(rig_battlevel_layer, DARK);
   
    // #endif
@@ -3330,28 +3336,7 @@ void window_load_cgm(Window *window_cgm) {
     window_cgm_add_bitmap_layer(&battery_layer, GRect(110, 155, 21, 9), GAlignCenter);
     //battery_layer = bitmap_layer_create(GRect(110, 155, 21, 9));
 #endif
-    // bitmap_layer_set_background_color(battery_layer, GColorClear);
-    // bitmap_layer_set_compositing_mode(battery_layer, GCompOpSet);
-    //layer_add_child(window_layer_cgm, bitmap_layer_get_layer(battery_layer));
-//#ifdef PBL_COLOR
-  /*
-    //RIG BATTERY ICON
-#ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_bitmap_layer(&rig_icon_layer, GRect(0, 93, 65, 56), GAlignCenter);
-    //rig_icon_layer = bitmap_layer_create(GRect(0, 93, 65, 56));
-#else
-    window_cgm_add_bitmap_layer(&rig_icon_layer, GRect(-5, 109, 65, 56), GAlignCenter);
-    //rig_icon_layer = bitmap_layer_create(GRect(-5, 109, 65, 56));
-#endif
-    //bitmap_layer_set_compositing_mode(rig_icon_layer, GCompOpSet);
-    //layer_set_update_proc(rig_icon_layer, point_layer_update_callback);
-    //layer_add_child(window_layer_cgm, bitmap_layer_get_layer(rig_icon_layer));
-    
-    //RIG LINE LAYER
-    rig_line_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
-    layer_add_child(window_layer_cgm, rig_line_layer);
-#endif
-    */
+
     // WATCH BATTERY LEVEL TEXT
 #ifdef PBL_PLATFORM_CHALK
     window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 158, 31, 15), FONT_KEY_GOTHIC_14_BOLD);
@@ -3363,8 +3348,7 @@ void window_load_cgm(Window *window_cgm) {
     //layer_add_child(window_layer_cgm, text_layer_get_layer(watch_battlevel_layer));
     
     // T1D NAME/IOB
-      t1dname_layer = text_layer_create(GRect(Vertical, Horizontal, 140, 140));
-//#endif
+      t1dname_layer = text_layer_create(GRect(0, 65, 85, 24));
 #ifdef PBL_ROUND
     text_layer_set_text_color(t1dname_layer, DARK);
 #endif
@@ -3379,46 +3363,60 @@ void window_load_cgm(Window *window_cgm) {
 #else
     window_cgm_add_bitmap_layer(&icon_layer, GRect(13, 3, 125, 135), GAlignLeft);
 #endif
+  
+  // ICON, ARROW OR SPECIAL VALUE2
+#ifdef PBL_PLATFORM_CHALK
+    window_cgm_add_bitmap_layer(&icon_layer2, GRect(33, 53, 135, 144), GAlignLeft);
+#else
+    window_cgm_add_bitmap_layer(&icon_layer2, GRect(13, 53, 125, 135), GAlignLeft);
+#endif
     
     // RAW CALCULATED
 #ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&raw_calc_layer, GRect(53, 37, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&raw_calc_layer, GRect(53, -5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
 #else
-    window_cgm_add_text_layer(&raw_calc_layer, GRect(33, 37, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&raw_calc_layer, GRect(33, -5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
 #endif
     text_layer_set_text_color(raw_calc_layer, DARK);
    
     // RAW UNFILT
 #ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&raw_unfilt_layer, GRect(94, 37, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&raw_unfilt_layer, GRect(94, -5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
 #else
-    window_cgm_add_text_layer(&raw_unfilt_layer, GRect(74, 37, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&raw_unfilt_layer, GRect(74, -5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
 #endif
     text_layer_set_text_color(raw_unfilt_layer, DARK);
     // BG
 #ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&bg_layer, GRect(17, 53, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+    window_cgm_add_text_layer(&bg_layer, GRect(17, 12, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 #else
-    window_cgm_add_text_layer(&bg_layer, GRect(-3, 53, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+    window_cgm_add_text_layer(&bg_layer, GRect(-3, 12, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 #endif
     text_layer_set_text_color(bg_layer, INRANGE);
   
       // BG 2
 #ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&bg_layer2, GRect(17, 53, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+    window_cgm_add_text_layer(&bg_layer2, GRect(17, 78, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 #else
-    window_cgm_add_text_layer(&bg_layer2, GRect(-3, 53, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+    window_cgm_add_text_layer(&bg_layer2, GRect(-3, 78, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 #endif
     text_layer_set_text_color(bg_layer2, INRANGE);
     
     // DELTA BG / MESSAGE LAYER
 #ifdef PBL_PLATFORM_CHALK
-    window_cgm_add_text_layer(&message_layer, GRect(18, 90, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&message_layer, GRect(18, 48, 144, 25), FONT_KEY_GOTHIC_24_BOLD);
 #else
-    window_cgm_add_text_layer(&message_layer, GRect(-2, 90, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+    window_cgm_add_text_layer(&message_layer, GRect(-2, 48, 144, 25), FONT_KEY_GOTHIC_24_BOLD);
 #endif
     text_layer_set_text_color(message_layer, DARK);
-    
+  
+      // DELTA BG2 / MESSAGE LAYER2
+#ifdef PBL_PLATFORM_CHALK
+    window_cgm_add_text_layer(&message_layer2, GRect(18, 90, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+#else
+    window_cgm_add_text_layer(&message_layer2, GRect(-2, 90, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+#endif
+    text_layer_set_text_color(message_layer2, DARK);
     
     // PERFECT BG
 #ifdef PBL_PLATFORM_CHALK
@@ -3426,7 +3424,6 @@ void window_load_cgm(Window *window_cgm) {
 #else
     window_cgm_add_bitmap_layer(&perfectbg_layer, GRect(-3, 53, 144, 80), GAlignTopLeft);
 #endif
-    
 
     // CGM TIME AGO READING
 #ifdef PBL_PLATFORM_CHALK
@@ -3438,12 +3435,10 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(cgmtime_layer, DARK);
     text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
 #endif
-    
   
     // HAPPY MSG LAYER
 #ifdef PBL_PLATFORM_CHALK
     window_cgm_add_text_layer(&happymsg_layer, GRect(19, -3, 144, 80), FONT_KEY_GOTHIC_24_BOLD);
-
 #else
     window_cgm_add_text_layer(&happymsg_layer, GRect(-1, -3, 144, 80), FONT_KEY_GOTHIC_24_BOLD);
 #endif
