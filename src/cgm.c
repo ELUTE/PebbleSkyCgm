@@ -14,9 +14,15 @@
 #define BATTERY_OUTLINE_HEIGHT 8
 #endif
 
-#define BG_COLOR GColorDukeBlue
-#define DARK_COLOR GColorOxfordBlue
-#define LIGHT_COLOR GColorPictonBlue
+#define ROUGE PBL_IF_COLOR_ELSE(GColorDarkCandyAppleRed , GColorDarkGray)
+#define DARK_COLOR PBL_IF_COLOR_ELSE(GColorOxfordBlue, GColorBlack)
+#define LIGHT_COLOR PBL_IF_COLOR_ELSE(GColorPictonBlue, GColorWhite)
+#define MED PBL_IF_COLOR_ELSE(GColorChromeYellow , GColorLightGray)
+#define INRANGE PBL_IF_COLOR_ELSE(GColorMidnightGreen  , GColorDarkGray)
+
+//#define BG_COLOR GColorDukeBlue
+//#define DARK_COLOR GColorOxfordBlue
+//#define LIGHT_COLOR GColorPictonBlue
 #define GColorWhiteInit { GColorWhiteARGB8 }
 #define GColorDarkInit { GColorOxfordBlueARGB8 }
 #define GColorLightInit { GColorPictonBlueARGB8 }
@@ -80,7 +86,8 @@ uint8_t AppSyncErrAlert = 100;
 
 // Pebble needs additional 62 Bytes?!? Total 232; Pad with additional 60 bytes
 //June 24static uint8_t sync_buffer_cgm[292];
-static uint8_t sync_buffer_cgm[560];
+static uint8_t sync_buffer_cgm[400]; //was 560
+
 // variables for timers and time
 AppTimer *timer_cgm = NULL;
 AppTimer *BT_timer = NULL;
@@ -320,6 +327,9 @@ static const uint8_t APPSYNCANDMSG_RETRIES_MAX = 50;
 // This is number of minutes, so if set to 11 timeout is at 11 minutes
 static const uint8_t DATAOFFLINE_RETRIES_MAX = 14;
 
+//global variable for mode share
+uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
+
 enum CgmKey {
     CGM_ICON_KEY = 0x0, // TUPLE_CSTRING, MAX 2 BYTES (10)
     CGM_BG_KEY = 0x1, // TUPLE_CSTRING, MAX 4 BYTES (253 OR 22.2)
@@ -334,8 +344,9 @@ enum CgmKey {
     CGM_BGSX_KEY = 0xA, // TUPLE_CSTRING, MAX 28 BYTES
     CGM_BGTY_KEY = 0xB, // TUPLE_CSTRING, MAX 28 BYTES
     CGM_NOIZ_KEY = 0xC,
-    //CGM_MODE_SWITCH_KEY = 0xD, //Mode share
     CGM_COB_KEY = 0xD, // COB
+    CGM_MODE_SWITCH_KEY = 0xE, //Mode share
+
 
 }; 
 // TOTAL MESSAGE DATA 4x5+2+5+3+9+25+28+28 = 120 BYTES
@@ -365,12 +376,12 @@ static const uint8_t LOGOSPECIAL_ICON_INDX = 6;
 
 
 //ADD SHARE LOCATION VARIABLES
-/*uint8_t Vertical = 0;
+uint8_t Vertical = 0;
 uint8_t Horizontal =0;
 static const uint8_t SHARE_MODE = 1;
 static const uint8_t SHARE_NON_US_MODE = 2;
 static const uint8_t NIGHTSCOUT_MODE = 3;
-void load_mod();*/
+void load_mod();
 
 
 static char *translate_app_error(AppMessageResult result) {
@@ -608,7 +619,7 @@ static void set_container_image(GBitmap **bmp_image, BitmapLayer *bmp_layer, con
     if (old_image != NULL) {
         gbitmap_destroy(old_image);
     }
-        APP_LOG(APP_LOG_LEVEL_INFO, "1 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+       // APP_LOG(APP_LOG_LEVEL_INFO, "1 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 } 
 //END CONTAINER
@@ -835,26 +846,26 @@ static void batteryGraphicsLayerDraw( Layer *layer, GContext *ctx ) {
    #ifdef PBL_PLATFORM_CHALK
     graphics_context_set_stroke_color(ctx, GColorWhite);
    #else
-    graphics_context_set_stroke_color(ctx, GColorPictonBlue);
+    graphics_context_set_stroke_color(ctx, LIGHT_COLOR);
    #endif
     gpath_draw_outline(ctx, batteryOutlinePath);
 
     // Signify the percentage:
 
     if (batteryLevel <=50) {
-        graphics_context_set_fill_color(ctx, GColorDarkCandyAppleRed);
+        graphics_context_set_fill_color(ctx, ROUGE);
         graphics_fill_rect( ctx, GRect( 0, 0, (batteryLevel/100.) * BATTERY_OUTLINE_WIDTH, BATTERY_OUTLINE_HEIGHT ), 0, 0 );
     }
     else{
       #ifdef PBL_PLATFORM_CHALK
         graphics_context_set_fill_color(ctx, GColorWhite);
       #else
-        graphics_context_set_fill_color(ctx, GColorPictonBlue);
+        graphics_context_set_fill_color(ctx, LIGHT_COLOR);
 
       #endif
         graphics_fill_rect( ctx, GRect( 0, 0, (batteryLevel/100.) * BATTERY_OUTLINE_WIDTH, BATTERY_OUTLINE_HEIGHT ), 0, 0 );
     }
-      APP_LOG(APP_LOG_LEVEL_INFO, "3 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+     // APP_LOG(APP_LOG_LEVEL_INFO, "3 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 }
 
@@ -865,7 +876,7 @@ void handle_watch_battery_cgm(BatteryChargeState watch_charge_state) {
 
     if (watch_charge_state.is_charging) {
         //#ifdef PBL_ROUND
-        bitmap_layer_set_background_color(battery_layer, GColorMayGreen);
+        bitmap_layer_set_background_color(battery_layer, INRANGE);
     }
     else{
         bitmap_layer_set_background_color(battery_layer, GColorClear);
@@ -1016,7 +1027,7 @@ void sync_error_callback_cgm(DictionaryResult appsync_dict_error, AppMessageResu
   // NULL out pointers
   null_dict_buffer(&iter);
   null_context_buffer(&context);
-      APP_LOG(APP_LOG_LEVEL_INFO, "4 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "4 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 } // end sync_error_callback_cgm
 
@@ -1101,7 +1112,7 @@ static void load_icon() {
     // CODE START
     // set avatar
     //create_update_bitmap(&avatar_bitmap,avatar_layer,RESOURCE_ID_IMAGE_AVATAR);
-      APP_LOG(APP_LOG_LEVEL_INFO, "5 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD ICON code start : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
     // Got an icon value, check data offline condition, clear vibrate flag if needed
     if ( (strcmp(current_bg_delta, "OFF") < 0) || (strcmp(current_bg_delta, "OFF") > 0) ) {
@@ -1123,15 +1134,16 @@ static void load_icon() {
         else if (strcmp(current_icon, DOUBLEUP_ARROW) == 0) {
           
 #ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(116, 15));
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(129, 15));
 #else
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(116, 15));
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(120, 15));
 #endif
             DoubleDownAlert = 100;
-            text_layer_set_background_color(tophalf_layer, GColorChromeYellow);
+            text_layer_set_background_color(tophalf_layer, MED);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             
         }
+
         else if (strcmp(current_icon, SINGLEUP_ARROW) == 0) {
 #ifdef PBL_PLATFORM_CHALK
             set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],GPoint(134, 25));
@@ -1170,9 +1182,6 @@ static void load_icon() {
 #else
             set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],GPoint(113, 38));
 #endif
-            //create_update_bitmap(&icon_bitmap, icon_layer, ARROW_ICONS[PIXEL_ICON_INDX]);
-            //text_layer_set_background_color(tophalf_layer, GColorPictonBlue);
-            //layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, SINGLEDOWN_ARROW) == 0) {
@@ -1190,11 +1199,11 @@ static void load_icon() {
                 //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD ICON, ICON ARROW: DOUBLE DOWN");
                 alert_handler_cgm(DOUBLEDOWN_VIBE);
                 DoubleDownAlert = 111;
-                text_layer_set_background_color(tophalf_layer, GColorRed);
+                text_layer_set_background_color(tophalf_layer, ROUGE);
 #ifdef PBL_PLATFORM_CHALK
                 set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(128, 23));
 #else
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(114, 23));
+                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(120, 23));
 #endif
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
                 
@@ -1760,13 +1769,13 @@ static void load_bg() {
             if (current_bg < bg_ptr[SHOWLOW_BG_INDX]) {
                 //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG: SET TO LO");
                 if (bg_layer != NULL) { text_layer_set_text(bg_layer, "LO");
-                text_layer_set_text_color(bg_layer, GColorDarkCandyAppleRed);} //COLOUR BG LAYERS
+                text_layer_set_text_color(bg_layer, ROUGE);} //COLOUR BG LAYERS
 
             }
             else if (current_bg > bg_ptr[SHOWHIGH_BG_INDX]) {
                 //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG: SET TO HI");
                 if (bg_layer != NULL) { text_layer_set_text(bg_layer, "HI"); 
-                text_layer_set_text_color(bg_layer, GColorChromeYellow);} //COLOUR BG LAYERS}
+                text_layer_set_text_color(bg_layer, MED);} //COLOUR BG LAYERS}
                
             }
             //}
@@ -1832,7 +1841,7 @@ static void load_bg() {
                     } // HardCodeAllAnimations
 
                 } // HardCodeNoAnimations; end all animation code
-      APP_LOG(APP_LOG_LEVEL_INFO, "6 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "6 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             }  } // end bg checks (if special_value_bitmap)
 
@@ -1856,30 +1865,7 @@ static void load_bg() {
                 }
             } // TurnOffVibrationsCalcRaw
 
-            // use calculated raw values in BG field; if different cascade down so we have last three values
-           // if (current_calc_raw != current_calc_raw1) {
-           //     strncpy(last_calc_raw3, last_calc_raw2, BG_BUFFER_SIZE);
-           //     strncpy(last_calc_raw2, last_calc_raw1, BG_BUFFER_SIZE);
-           //     strncpy(last_calc_raw1, last_calc_raw, BG_BUFFER_SIZE);
-           //     current_calc_raw1 = current_calc_raw;
-          //  }
-        //}
-
-       // else {
-            // if not in special values or don't have calculated raw, blank out the fields
-       //     strncpy(last_calc_raw1, " ", BG_BUFFER_SIZE);
-       //     strncpy(last_calc_raw2, " ", BG_BUFFER_SIZE);
-      //      strncpy(last_calc_raw3, " ", BG_BUFFER_SIZE);
         }
-
-        // set bg field accordingly for calculated raw layer
-        //text_layer_set_text(calcraw_last1_layer, last_calc_raw1);
-        //text_layer_set_text(calcraw_last2_layer, last_calc_raw2);
-        //text_layer_set_text(calcraw_last3_layer, last_calc_raw3);
-
-        //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, START VIBRATE, CURRENT_BG: %d LAST_BG: %s ", current_bg, last_bg);
-        //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, START VIBRATE, CURRENT_CALC_RAW: %d LAST_CALC_RAW: %s ", current_calc_raw, last_calc_raw);
-        //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, START VIBRATE, CALC_RAW 2: %d FORMAT CALC RAW 2: %s ", current_calc_raw2, formatted_calc_raw2);
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, START VIBRATE, CALC_RAW 3: %d FORMAT CALC RAW 2: %s ", current_calc_raw3, formatted_calc_raw3);
 
         bg_vibrator (0, bg_ptr[SPECVALUE_BG_INDX], SPECVALUE_SNZ_MIN, &specvalue_overwrite, SPECVALUE_VIBE);
@@ -1905,18 +1891,18 @@ static void load_bg() {
         layer_mark_dirty(text_layer_get_layer(bg_layer));
     }
     else if (current_bg < bg_ptr[LOW_BG_INDX]){
-        text_layer_set_text_color(bg_layer, GColorDarkCandyAppleRed);
+        text_layer_set_text_color(bg_layer, ROUGE);
         layer_mark_dirty(text_layer_get_layer(bg_layer));
     }
 
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, FUNCTION OUT");
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG, FUNCTION OUT, SNOOZE VALUE: %d", lastAlertTime);
     else{
-        text_layer_set_text_color(bg_layer, GColorMidnightGreen);
+        text_layer_set_text_color(bg_layer, INRANGE);
 
         layer_mark_dirty(text_layer_get_layer(bg_layer));
     }
-        APP_LOG(APP_LOG_LEVEL_INFO, "7 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+       // APP_LOG(APP_LOG_LEVEL_INFO, "7 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 } // end load_bg
 
@@ -2371,7 +2357,7 @@ static void load_rig_battlevel() {
     snprintf(battlevel_percent, sizeof(battlevel_percent), "%i%%", current_battlevel);
     strcat(formatted_battlevel, battlevel_percent);
     text_layer_set_text(rig_battlevel_layer, formatted_battlevel);
-      APP_LOG(APP_LOG_LEVEL_INFO, "8 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "8 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 } 
 
@@ -2479,14 +2465,14 @@ static void load_color() {
   
   //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD COLOR, FUNCTION START");
 //  int number_of_colors = 2;
-  
+          
   #ifdef PBL_PLATFORM_APLITE
     //number_of_colors = 2;
     top_color = GColorWhite;
     bottom_color = GColorWhite;
-    text_default_color = GColorBlack;
-    text_warning_color = GColorBlack;
-    text_urgent_color = GColorBlack;
+    text_color = GColorBlack;
+    chart_color = GColorWhite;
+    //text_urgent_color = GColorBlack;
   
   #else
   // can select colors
@@ -2572,7 +2558,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             strncpy(current_icon, new_tuple->value->cstring, ICON_MSGSTR_SIZE);
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, ICON VALUE: %s ", current_icon);
             load_icon();
-                  APP_LOG(APP_LOG_LEVEL_INFO, "icon key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "icon key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_ICON_KEY
 
@@ -2581,7 +2567,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             strncpy(last_bg, new_tuple->value->cstring, BG_MSGSTR_SIZE);
             // APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BG VALUE: %s ", last_bg);
             load_bg();
-                            APP_LOG(APP_LOG_LEVEL_INFO, "bg key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "bg key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_BG_KEY
 
@@ -2636,7 +2622,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                     // reset outage flag
                     need_to_reset_outage_flag = 100;
                 }
-                              APP_LOG(APP_LOG_LEVEL_INFO, "tcgm key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+              //APP_LOG(APP_LOG_LEVEL_INFO, "tcgm key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             }
           
@@ -2648,7 +2634,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             current_app_time = new_tuple->value->uint32;
            // APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, APP TIME VALUE: %lu ", current_app_time);
             load_apptime();
-                            APP_LOG(APP_LOG_LEVEL_INFO, "tapp key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+             //APP_LOG(APP_LOG_LEVEL_INFO, "tapp key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_TAPP_KEY
 
@@ -2657,7 +2643,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             strncpy(current_bg_delta, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BG DELTA VALUE: %s ", current_bg_delta);
             load_bg_delta();
-                            APP_LOG(APP_LOG_LEVEL_INFO, "dlta key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+             //APP_LOG(APP_LOG_LEVEL_INFO, "dlta key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_DLTA_KEY
           
@@ -2666,11 +2652,11 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             strncpy(last_battlevel, new_tuple->value->cstring, BATTLEVEL_MSGSTR_SIZE);
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, BATTERY LEVEL VALUE: %s ", last_battlevel);
             load_rig_battlevel();
-                            APP_LOG(APP_LOG_LEVEL_INFO, "ubat key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "ubat key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_UBAT_KEY
 
-               case CGM_NAME_KEY:;
+          case CGM_NAME_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: T1D NAME");
             strncpy(current_name, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
             text_layer_set_text(t1dname_layer, current_name);
@@ -2686,16 +2672,14 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                 //layer_set_hidden((Layer*)name_circle_layer, false);
                 //layer_set_hidden((Layer*)t1dname_layer,false);
             }
-                              APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
-
-           
+            //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             break; // break for CGM_NAME_KEY
 
         case CGM_VALS_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: VALUES");
             strncpy(current_values, new_tuple->value->cstring, VALUE_MSGSTR_SIZE);
             load_values();
-                            APP_LOG(APP_LOG_LEVEL_INFO, "vals key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "vals key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             load_color();
 
             break; // break for CGM_VALS_KEY
@@ -2711,7 +2695,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                 HaveCalcRaw = 111;
             }  
             text_layer_set_text(raw_calc_layer, last_calc_raw);    
-                  APP_LOG(APP_LOG_LEVEL_INFO, "clrw key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "clrw key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_CLRW_KEY
 
@@ -2722,45 +2706,46 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                 strncpy(last_raw_unfilt, " ", BG_MSGSTR_SIZE);
             }
             text_layer_set_text(raw_unfilt_layer, last_raw_unfilt);
-            APP_LOG(APP_LOG_LEVEL_INFO, "rwuf key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "rwuf key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
   
           break; // break for CGM_RWUF_KEY
 
         case CGM_BGSX_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BGS X AXIS");
              //APP_LOG(APP_LOG_LEVEL_INFO, "CGM_BGSX_KEY: %s", new_tuple->value->cstring);
-                      APP_LOG(APP_LOG_LEVEL_INFO, "bgsx1 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+          //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx START key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
   
           if(bgsx_array)
             {
                 free(bgsx_array);
                 bgsx_array = NULL;
             }
-                        APP_LOG(APP_LOG_LEVEL_INFO, "bgsx2 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+           //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx AFTER FREE BGSX ARRAY key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             char* nonconst = (char*)malloc(sizeof(char) * new_tuple->length);
-                        APP_LOG(APP_LOG_LEVEL_INFO, "bgsx3 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx MALLOC key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             strcpy(nonconst, new_tuple->value->cstring);
-                      APP_LOG(APP_LOG_LEVEL_INFO, "bgsx4 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx STRCPY key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             ProcessingState* state = data_processor_create(nonconst, ',');
+            
             uint8_t num_strings = data_processor_count(state);
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "BG num: %i", num_strings);
-                      APP_LOG(APP_LOG_LEVEL_INFO, "bgsx5 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+             //APP_LOG(APP_LOG_LEVEL_INFO, "bgsxNUM STRINGS key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
   
           bgsx_array = (int*)malloc((num_strings-1)*sizeof(int));     
             for (uint8_t n = 0; n < num_strings; n += 1) {
                 if (n == 0) {
                     tag_raw = data_processor_get_int(state);
                     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Tag Raw : %i", tag_raw);
-                              APP_LOG(APP_LOG_LEVEL_INFO, "bgsx6 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+             //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx AFTER ARRAY key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
                 }
                 else {
                     bgsx_array[n-1] = data_processor_get_int(state);
                     //APP_LOG(APP_LOG_LEVEL_DEBUG, "BG Split: %i", bgs[n-1]);
-                              APP_LOG(APP_LOG_LEVEL_INFO, "bgsx7 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+                //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx7 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
                 }     
             }
@@ -2771,12 +2756,11 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 			        free(nonconst);
 
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CGM_BGSX_KEY counter: %d ", bgsx_array_counter);
-            APP_LOG(APP_LOG_LEVEL_INFO, "bgsx key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
   
           break;
 
         case CGM_BGTY_KEY:;
-           
                if(bgty_array)
             {
                 free(bgty_array);
@@ -2803,7 +2787,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           
             free(nonconst1);
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CGM_BGTY_KEY: %s ", new_tuple->value->cstring);
-            APP_LOG(APP_LOG_LEVEL_INFO, "bgty key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            //APP_LOG(APP_LOG_LEVEL_INFO, "bgty key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
           break;
           case CGM_NOIZ_KEY:;
                 //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: NOISE");
@@ -2830,6 +2814,18 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           //APP_LOG(APP_LOG_LEVEL_INFO, "cob key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
   
           break; // break for CGM_COB_KEY
+          case CGM_MODE_SWITCH_KEY:;
+                current_mode_value= new_tuple->value->uint8;
+                //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, MODE: %i ", current_mode_value);
+                
+                if(bg_layer != NULL)
+                {
+                    load_mod();
+                    //GRect bounds = layer_get_bounds(text_layer_get_layer(t1dname_layer));
+                    //APP_LOG(APP_LOG_LEVEL_DEBUG, "ORIGIN, x: %d, y:%d ", bounds.origin.x, bounds.origin.y);
+                    layer_set_bounds(text_layer_get_layer(bg_layer), GRect(Horizontal,Vertical, 102, 40));
+                }
+                break;
           
         default:
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "new_tuple->value->cstring: %s" ,new_tuple->value->cstring);
@@ -2859,7 +2855,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
   null_tuple_buffer(&new_tuple);
   null_tuple_buffer(&old_tuple);
   null_context_buffer(&context);
-        APP_LOG(APP_LOG_LEVEL_INFO, "9 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+        //APP_LOG(APP_LOG_LEVEL_INFO, "9 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 } // end sync_tuple_changed_callback_cgm()
 
@@ -2891,7 +2887,7 @@ bt_connected = connection_service_peek_pebble_app_connection(); //was bluetooth_
         //APP_LOG(APP_LOG_LEVEL_INFO, "WATCH SENDCMD OPEN ERROR");
         null_dict_buffer(&iter);
         sync_error_callback_cgm(sendcmd_dicterr, sendcmd_openerr, iter);
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD OPEN ERR CODE: %i RES: %s", sendcmd_openerr, translate_app_error(sendcmd_openerr));
+        //APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD OPEN ERR CODE: %i RES: %s", sendcmd_openerr, translate_app_error(sendcmd_openerr));
         return;
     }
 
@@ -2900,7 +2896,7 @@ bt_connected = connection_service_peek_pebble_app_connection(); //was bluetooth_
 
     if (sendcmd_senderr != APP_MSG_OK) {
         //APP_LOG(APP_LOG_LEVEL_INFO, "WATCH SENDCMD SEND ERROR");
-        APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD SEND ERR CODE: %i RES: %s", sendcmd_senderr, translate_app_error(sendcmd_senderr));
+        //APP_LOG(APP_LOG_LEVEL_DEBUG, "WATCH SENDCMD SEND ERR CODE: %i RES: %s", sendcmd_senderr, translate_app_error(sendcmd_senderr));
         null_dict_buffer(&iter);
         sync_error_callback_cgm(sendcmd_dicterr, sendcmd_senderr, iter);
 
@@ -2966,84 +2962,31 @@ void handle_minute_tick_cgm(struct tm* tick_time_cgm, TimeUnits units_changed_cg
 } // end handle_minute_tick_cgm
 
 
-//CLICK HANDLERS
-//static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-//  text_layer_set_text(tophalf_layer, " ");
-
-// init the window pointer to NULL if it needs it
-//if (window_chart != NULL) {
-//  window_chart = NULL;
-//}
-
-// Format and push window
-//    window_chart = window_create();
-//  window_set_background_color(window_chart, GColorPictonBlue);
-
-//window_set_window_handlers(window_chart, (WindowHandlers){
-//  .load   = window_load_chart,
-//    .unload = window_unload_chart,
-// });  
-//    const bool animated_chart = true;
-//    window_stack_push(window_chart, 
-//        animated_chart);
-//}
-
-
-//static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
-// text_layer_set_text(tophalf_layer, " ");
-//}
-
-//static void click_config_provider(void *context) {
-// Register the ClickHandlers
-//    window_single_click_subscribe(BUTTON_ID_UP, up_click_handler);
-//window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
-//window_single_click_subscribe(BUTTON_ID_DOWN, down_click_handler);
-//}
-
-//static void exit_click_handler (ClickRecognizerRef recognizer, void *context) {
-//  window_stack_pop_all(true); // Exit app
-//}
 //Name field moves based on Nightscout/Share
-/*void load_mod(){
+void load_mod(){
 
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d", current_mode_value);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d", current_mode_value);
     if (current_mode_value == NIGHTSCOUT_MODE) {
 #ifdef PBL_ROUND 
-        Vertical = 0;
-        Horizontal = 57;
+        Vertical = 11;
+        Horizontal = 19;
 #else
-        Vertical = 0;
-        Horizontal = 3;
+        Vertical = 10;
+        Horizontal = 11;
 #endif
     }
     else
     {
 #ifdef PBL_ROUND
-        Vertical = 22;
-        Horizontal = 11;
+        Vertical = 8;
+        Horizontal = 19;
 #else
-        Vertical = 15;
+        Vertical = 8;
         Horizontal = 11;
 #endif
     }
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d, Vertical: %d Horizontal: %d", current_mode_value, Vertical, Horizontal);
-}*/
-/*static void fill_rect_gray(GContext *ctx, GRect bounds, GColor previous_color) {
-#ifdef PBL_COLOR
-  graphics_context_set_fill_color(ctx, GColorLightGray);
-  graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-  graphics_context_set_fill_color(ctx, previous_color);
-#else
-  // XXX: remove this after migrating to SDK 3.8+
-  for(uint8_t x = bounds.origin.x; x < bounds.origin.x + bounds.size.w; x++) {
-    for(uint8_t y = bounds.origin.y; y < bounds.origin.y + bounds.size.h; y++) {
-      if ((x + y) % 2 == 0) {
-        graphics_draw_pixel(ctx, GPoint(x, y));
-      }
-    }
-  }
-#endif
-}*/
+    //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d, Vertical: %d Horizontal: %d", current_mode_value, Vertical, Horizontal);
+}
 
 void window_cgm_add_text_layer (TextLayer **cgm_text_layer, GRect cgm_text_layer_pos, char *cgm_text_font) {
   
@@ -3096,59 +3039,36 @@ void window_load_cgm(Window *window_cgm) {
 
 // TIME; CURRENT ACTUAL TIME FROM WATCH
       #ifdef PBL_PLATFORM_CHALK
-      window_cgm_add_text_layer(&time_watch_layer, GRect(0, 142, 180, 30), FONT_KEY_BITHAM_30_BLACK);//CHRISTINE
-
-      //CHRISTINEtime_watch_layer = text_layer_create(GRect(0, 142, 180, 30));
-      //CHRISTINEtext_layer_set_font(time_watch_layer, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+      window_cgm_add_text_layer(&time_watch_layer, GRect(0, 141, 180, 30), FONT_KEY_BITHAM_30_BLACK);//CHRISTINE
       #else
       window_cgm_add_text_layer(&time_watch_layer, GRect(0, 139, 144, 30), FONT_KEY_GOTHIC_28_BOLD);//CHRISTINE
-
-      //CHRISTINEtime_watch_layer = text_layer_create(GRect(0, 139, 144, 30));
-      //CHRISTINEtext_layer_set_font(time_watch_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-
       #endif
       text_layer_set_text_color(time_watch_layer, GColorWhite);
-    //CHRISTINE text_layer_set_background_color(time_watch_layer, GColorClear);
-    //CHRISTINE text_layer_set_text_alignment(time_watch_layer, GTextAlignmentCenter);
-    //CHRISTINE layer_add_child(window_layer_cgm, text_layer_get_layer(time_watch_layer));
 
 // DATE
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&date_app_layer, GRect(55, 131, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
-        //date_app_layer = text_layer_create(GRect(55, 131, 50, 22));
+        window_cgm_add_text_layer(&date_app_layer, GRect(55, 130, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
         text_layer_set_text_color(date_app_layer, GColorWhite);
     #else
         window_cgm_add_text_layer(&date_app_layer, GRect(-1, 147, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
-        //date_app_layer = text_layer_create(GRect(-1, 147, 50, 22));
         text_layer_set_text_color(date_app_layer, GColorPictonBlue);
     #endif
-        //text_layer_set_background_color(date_app_layer, GColorClear);
-        //text_layer_set_font(date_app_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-        //text_layer_set_text_alignment(date_app_layer, GTextAlignmentCenter);
         draw_date_from_app();
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(date_app_layer));
 
 // TOPHALF
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&tophalf_layer, GRect(0, 0, 200, 68), FONT_KEY_GOTHIC_28_BOLD);
-//tophalf_layer = text_layer_create(GRect(0, 0, 200, 68));
     #else
         window_cgm_add_text_layer(&tophalf_layer, GRect(0, 0, 145, 77), FONT_KEY_GOTHIC_28_BOLD);
-//tophalf_layer = text_layer_create(GRect(0, 0, 145, 77));
     #endif
-        //text_layer_set_text_color(tophalf_layer, GColorBlack);
         text_layer_set_background_color(tophalf_layer, GColorWhite);
-        //text_layer_set_font(tophalf_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-        //text_layer_set_text_alignment(tophalf_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(tophalf_layer));
-
+     
 
 //NAME CIRCLE LAYER
         name_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
         layer_add_child(window_layer_cgm, name_circle_layer);
         layer_set_update_proc(name_circle_layer, name_circle_update_proc);
         layer_set_hidden(name_circle_layer, true);
-        //June20layer_set_hidden((Layer*)name_circle_layer,true);
 
 //CIRCLE LAYER
         circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
@@ -3160,39 +3080,25 @@ void window_load_cgm(Window *window_cgm) {
         layer_add_child(window_layer_cgm, cob_circle_layer);
         layer_set_update_proc(cob_circle_layer, cob_circle_update_proc);
         layer_set_hidden(cob_circle_layer, true);
-        //June20layer_set_hidden((Layer*)cob_circle_layer,true);
 
 // NOISE
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&noise_layer, GRect(71, -15, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
-//noise_layer = text_layer_create(GRect(71, 5, 40, 10));
     #else
         window_cgm_add_text_layer(&noise_layer, GRect(54, -16, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
-//noise_layer = text_layer_create(GRect(71, 6, 40, 10));
     #endif
-        //text_layer_set_text_color(noise_layer, DARK_COLOR);
-        //text_layer_set_background_color(noise_layer, GColorClear);
-        //text_layer_set_font(noise_layer, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
-        //text_layer_set_text_alignment(noise_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(noise_layer));
-
+      
 // RIG BATTERY LEVEL
 #ifdef PBL_PLATFORM_CHALK
 window_cgm_add_text_layer(&rig_battlevel_layer, GRect(2, 66, 50, 50), FONT_KEY_GOTHIC_18_BOLD);//CHRISTINE
-//rig_battlevel_layer = text_layer_create(GRect(2, 66, 50, 50));
 #else
 window_cgm_add_text_layer(&rig_battlevel_layer, GRect(8, 74, 45, 50), FONT_KEY_GOTHIC_18_BOLD);//CHRISTINE
-//rig_battlevel_layer = text_layer_create(GRect(8, 74, 45, 50));
 #endif
 text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
-//text_layer_set_background_color(rig_battlevel_layer, GColorClear);
-//text_layer_set_font(rig_battlevel_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-//text_layer_set_text_alignment(rig_battlevel_layer, GTextAlignmentCenter);
-//layer_add_child(window_layer_cgm, text_layer_get_layer(rig_battlevel_layer));
 
 //WATCH BATTERY ICON LAYER
     #ifdef PBL_PLATFORM_CHALK
-        batteryGraphicsLayer = layer_create(GRect(110, 140, 31, 15));
+        batteryGraphicsLayer = layer_create(GRect(110, 139, 31, 15));
     #else
         batteryGraphicsLayer = layer_create(GRect(110, 155, 31, 15));
     #endif
@@ -3202,211 +3108,85 @@ text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
 
 // WATCH CHARGING ICON
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&battery_layer, GRect(110, 140, 14, 6), GAlignCenter); 
-        // battery_layer = bitmap_layer_create(GRect(110, 140, 14, 6));
+        window_cgm_add_bitmap_layer(&battery_layer, GRect(110, 139, 14, 6), GAlignCenter); 
     #else
         window_cgm_add_bitmap_layer(&battery_layer, GRect(110, 155, 21, 9), GAlignCenter); 
-        //battery_layer = bitmap_layer_create(GRect(110, 155, 21, 9));
     #endif
-        //bitmap_layer_set_background_color(battery_layer, GColorClear);
-        //bitmap_layer_set_compositing_mode(battery_layer, GCompOpSet);
-        //layer_add_child(window_layer_cgm, bitmap_layer_get_layer(battery_layer));
-
+      
 // COB
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&cob_layer, GRect(22, 135, 40, 28), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//cob_layer = text_layer_create(GRect(22, 135, 40, 28));
     #else
         window_cgm_add_text_layer(&cob_layer, GRect(-12, 47, 60 , 30), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//cob_layer = text_layer_create(GRect(-12, 47, 60 , 30));
     #endif
-        //text_layer_set_text_color(cob_layer, GColorOxfordBlue);
-        //text_layer_set_background_color(cob_layer, GColorClear);
-        //text_layer_set_font(cob_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        //text_layer_set_text_alignment(cob_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(cob_layer));
-        //layer_set_hidden((Layer*)cob_layer,true);
         layer_set_hidden(text_layer_get_layer(cob_layer), true);
 
 // WATCH BATTERY LEVEL TEXT
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 158, 31, 15), FONT_KEY_GOTHIC_14_BOLD);//CHRISTINE
-//watch_battlevel_layer = text_layer_create(GRect(110, 158, 31, 15));
+        window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 157, 31, 15), FONT_KEY_GOTHIC_14_BOLD);//CHRISTINE
     #else
         window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 150, 50, 22), FONT_KEY_GOTHIC_14_BOLD);//CHRISTINE
-//watch_battlevel_layer = text_layer_create(GRect(110, 150, 50, 22));
     #endif
         text_layer_set_text_color(watch_battlevel_layer, GColorMidnightGreen);
-        //text_layer_set_background_color(watch_battlevel_layer, GColorClear);
-        //text_layer_set_font(watch_battlevel_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
-       // text_layer_set_text_alignment(watch_battlevel_layer, GTextAlignmentLeft);
         handle_watch_battery_cgm(battery_state_service_peek()); 
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(watch_battlevel_layer));
 
 // T1D NAME/IOB
-        //t1dname_layer = text_layer_create(GRect(Vertical, Horizontal, 50, 50));
 #ifdef PBL_PLATFORM_CHALK
-        //t1dname_layer = text_layer_create(GRect(8,33, 44, 44));
         window_cgm_add_text_layer(&t1dname_layer, GRect(8,33, 44, 44), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
 #else
         window_cgm_add_text_layer(&t1dname_layer, GRect(0, 3, 40, 40), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-        //t1dname_layer = text_layer_create(GRect(0, 3, 40, 40));
-        //text_layer_set_text_alignment(t1dname_layer, GTextAlignmentCenter);
     #endif
-        //text_layer_set_text_color(t1dname_layer, GColorOxfordBlue);
-        //text_layer_set_text_alignment(t1dname_layer, GTextAlignmentCenter);
-        //text_layer_set_background_color(t1dname_layer, GColorClear);
-        //text_layer_set_font(t1dname_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(t1dname_layer));
-
 // ICON, ARROW OR SPECIAL VALUE
         window_cgm_add_bitmap_layer(&icon_layer, GRect(33, 3, 135, 144), GAlignLeft); 
-        //icon_layer = bitmap_layer_create(GRect(33, 3, 135, 144));
-        //bitmap_layer_set_alignment(icon_layer, GAlignLeft);
-        //bitmap_layer_set_background_color(icon_layer, GColorClear);
-        //bitmap_layer_set_compositing_mode(icon_layer, GCompOpSet);
-        //layer_add_child(window_layer_cgm, bitmap_layer_get_layer(icon_layer));   
 
 // RAW CALCULATED
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&raw_calc_layer, GRect(55, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-        //raw_calc_layer = text_layer_create(GRect(55, 7, 35, 25));
     #else
         window_cgm_add_text_layer(&raw_calc_layer, GRect(39, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//raw_calc_layer = text_layer_create(GRect(39, 5, 35, 25));
     #endif
-        //text_layer_set_text_color(raw_calc_layer, GColorOxfordBlue);
-        //text_layer_set_background_color(raw_calc_layer, GColorClear);
-        //text_layer_set_font(raw_calc_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        //text_layer_set_text_alignment(raw_calc_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(raw_calc_layer));
-
+      
 // RAW UNFILT
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&raw_unfilt_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-        //raw_unfilt_layer = text_layer_create(GRect(91, 7, 35, 25)); 
     #else
-        //raw_unfilt_layer = text_layer_create(GRect(74, 5, 35, 25)); 
         window_cgm_add_text_layer(&raw_unfilt_layer, GRect(74, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
     #endif
-        //text_layer_set_text_color(raw_unfilt_layer, GColorOxfordBlue);
-        //text_layer_set_background_color(raw_unfilt_layer, GColorClear);
-        //text_layer_set_font(raw_unfilt_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        //text_layer_set_text_alignment(raw_unfilt_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(raw_unfilt_layer));
 
 // BG
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&bg_layer, GRect(17, 23, 144, 80), FONT_KEY_BITHAM_42_BOLD);//CHRISTINE
-//bg_layer = text_layer_create(GRect(17, 23, 144, 80));
-    #else
-        window_cgm_add_text_layer(&bg_layer, GRect(1, 21, 144, 80), FONT_KEY_BITHAM_42_BOLD);//CHRISTINE
-//bg_layer = text_layer_create(GRect(1, 21, 144, 80));
-    #endif
+        window_cgm_add_text_layer(&bg_layer, GRect(Horizontal, Vertical, 144, 80), FONT_KEY_BITHAM_42_BOLD);//CHRISTINE
         text_layer_set_text_color(bg_layer, GColorMidnightGreen);
-        //text_layer_set_background_color(bg_layer, GColorClear);
-        //text_layer_set_font(bg_layer, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-        //text_layer_set_text_alignment(bg_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(bg_layer));
-
+      
 // DELTA BG / MESSAGE LAYER
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&message_layer, GRect(18, 58, 144, 50), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//message_layer = text_layer_create(GRect(18, 58, 144, 50));
     #else
         window_cgm_add_text_layer(&message_layer, GRect(2, 57, 144, 50), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//message_layer = text_layer_create(GRect(2, 57, 144, 50));
     #endif
-        //text_layer_set_text_color(message_layer, GColorOxfordBlue);
-        //text_layer_set_background_color(message_layer, GColorClear);
-        //text_layer_set_font(message_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        //text_layer_set_text_alignment(message_layer, GTextAlignmentCenter);
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(message_layer));
-/*
-// CALCULATED RAW INSTEAD OF BG - LAST VALUE (1) MOVED OFF SCREEN CAUSE IT WAS REDUNDANT
-    #ifdef PBL_PLATFORM_CHALK
-        calcraw_last1_layer = text_layer_create(GRect(36, 10, 40, 25)); 
-        text_layer_set_text_alignment(calcraw_last1_layer, GTextAlignmentCenter);
-    #else
-        calcraw_last1_layer = text_layer_create(GRect(200, -7, 40, 25));
-        text_layer_set_text_alignment(calcraw_last1_layer, GTextAlignmentLeft);
-    #endif
-        text_layer_set_text_color(calcraw_last1_layer, GColorClear);
-        text_layer_set_background_color(calcraw_last1_layer, GColorClear);
-        text_layer_set_font(calcraw_last1_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        layer_add_child(window_layer_cgm, text_layer_get_layer(calcraw_last1_layer));
-
-// CALCULATED RAW INSTEAD OF BG - 2ND LAST VALUE (2) 
-    #ifdef PBL_PLATFORM_CHALK
-        calcraw_last2_layer = text_layer_create(GRect(76, -4, 40, 25));
-    #else
-        calcraw_last2_layer = text_layer_create(GRect(15, 12, 40, 25));
-    #endif
-        text_layer_set_text_color(calcraw_last2_layer, GColorClear);
-        text_layer_set_background_color(calcraw_last2_layer, GColorClear);
-        text_layer_set_font(calcraw_last2_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        text_layer_set_text_alignment(calcraw_last2_layer, GTextAlignmentLeft);
-        layer_add_child(window_layer_cgm, text_layer_get_layer(calcraw_last2_layer)); 
-
-// CALCULATED RAW INSTEAD OF BG - 3RD LAST VALUE (3)
-    #ifdef PBL_PLATFORM_CHALK
-        calcraw_last3_layer = text_layer_create(GRect(118, 10, 40, 25));
-    #else
-        calcraw_last3_layer = text_layer_create(GRect(-1, -7, 40, 25));
-    #endif
-        text_layer_set_text_color(calcraw_last3_layer, GColorClear);
-        text_layer_set_background_color(calcraw_last3_layer, GColorClear);
-        text_layer_set_font(calcraw_last3_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        text_layer_set_text_alignment(calcraw_last3_layer, GTextAlignmentLeft);
-        layer_add_child(window_layer_cgm, text_layer_get_layer(calcraw_last3_layer)); 
-*/
+        
 // PERFECT BG
     #ifdef PBL_PLATFORM_CHALK
       window_cgm_add_bitmap_layer(&perfectbg_layer, GRect(-140, 88, 50, 49), GAlignLeft); //CHRISTINE
-      //perfectbg_layer = bitmap_layer_create(GRect(-140, 88, 50, 49));
     #else
       window_cgm_add_bitmap_layer(&perfectbg_layer, GRect(-140, 94, 50, 53), GAlignLeft); //CHRISTINE
-      //perfectbg_layer = bitmap_layer_create(GRect(-140, 94, 50, 53));
     #endif
-        //bitmap_layer_set_alignment(perfectbg_layer, GAlignTopLeft);
-        //bitmap_layer_set_background_color(perfectbg_layer, GColorClear);
-        //bitmap_layer_set_compositing_mode(perfectbg_layer, GCompOpSet);
-        //layer_add_child(window_layer_cgm, bitmap_layer_get_layer(perfectbg_layer));
-
-
+    
 // CGM TIME AGO READING
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&cgmtime_layer, GRect(115, 61, 50, 24), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-        //cgmtime_layer = text_layer_create(GRect(115, 61, 50, 24));       
     #else
         window_cgm_add_text_layer(&cgmtime_layer, GRect(91, 69, 50, 28), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-        //cgmtime_layer = text_layer_create(GRect(91, 69, 50, 28));
-        //text_layer_set_text_color(cgmtime_layer, GColorWhite);
-        //text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
     #endif
        text_layer_set_text_color(cgmtime_layer, GColorWhite);
         text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
-        //text_layer_set_background_color(cgmtime_layer, GColorClear);
-        //text_layer_set_font(cgmtime_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-        //layer_add_child(window_layer_cgm, text_layer_get_layer(cgmtime_layer));
-        
+      
 // HAPPY MSG LAYER
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&happymsg_layer, GRect(-180, 88, 175, 49), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//happymsg_layer = text_layer_create(GRect(-180, 88, 175, 49));
 #else
         window_cgm_add_text_layer(&happymsg_layer, GRect(-144, 94, 145, 48), FONT_KEY_GOTHIC_24_BOLD);//CHRISTINE
-//happymsg_layer = text_layer_create(GRect(-144, 94, 145, 48));
 #endif
-//text_layer_set_text_color(happymsg_layer, GColorOxfordBlue);
 text_layer_set_background_color(happymsg_layer, GColorPictonBlue);
-//text_layer_set_font(happymsg_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-//text_layer_set_text_alignment(happymsg_layer, GTextAlignmentCenter);
-//layer_add_child(window_layer_cgm, text_layer_get_layer(happymsg_layer));
-//layer_set_hidden((Layer *)happymsg_layer, true);
-
-
-        //    layer_set_update_proc(circle_layer, circle_update_proc);
 
         // put " " (space) in bg field so logo continues to show
         // " " (space) also shows these are init values, not bad or null values
@@ -3424,7 +3204,7 @@ text_layer_set_background_color(happymsg_layer, GColorPictonBlue);
             TupletCString(CGM_BGSX_KEY, " "),
             TupletInteger(CGM_BGTY_KEY, 0),
             TupletInteger(CGM_NOIZ_KEY, 0),
-           // TupletInteger(CGM_MODE_SWITCH_KEY, 0),//add share mode
+            TupletInteger(CGM_MODE_SWITCH_KEY, 0),//add share mode
             TupletCString(CGM_COB_KEY,  " "), 
         };
 
@@ -3451,14 +3231,14 @@ text_layer_set_background_color(happymsg_layer, GColorPictonBlue);
 
 void window_unload_cgm(Window *window_cgm) {
       app_sync_deinit(&sync_cgm);
-        APP_LOG(APP_LOG_LEVEL_INFO, "unload vefore free bgty_array : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+        //APP_LOG(APP_LOG_LEVEL_INFO, "unload vefore free bgty_array : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
  if(bgty_array)
             {
                 free(bgty_array);
                 bgty_array = NULL;
             }
-          APP_LOG(APP_LOG_LEVEL_INFO, "unload after free bgty_array : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+          //APP_LOG(APP_LOG_LEVEL_INFO, "unload after free bgty_array : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
   if(bgsx_array)
             {
@@ -3510,11 +3290,8 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&raw_unfilt_layer);
     destroy_null_TextLayer(&noise_layer);
     destroy_null_TextLayer(&cob_layer);
-    //destroy_null_TextLayer(&calcraw_last1_layer);
-    //destroy_null_TextLayer(&calcraw_last2_layer);
-    //destroy_null_TextLayer(&calcraw_last3_layer);
-
-      APP_LOG(APP_LOG_LEVEL_INFO, "10 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+  
+      //APP_LOG(APP_LOG_LEVEL_INFO, "10 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
     //  APP_LOG(APP_LOG_LEVEL_INFO, "window_cgm_UNLOAD Heap Used: %d, Free: %d ", heap_bytes_used(), heap_bytes_free());
 }
@@ -3529,11 +3306,6 @@ static void init_cgm(void) {
   
     tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick_cgm);
 
-    // subscribe to the bluetooth connection service
-    // bluetooth_connection_service_subscribe(&handle_bluetooth_cgm);
-    // connection_service_subscribe((ConnectionHandlers) {
-    //    .pebble_app_connection_handler = handle_bluetooth_cgm
-    //  });
     connection_service_subscribe((ConnectionHandlers) {
         .pebble_app_connection_handler = bt_handler
     });
@@ -3562,9 +3334,8 @@ static void init_cgm(void) {
     //app_message_register_outbox_failed(outbox_failed_handler_cgm);
 
     //APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, ABOUT TO CALL APP MSG OPEN"); 
-     app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
-    //app_message_open(800, 800); 
-
+     //app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+      app_message_open(800, 800);
     //  APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, APP MSG OPEN DONE");
     if(chart_layer != NULL)
     {
@@ -3588,7 +3359,7 @@ static void init_cgm(void) {
   }
     //window_stack_push(window_cgm, true);
     //APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE OUT"); 
-      APP_LOG(APP_LOG_LEVEL_INFO, "init : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "init : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
 }  // end init_cgm
 
@@ -3633,13 +3404,13 @@ static void deinit_cgm(void) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "DEINIT, WINDOW POINTER NOT NULL, SET TO NULL");
     window_cgm = NULL;
   }
-      APP_LOG(APP_LOG_LEVEL_INFO, "deinit : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "deinit : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
   //APP_LOG(APP_LOG_LEVEL_INFO, "DEINIT CODE OUT");
 } // end deinit_cgm
 
 int main(void) {
-      APP_LOG(APP_LOG_LEVEL_INFO, "main : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+      //APP_LOG(APP_LOG_LEVEL_INFO, "main : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
     init_cgm();
     app_event_loop();

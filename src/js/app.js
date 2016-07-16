@@ -1,7 +1,7 @@
-var hasTimeline = 1;
-var topic = "not_set";
+//var hasTimeline = 1;
+//var topic = "not_set";
 var fix = 0;
-var defaultId = 99;
+//var defaultId = 99;
 var logging = 1;
 var mmol_MinLimit = 0.9;
 var mgdl_MinLimit = 39;
@@ -23,7 +23,7 @@ function fetchCgmData() {
     switch (opts.mode) {
         case "Nightscout":
             console.log("Nightscout data to be loaded");
-            subscribeBy(opts.endpoint);
+            //subscribeBy(opts.endpoint);
             opts.endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
             opts.endpoint = opts.endpoint.replace("/pebble/", "");
             opts.endpoint = opts.endpoint.replace("/pebble", "");
@@ -35,7 +35,7 @@ function fetchCgmData() {
         case "US_Share":
         case "Non_US_Share":
             console.log("Share data to be loaded");
-            subscribeBy(opts.accountName);
+            //subscribeBy(opts.accountName);
             share(opts);
             break;
 
@@ -69,11 +69,7 @@ function getNightScoutArrayData(message, opts) {
     http.onload = function(e) {
         if (http.status == 200) {
             var data = JSON.parse(http.responseText);
-            // console.log("----------Data from treatments call: " + data);
 
-            // console.log("Message 1:" + JSON.stringify(message));
-
-            console.log("------data" + data);
             // Add the array data for graph
             message.bgsx = createBgArray(data, opts);
             message.bgty = createBgTimeArray(data, opts);
@@ -103,7 +99,7 @@ function getNightScoutArrayData(message, opts) {
 //Create BG ARRAY
 function createBgArray(data, opts) {
     var toReturn = "";
-    console.log("-----------------------data.length:" + data.length);
+    //console.log("-----------------------data.length:" + data.length);
     var now = new Date();
    
     var minLimit = mmol_MinLimit; // mmol
@@ -115,7 +111,7 @@ function createBgArray(data, opts) {
         var wall = parseInt(data[i].date);
         var timeAgo = msToMinutes(now.getTime() - wall);
       
-        console.log("----createBgArray------ data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
+        //console.log("----createBgArray------ data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
       
         if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >= minLimit) {
             toReturn = toReturn + data[i].sgv.toString() + ",";
@@ -492,7 +488,7 @@ function nightscout(opts) {
                    // values += "," + opts.mycolors; // Color field
 
 
-                    //var mode_switch = getModeAsInteger(opts);
+                    var mode_switch = getModeAsInteger(opts);
 
                     // load message data  
                     message = {
@@ -508,7 +504,7 @@ function nightscout(opts) {
                         rwuf: formatRawUnfilt,
                         noiz: currentNoise,
                         cob: currentCOB,
-                        // mode_switch: 3,
+                        mode_switch: 3,
                         bgsx: arraydata.bgsx,
                         bgty: arraydata.bgty
                     };
@@ -552,36 +548,25 @@ req.onerror = function (e) {
       //  MessageQueue.sendAppMessage(message);
     //}, 59000); // timeout in ms; set at 45 seconds; can not go beyond 59 seconds   
 }
-
-function subscribeBy(base) {
-    try {
-        topic = hashCode(base).toString();
-        logging("hashcode:" + topic);
-        Pebble.getTimelineToken(
-            function(token) {
-                console.log('My timeline token is: ' + token);
-            },
-            function(error) {
-                console.log('Error getting timeline token: ' + error);
-                hasTimeline = 0;
-            }
-        );
-        Pebble.timelineSubscribe(topic,
-            function() {
-                //console.log('Subscribed to: ' + topic);
-            },
-            function(errorString) {
-                //console.log('Error subscribing to topic: ' + errorString);
-                hasTimeline = 0;
-            }
-        );
-    } catch (err) {
-        //console.log('Error: ' + err.message);
-        hasTimeline = 0;
+function getModeAsInteger(opts)
+{
+  console.log("getModeAsInteger");
+	var mode_switch = 0; 
+	var mode = opts.mode.toLowerCase();
+  console.log("getModeAsInteger: mode: " + mode);
+	if(mode == "us_share")
+	{
+		mode_switch = 1;
+	}
+    else if(mode == "non_us_share")
+    {
+        mode_switch = 2;
     }
-
-    if (hasTimeline)
-        cleanupSubscriptions();
+    else
+    {
+        mode_switch = 3;
+    } 
+  return mode_switch;
 }
 
 //**********************SHARE**********************//
@@ -758,7 +743,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                 // add name
                 var name = options.t1name;
                 //add mode 
-                //var mode_switch = getModeAsInteger(options);;
+                var mode_switch = getModeAsInteger(options);;
 
                 var values= null;
                 if (options.radio == "mgdl_form") {
@@ -802,17 +787,17 @@ function getShareGlucoseData(sessionId, defaults, options) {
 
                 var convertedEgv = null;
                 //Manage HIGH & LOW
-                if (data[0].Value < 40) {
+                /*if (data[0].Value < 40) {
                     bg = "LOW";
                     dlta = "check bg";
                     icon = 0;
-                    console.log("---------------LOW");
+                    //console.log("---------------LOW");
                 } else if (data[0].Value > 400) {
                     bg = "HI";
                     dlta = "check bg";
                     icon = 0;
-                    logging("---------------HIGH");
-                } else {
+                    //logging("---------------HIGH");
+                } else {*/
                     convertedEgv = (data[0].Value * options.conversion);
                     bg = (convertedEgv < 39 * options.conversion) ? parseFloat(Math.round(convertedEgv * 100) / 100).toFixed(1).toString() : convertedEgv.toFixed(fix).toString();
                     dlta = (convertedEgv < 39 * options.conversion) ? parseFloat(Math.round(convertedDelta * 100) / 100).toFixed(1) : convertedDelta.toFixed(fix);
@@ -825,36 +810,10 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     icon = ((data[0].Trend > 7) ? 0 : data[0].Trend).toString();
 
                     options.bg = data[0].Value;
-                    console.log("---------------HIGH");
-                }
+                    //console.log("---------------HIGH");
+               // }
 
-                var alert = calculateShareAlert(convertedEgv, wall, options);
-
-                // var alert = calculateShareAlert(convertedEgv, tcgm, options);
-                var timeDeltaMinutes = Math.floor(timeAgo / 60000);
-                var d = new Date(wall);
-                //var d = new Date(tcgm);
-                var n = d.getMinutes();
-                var pin_id_suffix = 5 * Math.round(n / 5);
-                var title = "[SPARK] " + bg + " " + options.unit;
-                var pin = {
-                    "id": "pin-egv" + topic + pin_id_suffix,
-                    "time": d.toISOString(),
-                    "duration": 5,
-                    "layout": {
-                        "type": "genericPin",
-                        "title": title,
-                        "body": "Dexcom Share",
-                        "tinyIcon": "system://images/GLUCOSE_MONITOR",
-                        "backgroundColor": "#FF5500"
-                    },
-                    "actions": [{
-                        "title": "Launch App",
-                        "type": "openWatchApp",
-                        "launchCode": 1
-                    }],
-
-                };
+ 
 
                 //console.log("dlta: " + dlta);
                 //console.log("bg: " + bg);
@@ -875,18 +834,13 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     "vals": values,
                     "tcgm": tcgm,
                     "name": name,
-                    // "mode_switch": mode_switch,
+                    "mode_switch": mode_switch,
                     "bgsx": createShareBgArray(data),
                     "bgty": createShareBgTimeArray(data)
                 });
                 options.id = wall;
                 //    window.localStorage.setItem('cgmPebbleDuo', JSON.stringify(options));
 
-                if (hasTimeline) {
-                    insertUserPin(pin, topic, function(responseText) {
-                        console.log('Result: ' + responseText);
-                    });
-                }
             }
 
         } else {
@@ -970,94 +924,6 @@ function calculateShareAlert(bg, currentId, options) {
     return 0;
 }
 
-function insertUserPin(pin, topic, callback) {
-    if (topic != "not_set")
-        timelineRequest(pin, topic, 'PUT', callback);
-}
-
-// The timeline public URL root
-var API_URL_ROOT = 'https://timeline-api.getpebble.com/';
-
-function timelineRequest(pin, topic, type, callback) {
-
-    // User or shared?
-    //var url = API_URL_ROOT + 'v1/user/pins/' + pin.id;
-    var url = API_URL_ROOT + 'v1/shared/pins/' + pin.id;
-    // Create XHR
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function() {
-        //console.log('timeline: response received: ' + this.responseText);
-        callback(this.responseText);
-    };
-
-
-    xhr.open(type, url);
-
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('X-API-Key', '');
-    xhr.setRequestHeader('X-Pin-Topics', topic);
-
-    // Send
-    xhr.send(JSON.stringify(pin));
-    //console.log('timeline: request sent.');
-
-    var xhrSb = new XMLHttpRequest();
-    xhrSb.onload = function() {
-        //console.log('timeline: response received: ' + this.responseText);
-        callback(this.responseText);
-    };
-    xhrSb.open(type, url);
-
-    xhrSb.setRequestHeader('Content-Type', 'application/json');
-    xhrSb.setRequestHeader('X-API-Key', '');
-    xhrSb.setRequestHeader('X-Pin-Topics', topic);
-
-    xhrSb.send(JSON.stringify(pin));
-    //console.log('timeline: SB request sent.');
-
-}
-
-
-function cleanupSubscriptions() {
-    Pebble.timelineSubscriptions(
-        function(topics) {
-            console.log('Subscribed to ' + topics.join(','));
-            //console.log("subs: " + topics);
-            for (var i = 0; i < topics.length; i++) {
-                //console.log("topic: " + topic)
-                //console.log("topics[i]: " + topics[i])
-                if (topic != topics[i]) {
-                    Pebble.timelineUnsubscribe(topics[i],
-                        function() {
-                            //console.log('Unsubscribed from: ' + topics[i]);
-                        },
-                        function(errorString) {
-                            //console.log('Error unsubscribing from topic: ' + errorString);
-                        }
-                    );
-                }
-            }
-
-        },
-        function(errorString) {
-            //console.log('Error getting subscriptions: ' + errorString);
-            return ",";
-        }
-    );
-}
-
-
-function hashCode(base) {
-    var hash = 0,
-        i, chr, len;
-    if (base.length === 0) return hash;
-    for (i = 0, len = base.length; i < len; i++) {
-        chr = base.charCodeAt(i);
-        hash = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-}
 
 function logging(message) {
     if (logging)
@@ -1203,47 +1069,24 @@ var MessageQueue = (function() {
 
 }());
 
-
-function clear_defaults(opts) {
-    console.log("START clear_defaults");
-
-    // clear out the variables of the other setting if you switch
-    switch (opts.mode) {
-        case "Nightscout":
-            opts.accountName = " ";
-            opts.password = " ";
-            break;
-
-        case "US_Share":
-        case "Non_US_Share":
-            opts.endpoint = " ";
-            break;
-
-        default:
-            console.log("clear_defaults - Mode not selected");
-            // could clear all opts here.
-            break;
-    }
-}
-
 // pebble specific calls with watch
-/*Pebble.addEventListener("ready",
+Pebble.addEventListener("ready",
     function(e) {
         "use strict";
         console.log("Pebble JS ready");
         var opts = [].slice.call(arguments).pop();
         opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
 
-       /* var current_mode = getModeAsInteger(opts);
+        var current_mode = getModeAsInteger(opts);
         console.log("opts: " + JSON.stringify(opts));
         // send message data  
         var message = {
             mode_switch: current_mode
-        };*/
+        };
 
-// send message data to log and to watch
-//     Pebble.sendAppMessage(message);
-// });
+ //send message data to log and to watch
+     Pebble.sendAppMessage(message);
+ });
 
 Pebble.addEventListener("appmessage", function(e) {
         console.log("JS Recvd Msg From Watch: " + JSON.stringify(e.payload));
@@ -1257,8 +1100,6 @@ Pebble.addEventListener("showConfiguration", function(e) {
 
 Pebble.addEventListener("webviewclosed", function(e) {
     var opts = JSON.parse(decodeURIComponent(e.response));
-    // clear non-selected parameters from the storage item
-    clear_defaults(opts);
 
     console.log("CLOSE CONFIG OPTIONS = " + JSON.stringify(opts));
 

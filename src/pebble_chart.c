@@ -385,6 +385,8 @@ static void chart_layer_update_layout(ChartLayer* layer) {
       fMinY = 40;
     if (fMaxY > 400)
       fMaxY = 400;
+    //const float fYScale = (float)(bounds.size.h - (2 * pData->iMargin)) / (fMaxY - fMinY); 
+
       
     pData->fXYRange = 30;
   }
@@ -402,6 +404,7 @@ static void chart_layer_update_layout(ChartLayer* layer) {
       // calc y tick spacing
       pData->iYTicks = (int)(fYScale * exponential10(closest_log10(fMaxY - fMinY)));
 
+      
       // figure out X-scale
       float fMaxX = pData->pXOrigData[0];
       float fMinX = pData->pXOrigData[0];
