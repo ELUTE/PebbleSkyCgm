@@ -712,7 +712,7 @@ function sendUnknownError(msg) {
 function getShareGlucoseData(sessionId, defaults, options) {
     var now = new Date();
     var http = new XMLHttpRequest();
-    var url = defaults.LatestGlucose + '?sessionID=' + sessionId + '&minutes=' + 1440 + '&maxCount=' + 8;
+    var url = defaults.LatestGlucose + '?sessionID=' + sessionId + '&minutes=' + 1440 + '&maxCount=' + 12;
     http.open("POST", url, true);
 
     //Send the proper header information along with the request

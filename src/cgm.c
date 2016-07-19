@@ -1128,7 +1128,8 @@ static void load_icon() {
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD ICON, CURRENT ICON: %s", current_icon);
         if ( (strcmp(current_icon, NO_ARROW) == 0) || (strcmp(current_icon, NOTCOMPUTE_ICON) == 0) || (strcmp(current_icon, OUTOFRANGE_ICON) == 0) ) {
             set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[PIXEL_ICON_INDX],GPoint(116, 15));
-
+            text_layer_set_background_color(tophalf_layer, GColorWhite);
+            layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         } 
         else if (strcmp(current_icon, DOUBLEUP_ARROW) == 0) {
@@ -1136,7 +1137,7 @@ static void load_icon() {
 #ifdef PBL_PLATFORM_CHALK
             set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(129, 15));
 #else
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(120, 15));
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(118, 15));
 #endif
             DoubleDownAlert = 100;
             text_layer_set_background_color(tophalf_layer, MED);
@@ -1182,6 +1183,8 @@ static void load_icon() {
 #else
             set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],GPoint(113, 38));
 #endif
+          text_layer_set_background_color(tophalf_layer, GColorWhite);
+            layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, SINGLEDOWN_ARROW) == 0) {
@@ -1201,9 +1204,9 @@ static void load_icon() {
                 DoubleDownAlert = 111;
                 text_layer_set_background_color(tophalf_layer, ROUGE);
 #ifdef PBL_PLATFORM_CHALK
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(128, 23));
+                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(129, 23));
 #else
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(120, 23));
+                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(119, 23));
 #endif
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
                 
@@ -1223,6 +1226,8 @@ static void load_icon() {
 #else
                 set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
 #endif
+              text_layer_set_background_color(tophalf_layer, GColorWhite);
+            layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
             else {
                 // unexpected, set logo icon
@@ -1941,7 +1946,13 @@ static void load_cgmtime() {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME, INIT CGM TIMEAGO SHOW LAST TIME");
             current_temp_time = current_cgm_time;
             current_local_time = localtime(&current_temp_time);
+           if (timeformat == 0){
             draw_cgm_time = strftime(cgm_time_text, TIME_TEXTBUFF_SIZE, "%l:%M", current_local_time);
+        } else {
+            draw_cgm_time = strftime(cgm_time_text, TIME_TEXTBUFF_SIZE, "%H:%M", current_local_time);
+
+        }
+
             if (draw_cgm_time != 0) {
                 text_layer_set_text(cgmtime_layer, cgm_time_text);
             }
@@ -2345,7 +2356,6 @@ static void load_rig_battlevel() {
         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, UNKNOWN, ERROR BATTERY");
         text_layer_set_text(rig_battlevel_layer, "ERR\0");
 
-        //layer_set_hidden((Layer *)inv_rig_battlevel_layer, false);
         return;
     }
    // initialize formatted battlevel
@@ -2660,7 +2670,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: T1D NAME");
             strncpy(current_name, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
             text_layer_set_text(t1dname_layer, current_name);
-            if ( (strcmp(current_name, " ") == 0) || (strcmp(current_cob, "0u") == 0) ) {
+            if ( (strcmp(current_name, " ") == 0) || (strcmp(current_name, "") == 0) ) {
                 //layer_set_hidden((Layer*)name_circle_layer, true);
                   layer_set_hidden(name_circle_layer, true);
                   layer_set_hidden(text_layer_get_layer(t1dname_layer), true);
@@ -2668,7 +2678,8 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                 //layer_set_hidden((Layer*)t1dname_layer,true);
             }else {
                layer_set_hidden(name_circle_layer, false);
-                     layer_set_hidden(text_layer_get_layer(t1dname_layer), false);
+                layer_set_hidden(text_layer_get_layer(t1dname_layer), false);
+              
                 //layer_set_hidden((Layer*)name_circle_layer, false);
                 //layer_set_hidden((Layer*)t1dname_layer,false);
             }
@@ -3038,12 +3049,12 @@ void window_load_cgm(Window *window_cgm) {
         //    window_set_click_config_provider(window_cgm,(ClickConfigProvider)click_config_provider);   
 
 // TIME; CURRENT ACTUAL TIME FROM WATCH
-      #ifdef PBL_PLATFORM_CHALK
-      window_cgm_add_text_layer(&time_watch_layer, GRect(0, 141, 180, 30), FONT_KEY_BITHAM_30_BLACK);//CHRISTINE
-      #else
-      window_cgm_add_text_layer(&time_watch_layer, GRect(0, 139, 144, 30), FONT_KEY_GOTHIC_28_BOLD);//CHRISTINE
-      #endif
-      text_layer_set_text_color(time_watch_layer, GColorWhite);
+    #ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&time_watch_layer, GRect(0, 141, 180, 30), FONT_KEY_BITHAM_30_BLACK);//CHRISTINE
+    #else
+        window_cgm_add_text_layer(&time_watch_layer, GRect(4, 139, 144, 30), FONT_KEY_GOTHIC_28_BOLD);//CHRISTINE
+    #endif
+        text_layer_set_text_color(time_watch_layer, GColorWhite);
 
 // DATE
     #ifdef PBL_PLATFORM_CHALK
@@ -3089,12 +3100,12 @@ void window_load_cgm(Window *window_cgm) {
     #endif
       
 // RIG BATTERY LEVEL
-#ifdef PBL_PLATFORM_CHALK
-window_cgm_add_text_layer(&rig_battlevel_layer, GRect(2, 66, 50, 50), FONT_KEY_GOTHIC_18_BOLD);//CHRISTINE
-#else
-window_cgm_add_text_layer(&rig_battlevel_layer, GRect(8, 74, 45, 50), FONT_KEY_GOTHIC_18_BOLD);//CHRISTINE
-#endif
-text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
+    #ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(2, 66, 50, 50), FONT_KEY_GOTHIC_18_BOLD);//CHRISTINE
+    #else
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(8, 74, 45, 50), FONT_KEY_GOTHIC_18_BOLD);//CHRISTINE
+    #endif
+        text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
 
 //WATCH BATTERY ICON LAYER
     #ifdef PBL_PLATFORM_CHALK
