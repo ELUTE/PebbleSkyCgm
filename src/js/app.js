@@ -485,7 +485,7 @@ function nightscout(opts) {
                     } else {
                         values += ",0"; // Do not vibrate on raw value when in special values                        
                     }
-                   // values += "," + opts.mycolors; // Color field
+                    values += "," + opts.mycolors; // Color field
 
 
                     var mode_switch = getModeAsInteger(opts);
@@ -1095,7 +1095,7 @@ Pebble.addEventListener("appmessage", function(e) {
 
 Pebble.addEventListener("showConfiguration", function(e) {
     console.log("Showing Configuration", JSON.stringify(e));
-    Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skysharesparkconfigV1.html');
+    Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skysharesparkconfigV2.html');
 });
 
 Pebble.addEventListener("webviewclosed", function(e) {
