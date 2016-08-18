@@ -823,6 +823,18 @@ static void create_update_bitmap(GBitmap **bmp_image, BitmapLayer *bmp_layer, co
     }
     //APP_LOG(APP_LOG_LEVEL_INFO, " CREATE UPDATE BITMAP: EXIT CODE");
 } // end create_update_bitmap
+
+//SET MESSAGE LAYER
+void set_message_layer (char *msg_string, char *msg_buffer, bool use_msg_buffer, GColor msg_colour) {
+
+  text_layer_set_text_color(message_layer, msg_colour);
+
+  if (use_msg_buffer) { text_layer_set_text(message_layer, (char *)msg_buffer); }
+  else { text_layer_set_text(message_layer, (char *)msg_string); }
+
+} // end set_message_layer
+
+//CLEAR TIME AGO
 void clear_cgm_timeago () {
 
   // erase cgm timeago time
@@ -937,8 +949,8 @@ void bt_handler(bool bt_connected) {
     BT_timer_pop = 100;
     //APP_LOG(APP_LOG_LEVEL_INFO, "NO BLUETOOTH");
     if (TurnOff_NOBLUETOOTH_Msg == 111) {
-        text_layer_set_text(message_layer, "NO BT\0");
-
+        //text_layer_set_text(message_layer, "NO BT\0");
+          set_message_layer("NO BT\0", "", false, text_colour);
     }
     //}
     else {
@@ -1772,7 +1784,9 @@ static void load_bg() {
             //      Bluetooth is out; set BT message
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
             //if (TurnOff_NOBLUETOOTH_Msg == 100) {
-            text_layer_set_text(message_layer, "NO BT");
+            set_message_layer("NO BT\0", "", false, text_colour);
+
+          //text_layer_set_text(message_layer, "NO BT");
             //} // if turnoff nobluetooth msg
         }// if !bluetooth connected
         else {
@@ -1783,7 +1797,8 @@ static void load_bg() {
           if (bg_layer != NULL) {
             //text_layer_set_text(bg_layer, last_bg);
             text_layer_set_text(bg_layer, "ERR\0");
-            text_layer_set_text(message_layer, "BGERR\0");
+            set_message_layer("NODAT\0", "", false, text_colour);
+            //text_layer_set_text(message_layer, "NODAT\0");
 
             //     create_update_bitmap(&icon_bitmap,icon_layer,SPECIAL_VALUE_ICONS[CIRCLE_ICON_INDX]);
             specvalue_alert = 111;
@@ -1799,8 +1814,8 @@ static void load_bg() {
         if ((current_bg == specvalue_ptr[NO_ANTENNA_VALUE_INDX]) || (current_bg == specvalue_ptr[BAD_RF_VALUE_INDX])) {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET BROKEN ANTENNA");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
-            text_layer_set_text(message_layer, " ");
-
+            //text_layer_set_text(message_layer, " ");
+            set_message_layer("\0", "", false, text_colour);
 
 #ifdef PBL_PLATFORM_CHALK
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], GPoint(67, 33));
@@ -1808,14 +1823,13 @@ static void load_bg() {
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], GPoint(51, 35));
 #endif
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
-
             specvalue_alert = 111;
         }
 
         else if (current_bg == specvalue_ptr[SENSOR_NOT_CALIBRATED_VALUE_INDX]) {
             // APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET BLOOD DROP");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
-            text_layer_set_text(message_layer, "");
+            set_message_layer("\0", "", false, text_colour);
 
 #ifdef PBL_PLATFORM_CHALK
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(73, 30));
@@ -1831,7 +1845,7 @@ static void load_bg() {
                  || (current_bg == specvalue_ptr[STOP_LIGHT_VALUE_INDX])) {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET STOP LIGHT");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
-            text_layer_set_text(message_layer, "");
+            set_message_layer("\0", "", false, text_colour);
 
 #ifdef PBL_PLATFORM_CHALK
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[STOP_LIGHT_ICON_INDX], GPoint(79, 33));
@@ -1845,7 +1859,7 @@ static void load_bg() {
         else if (current_bg == specvalue_ptr[HOURGLASS_VALUE_INDX]) {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET HOUR GLASS");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
-            text_layer_set_text(message_layer, "");
+            set_message_layer("\0", "", false, text_colour);
 
 
 #ifdef PBL_PLATFORM_CHALK
@@ -1860,7 +1874,7 @@ static void load_bg() {
         else if (current_bg == specvalue_ptr[QUESTION_MARKS_VALUE_INDX]) {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, CLEAR TEXT");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
-            text_layer_set_text(message_layer, "");
+            set_message_layer("\0", "", false, text_colour);
 
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, SET BITMAP");
@@ -1878,7 +1892,7 @@ static void load_bg() {
         else if (current_bg < bg_ptr[SPECVALUE_BG_INDX]) {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, UNEXPECTED SPECIAL VALUE: SET LOGO ICON");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
-            text_layer_set_text(message_layer, "");
+            set_message_layer("\0", "", false, text_colour);
 
 
 #ifdef PBL_PLATFORM_CHALK
@@ -2284,7 +2298,6 @@ static void load_bg_delta() {
     // check for CHECK CGM condition, if true set message
 
     if ((CGMOffAlert == 111) && (ClearedOutage == 100) && (ClearedBTOutage == 100)
-
         && (current_cgm_timeago != 0) && (stored_cgm_time == current_cgm_time) &&
         (TurnOff_CHECKCGM_Msg == 100)) {
             text_layer_set_text(bg_layer, "OLD\0"); //added August 4
@@ -2397,7 +2410,7 @@ static void load_bg_delta() {
         //text_layer_set_text(message_layer, formatted_bg_delta);
               text_layer_set_text(message_layer, "ZER\0");
         return;
-    }*/ 
+    }*/
 
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD BG DELTA, DELTA STRING: %s", &current_bg_delta[i]);
     if (currentBG_isMMOL == 100) {
@@ -2618,8 +2631,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
     const uint8_t BG_MSGSTR_SIZE = 6;
     const uint8_t BGDELTA_MSGSTR_SIZE = 6;
     const uint8_t BATTLEVEL_MSGSTR_SIZE = 4;
-    const uint8_t VALUE_MSGSTR_SIZE = 60;
-
+    const uint8_t VALUE_MSGSTR_SIZE = 80;
     // CODE START
     // reset appsync retries counter
     appsyncandmsg_retries_counter = 0;
