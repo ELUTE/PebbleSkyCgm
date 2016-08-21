@@ -112,7 +112,7 @@ uint32_t current_app_time = 0;
 static char current_bg_delta[6] = {0};
 static char last_calc_raw[6] = {0};
 static char last_raw_unfilt[6] = {0};
-static char current_cob[6] = {0};
+static char current_cob[8] = {0};
 static char current_name[6] = {0};
 
 int color_value = 0;
@@ -2631,7 +2631,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
     const uint8_t BG_MSGSTR_SIZE = 6;
     const uint8_t BGDELTA_MSGSTR_SIZE = 6;
     const uint8_t BATTLEVEL_MSGSTR_SIZE = 4;
-    const uint8_t VALUE_MSGSTR_SIZE = 80;
+    const uint8_t VALUE_MSGSTR_SIZE = 48;
     // CODE START
     // reset appsync retries counter
     appsyncandmsg_retries_counter = 0;

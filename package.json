@@ -30,138 +30,8 @@
         "resources": {
             "media": [
                 {
-                    "file": "images/antenna.png",
-                    "name": "IMAGE_BROKEN_ANTENNA",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/club100.png",
-                    "name": "IMAGE_CLUB100",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/club55.png",
-                    "name": "IMAGE_CLUB55",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/drop.png",
-                    "name": "IMAGE_BLOOD_DROP",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/hourglass.png",
-                    "name": "IMAGE_HOURGLASS",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/LOGO.png",
-                    "name": "IMAGE_LOGO",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/pixel.png",
-                    "name": "IMAGE_PIXEL",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/Question.png",
-                    "name": "IMAGE_QUESTION_MARKS",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/right.png",
-                    "name": "IMAGE_FLAT_SM",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/sm_45down.png",
-                    "name": "IMAGE_DOWN45_SM",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/sm_45up.png",
-                    "name": "IMAGE_UP45_SM",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/sm_doubledown.png",
-                    "name": "IMAGE_DOWNDOWN_SM",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/sm_down.png",
-                    "name": "IMAGE_DOWN_SM",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk"
-                    ],
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/sm_upup.png",
-                    "name": "IMAGE_UPUP_SM",
+                    "file": "images/stoplightcolor.png",
+                    "name": "IMAGE_STOP_LIGHT",
                     "targetPlatforms": [
                         "aplite",
                         "basalt",
@@ -180,8 +50,138 @@
                     "type": "bitmap"
                 },
                 {
-                    "file": "images/stoplightcolor.png",
-                    "name": "IMAGE_STOP_LIGHT",
+                    "file": "images/sm_upup.png",
+                    "name": "IMAGE_UPUP_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_down.png",
+                    "name": "IMAGE_DOWN_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_doubledown.png",
+                    "name": "IMAGE_DOWNDOWN_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_45up.png",
+                    "name": "IMAGE_UP45_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_45down.png",
+                    "name": "IMAGE_DOWN45_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/right.png",
+                    "name": "IMAGE_FLAT_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/Question.png",
+                    "name": "IMAGE_QUESTION_MARKS",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/pixel.png",
+                    "name": "IMAGE_PIXEL",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/LOGO.png",
+                    "name": "IMAGE_LOGO",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/hourglass.png",
+                    "name": "IMAGE_HOURGLASS",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/drop.png",
+                    "name": "IMAGE_BLOOD_DROP",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/club55.png",
+                    "name": "IMAGE_CLUB55",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/club100.png",
+                    "name": "IMAGE_CLUB100",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/antenna.png",
+                    "name": "IMAGE_BROKEN_ANTENNA",
                     "targetPlatforms": [
                         "aplite",
                         "basalt",
@@ -201,5 +201,5 @@
             "watchface": true
         }
     },
-    "version": "1.3.0"
+    "version": "1.4.0"
 }
