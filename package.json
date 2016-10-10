@@ -1,0 +1,222 @@
+{
+    "author": "Dexterity",
+    "dependencies": {},
+    "keywords": [],
+    "name": "skyline",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Sky Line",
+        "enableMultiJS": true,
+        "messageKeys": {
+            "bg": 1,
+            "bgsx": 10,
+            "bgty": 11,
+            "clrw": 8,
+            "cob": 13,
+            "dlta": 4,
+            "icon": 0,
+            "mode_switch": 14,
+            "name": 6,
+            "noiz": 12,
+            "rwuf": 9,
+            "tapp": 3,
+            "tcgm": 2,
+            "ubat": 5,
+            "vals": 7
+        },
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/antenna.png",
+                    "name": "IMAGE_BROKEN_ANTENNA",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/club100.png",
+                    "name": "IMAGE_CLUB100",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/club55.png",
+                    "name": "IMAGE_CLUB55",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/drop.png",
+                    "name": "IMAGE_BLOOD_DROP",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/hourglass.png",
+                    "name": "IMAGE_HOURGLASS",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/LOGO.png",
+                    "name": "IMAGE_LOGO",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/pixel.png",
+                    "name": "IMAGE_PIXEL",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/Question.png",
+                    "name": "IMAGE_QUESTION_MARKS",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/right.png",
+                    "name": "IMAGE_FLAT_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_45down.png",
+                    "name": "IMAGE_DOWN45_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_45up.png",
+                    "name": "IMAGE_UP45_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_doubledown.png",
+                    "name": "IMAGE_DOWNDOWN_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_down.png",
+                    "name": "IMAGE_DOWN_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_upup.png",
+                    "name": "IMAGE_UPUP_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/sm_up.png",
+                    "name": "IMAGE_UP_SM",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/stoplightcolor.png",
+                    "name": "IMAGE_STOP_LIGHT",
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "basalt",
+            "chalk",
+            "diorite"
+        ],
+        "uuid": "1dede643-e273-4c4a-b7ea-12d12d0811aa",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "1.5.0"
+}
