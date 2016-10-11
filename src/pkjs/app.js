@@ -1,11 +1,3 @@
-// Import the Clay package
-//var Clay = require('pebble-clay');
-// Load our Clay configuration file
-//var clayConfig = require('./config');
-// Initialize Clay
-//var clay = new Clay(clayConfig);
-
-
 //var hasTimeline = 1;
 //var topic = "not_set";
 var fix = 0;
@@ -27,6 +19,7 @@ function fetchCgmData() {
     // declare local variables for message data
     var opts = [].slice.call(arguments).pop();
     opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
+    //console.log("-------- opts 1: " + opts);
     switch (opts.mode) {
         case "Nightscout":
             console.log("Nightscout data to be loaded");
@@ -36,7 +29,7 @@ function fetchCgmData() {
             opts.endpoint = opts.endpoint.replace("/pebble", "");
 
             nightscout(opts);
-            //getLoopData(opts);
+            //getLoopData();
             break;
 
         case "US_Share":
@@ -61,7 +54,7 @@ function fetchCgmData() {
     //console.log("fetchCgmData 5");
 } // end fetchCgmData
 
-//Get last 12 SGV's
+//Get last 9 SGV's
 function getNightScoutArrayData(message, opts) {
     // opts.vibe = parseInt(opts.vibe, 10);
     // console.log("OPTS:" + opts);
@@ -80,7 +73,7 @@ function getNightScoutArrayData(message, opts) {
             // Add the array data for graph
             message.bgsx = createBgArray(data, opts);
             message.bgty = createBgTimeArray(data, opts);
-            //console.log("Nightscout Array Data:" + JSON.stringify(message));
+            console.log("Data from treatments call:" + JSON.stringify(message));
             return message;
 
         } else {
@@ -103,27 +96,37 @@ function getNightScoutArrayData(message, opts) {
     return message;
 } //end 
 
-//Get last 12 SGV's
-function getLoopArrayData(message, opts) {
+function getLoopData(message2, opts) {
     // opts.vibe = parseInt(opts.vibe, 10);
     // console.log("OPTS:" + opts);
     var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
     endpoint = endpoint.replace("/pebble/", "");
     endpoint = endpoint.replace("/pebble", "");
 
-    var loopurl = endpoint + "/api/v2/properties/loop";
-
+    var loopurl = endpoint + "/api/v2/properties/loop,basal";
     var http = new XMLHttpRequest();
     http.open("GET", loopurl, false);
     http.onload = function(e) {
         if (http.status == 200) {
-            var data = JSON.parse(http.responseText);
+            //var loopdata = (http.responseText);
+    var loopn;
+    var loopok = " ";
+    var loopsymbol = "";
+    var loopbasal = "";
+          
+    loopn = JSON.parse(http.responseText);    
+    loopok = loopn.loop.lastOkMoment;
+    loopsymbol = loopn.loop.display.symbol;
+    loopbasal = loopn.basal.display;
+    console.log("loop status: " + loopn);
+          
+          message2 = {
+                        loopbasal: loopbasal,
+                        loopsym: loopsymbol,
+                        loopok:  loopok,
 
-            // Add the array data for graph
-            message.loop = createLoopData(data, opts);
-            //message.bgty = createBgTimeArray(data, opts);
-          console.log("Nightscout Loop Data:" + JSON.stringify(message));
-            return message;
+                        //loopok: loopok,
+                    };
 
         } else {
             sendUnknownError("dataerr");
@@ -142,55 +145,8 @@ function getLoopArrayData(message, opts) {
         sendUnknownError("invalidurl");
     }
     //console.log("Message 4:" + JSON.stringify(message));
-    return message;
+    //return messageLoop;
 } //end 
-/*function Looper(timestamp, duration, absolute) {
-    return {
-      "eventType": "Temp Basal",
-      "created_at": timestamp,
-      "duration": duration,
-      "absolute": absolute,
-    };
-  }*/
-/*function createLoopData(data, opts, Looper) {
-      
-    return Looper(data) {
-      if (data.length && data[0]['duration'] && Date.now() < new Date(data[0]['created_at']).getTime() + parseFloat(data[0]['duration']) * 60 * 1000) {
-        var start = new Date(Looper[0]['created_at']);
-        var rate;
-        if (data[0]['percent'] && parseFloat(data[0]['percent']) === 0) {
-          rate = 0;
-        } else {
-          rate = parseFloat(data[0]['absolute']);
-        }
-        return {start: start, rate: rate, duration: treatments[0]['duration']};
-      } else {
-        return undefined;
-      }
-    });
-  }
-*/
-
-function createLoopData(data, opts) {
-    var toReturn = "";
-    //console.log("-----------------------data.length:" + data.length);
-   // var now = new Date();
-   
-  
-   
-      var loopData = data[];
-     toReturn = toReturn + data[1] + ",";
-  
-        //console.log("----createBgArray------ data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
-      
-       // if (data[i]. == 'name' && data[i].name {
-       //     toReturn = toReturn + data[i].name.toString() + ",";
-       // }
-    //}
-    toReturn = toReturn.replace(/,\s*$/, "");
-    return toReturn;
-} //end createBgTimeArray     
-
 //Create BG ARRAY
 function createBgArray(data, opts) {
     var toReturn = "";
@@ -216,7 +172,6 @@ function createBgArray(data, opts) {
     return toReturn;
 } //end createBgTimeArray
 
-
 function createBgTimeArray(data, opts) {
     //  var bgHour = "00";
     //  var bgMin = "00";
@@ -233,7 +188,7 @@ function createBgTimeArray(data, opts) {
         var wall = parseInt(data[i].date);
         var timeAgo = msToMinutes(now.getTime() - wall);
       
-      //  console.log("-----createBgTimeArray----- data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
+        //console.log("-----createBgTimeArray----- data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
 
         if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >= minLimit) {
             toReturn2 = toReturn2 + (120 - timeAgo).toString() + ",";
@@ -244,35 +199,10 @@ function createBgTimeArray(data, opts) {
         return toReturn2;
    
 } // end createBgTimeArray
-/*
-function createLoopData(data, opts, responseloop) {
-    //  var bgHour = "00";
-    //  var bgMin = "00";
-    var toReturn3 = "";
-    var loopiob ="";
-    
-    var now = new Date();
-    //var loop, loopiob, loopbasal, looploop;
-    for (var i = 0; i < data.length; i++) {
-        var wall = parseInt(data[i].date);
-        var timeAgo = msToMinutes(now.getTime() - wall);
-        loopiob = responseloop.iob;
-        
-        console.log("-----loop----- loop: " + loopiob);
-        
-       // if (timeAgo < 120 && data[i].type == 'sgv' && data[i].device >= minLimit) {
-            toReturn3 = toReturn3 + data[i].lastBolus.toString() + ",";
-        //}
-    }
-        toReturn3 = toReturn3.replace(/,\s*$/, "");
-         console.log("createLoopData: " + toReturn3);
-        return toReturn3;
-   
-} // end createLoopData
-*/
-//get icon, bg, timeago, delta, name, noiz, raw, options
-function nightscout(opts) {
 
+//get icon, bg, timeago, delta, name, noiz, raw, options
+function nightscout(opts, message2) {
+    
     opts.endpoint = opts.endpoint + "/pebble";
     //console.log ("START fetchCgmData");
     // declare local variables for message data
@@ -296,8 +226,7 @@ function nightscout(opts) {
             clrw: " ",
             rwuf: " ",
             cob: " ",
-            //basal: " ",
-            noiz: 0
+            noiz: 0,
 
         };
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
@@ -321,15 +250,11 @@ function nightscout(opts) {
       MessageQueue.sendAppMessage(message);
     }, 59000 ); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds  
 	
+//June 23
     // get cgm data
-
     var arraydata = {};
     arraydata = getNightScoutArrayData(arraydata, opts);
-    var loopdata = {};
-    loopdata = createLoopData(loopdata, opts);
-
-    //loopdata = getLoopData(message, opts);
-
+    //getLoopData();
     req.onload = function(e) {
 
         if (req.readyState == 4) {
@@ -377,8 +302,7 @@ function nightscout(opts) {
                         currentBGDelta = responsebgs[0].bgdelta,
                         //currentBGDelta = -8,
                         formatBGDelta = " ",
-                        // get Current Basal
-                        //currentBasal = responsebgs[0].basal,
+
                         // get battery level
                         currentBattery = responsebgs[0].battery,
                         //currentBattery = "100",
@@ -600,10 +524,9 @@ function nightscout(opts) {
                         values += ",0"; // Do not vibrate on raw value when in special values                        
                     }
                     values += "," + opts.mycolors; // Color field
-
+//var loopok=loopn.loopok;
 
                     var mode_switch = getModeAsInteger(opts);
-
                     // load message data  
                     message = {
                         icon: currentIcon,
@@ -621,8 +544,8 @@ function nightscout(opts) {
                         mode_switch: 3,
                         bgsx: arraydata.bgsx,
                         bgty: arraydata.bgty,
-                        //lbasal: loopdata.basal,
-                        //lago: loopdata.ago,
+
+                        //loopok: loopok,
                     };
 
                     // send message data to log and to watch
@@ -1211,7 +1134,7 @@ Pebble.addEventListener("appmessage", function(e) {
 
 Pebble.addEventListener("showConfiguration", function(e) {
     console.log("Showing Configuration", JSON.stringify(e));
-    Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skylineloop.html');
+    Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skysharesparkconfigV2.html');
 });
 
 Pebble.addEventListener("webviewclosed", function(e) {
