@@ -29,7 +29,7 @@ function fetchCgmData() {
             opts.endpoint = opts.endpoint.replace("/pebble", "");
 
             nightscout(opts);
-            //getLoopData();
+            getLoopData(opts);
             break;
 
         case "US_Share":
@@ -96,57 +96,6 @@ function getNightScoutArrayData(message, opts) {
     return message;
 } //end 
 
-function getLoopData(message2, opts) {
-    // opts.vibe = parseInt(opts.vibe, 10);
-    // console.log("OPTS:" + opts);
-    var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
-    endpoint = endpoint.replace("/pebble/", "");
-    endpoint = endpoint.replace("/pebble", "");
-
-    var loopurl = endpoint + "/api/v2/properties/loop,basal";
-    var http = new XMLHttpRequest();
-    http.open("GET", loopurl, false);
-    http.onload = function(e) {
-        if (http.status == 200) {
-            //var loopdata = (http.responseText);
-    var loopn;
-    var loopok = " ";
-    var loopsymbol = "";
-    var loopbasal = "";
-          
-    loopn = JSON.parse(http.responseText);    
-    loopok = loopn.loop.lastOkMoment;
-    loopsymbol = loopn.loop.display.symbol;
-    loopbasal = loopn.basal.display;
-    console.log("loop status: " + loopn);
-          
-          message2 = {
-                        loopbasal: loopbasal,
-                        loopsym: loopsymbol,
-                        loopok:  loopok,
-
-                        //loopok: loopok,
-                    };
-
-        } else {
-            sendUnknownError("dataerr");
-        }
-    };
-    http.onerror = function() {
-        sendServerError();
-    };
-    http.ontimeout = function() {
-        sendTimeOutError();
-    };
-
-    try {
-        http.send();
-    } catch (e) {
-        sendUnknownError("invalidurl");
-    }
-    //console.log("Message 4:" + JSON.stringify(message));
-    //return messageLoop;
-} //end 
 //Create BG ARRAY
 function createBgArray(data, opts) {
     var toReturn = "";
@@ -200,14 +149,60 @@ function createBgTimeArray(data, opts) {
    
 } // end createBgTimeArray
 
-//get icon, bg, timeago, delta, name, noiz, raw, options
-function nightscout(opts, message2) {
+function getLoopData(opts) {
     
+    var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
+                   endpoint = endpoint.replace("/pebble/", "");
+                   endpoint = endpoint.replace("/pebble", "");
+
+    var loopurl = endpoint + "/api/v2/properties/loop,basal";
+    var http = new XMLHttpRequest();
+    http.open("GET", loopurl, false);
+    http.onload = function(e) {
+        if (http.status == 200) {
+            //var loopdata = (http.responseText);
+    var loopn = JSON.parse(http.responseText); 
+
+         
+          if (loopn.length === 0) {
+             sendUnknownError("dataerr");
+
+          //return loopok;
+         // console.log("Typeof" typeof loopsymbol);
+        } else {
+            opts.Last =  loopn.loop.lastOkMoment;
+            opts.Symbol = loopn.loop.display.symbol; 
+            opts.Basal = loopn.basal.display;
+    
+          console.log("loop body: " + opts.Last + opts.Symbol + opts.Basal);
+             }
+        }
+    };
+    http.onerror = function() {
+        sendServerError();
+    };
+    http.ontimeout = function() {
+        sendTimeOutError();
+    };
+
+    try {
+        http.send();
+    } catch (e) {
+        sendUnknownError("invalidurl");
+    }
+    //console.log("Message 4:" + JSON.stringify(message));
+    //return messageLoop;
+} //end 
+
+//get icon, bg, timeago, delta, name, noiz, raw, options
+function nightscout(opts) {
+      //var loopok = loopn.loop.lastOkMoment;
+ // getLoopData();
     opts.endpoint = opts.endpoint + "/pebble";
     //console.log ("START fetchCgmData");
     // declare local variables for message data
     var response, responsebgs, responsecals, message;
-
+    
     // check if endpoint exists
     if (!opts.endpoint) {
         // endpoint doesn't exist, return no endpoint to watch
@@ -224,9 +219,12 @@ function nightscout(opts, message2) {
             bgsx: " ",
             bgty: " ",
             clrw: " ",
-            rwuf: " ",
+            //rwuf: " ",
             cob: " ",
-            noiz: 0,
+           // noiz: 0,
+            sym: " ",
+            last: 0,
+            basal: " ",
 
         };
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
@@ -250,11 +248,11 @@ function nightscout(opts, message2) {
       MessageQueue.sendAppMessage(message);
     }, 59000 ); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds  
 	
-//June 23
     // get cgm data
     var arraydata = {};
     arraydata = getNightScoutArrayData(arraydata, opts);
-    //getLoopData();
+    
+
     req.onload = function(e) {
 
         if (req.readyState == 4) {
@@ -269,7 +267,6 @@ function nightscout(opts, message2) {
                 responsebgs = response.bgs;
                 responsecals = response.cals;
                 //ADDED NEW
-
                 // check response data
                 if (responsebgs && responsebgs.length > 0) {
 
@@ -287,6 +284,7 @@ function nightscout(opts, message2) {
                         rawCalcOffset = 5,
                         specialValue = false,
                         calibrationValue = false,
+                        
 
                         // get CGM time delta and format
                         readingTime = new Date(responsebgs[0].datetime).getTime(),
@@ -302,11 +300,14 @@ function nightscout(opts, message2) {
                         currentBGDelta = responsebgs[0].bgdelta,
                         //currentBGDelta = -8,
                         formatBGDelta = " ",
+                        //get loop information'
+                        loopSym = opts.Symbol,
+                        loopBasal = opts.Basal,
+                        loopLast = opts.Last,
 
                         // get battery level
                         currentBattery = responsebgs[0].battery,
                         //currentBattery = "100",
-
                         // get NameofT1DPerson and IOB
                         NameofT1DPerson = opts.t1name,
                         currentIOB = responsebgs[0].iob,
@@ -400,7 +401,7 @@ function nightscout(opts, message2) {
                         default:
                             currentIcon = "10";
                     }
-
+                     
                     // if no battery being sent yet, then send nothing to watch
                     // console.log("Battery Value: " + currentBattery);
                     if ((typeof currentBattery == "undefined") || (currentBattery === null)) {
@@ -442,10 +443,10 @@ function nightscout(opts, message2) {
                             (isNaN(currentRawFilt))) {
                             currentRawFilt = "ERR";
                         }
-                        if ((currentRawUnfilt < 0) || (currentRawUnfilt > 900000) ||
-                            (isNaN(currentRawUnfilt))) {
-                            currentRawUnfilt = "ERR";
-                        }
+                        //if ((currentRawUnfilt < 0) || (currentRawUnfilt > 900000) ||
+                        //    (isNaN(currentRawUnfilt))) {
+                        //    currentRawUnfilt = "ERR";
+                       // }
 
                         // set 0, LO and HI in calculated raw
                         if ((currentCalcRaw >= 0) && (currentCalcRaw < 30)) {
@@ -524,7 +525,6 @@ function nightscout(opts, message2) {
                         values += ",0"; // Do not vibrate on raw value when in special values                        
                     }
                     values += "," + opts.mycolors; // Color field
-//var loopok=loopn.loopok;
 
                     var mode_switch = getModeAsInteger(opts);
                     // load message data  
@@ -538,14 +538,15 @@ function nightscout(opts, message2) {
                         name: NameofT1DPerson,
                         vals: values,
                         clrw: formatCalcRaw,
-                        rwuf: formatRawUnfilt,
-                        noiz: currentNoise,
+                        //rwuf: formatRawUnfilt,
+                        //noiz: currentNoise,
                         cob: currentCOB,
-                        mode_switch: 3,
+                        //mode_switch: 3,
                         bgsx: arraydata.bgsx,
                         bgty: arraydata.bgty,
-
-                        //loopok: loopok,
+                        sym: loopSym,
+                        last: loopLast,
+                        basal: loopBasal,
                     };
 
                     // send message data to log and to watch
@@ -747,7 +748,6 @@ function sendUnknownError(msg) {
     });
 }
 
-
 function getShareGlucoseData(sessionId, defaults, options) {
     var now = new Date();
     var http = new XMLHttpRequest();
@@ -917,7 +917,6 @@ function createShareBgArray(data) {
     return toReturn;
 }
 
-
 function createShareBgTimeArray(data) {
     var toReturn = "";
     var regex = /\((.*)\)/;
@@ -962,7 +961,6 @@ function calculateShareAlert(bg, currentId, options) {
 
     return 0;
 }
-
 
 function logging(message) {
     if (logging)

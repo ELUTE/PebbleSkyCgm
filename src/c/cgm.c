@@ -38,9 +38,12 @@ TextLayer *time_watch_layer = NULL;
 TextLayer *date_app_layer = NULL;
 TextLayer *happymsg_layer = NULL;
 TextLayer *raw_calc_layer = NULL;
-TextLayer *raw_unfilt_layer = NULL;
+TextLayer *symbol_layer = NULL;
 TextLayer *noise_layer = NULL;
 TextLayer *cob_layer = NULL;
+TextLayer *basal_layer = NULL;
+TextLayer *time_layer = NULL;
+
 
 // main window layer
 BitmapLayer *icon_layer = NULL;
@@ -98,6 +101,7 @@ uint8_t current_battlevel = 0;
 uint32_t current_cgm_time = 0;
 uint32_t stored_cgm_time = 0;
 uint32_t current_cgm_timeago = 0;
+uint32_t current_time = 0;
 uint8_t init_loading_cgm_timeago = 111;
 char cgm_label_buffer[6] = {0};
 int cgm_timeago_diff = 0;
@@ -111,9 +115,10 @@ uint8_t ClearedBTOutage = 100;
 uint32_t current_app_time = 0;
 static char current_bg_delta[6] = {0};
 static char last_calc_raw[6] = {0};
-static char last_raw_unfilt[6] = {0};
+static char current_symbol[4] = {0};
 static char current_cob[8] = {0};
 static char current_name[6] = {0};
+static char current_basal[6] = {0};
 
 int color_value = 0;
 GColor top_colour = GColorWhiteInit;
@@ -289,7 +294,7 @@ uint8_t HardCodeAllAnimations = 100;
 // If you want to turn off vibrations for calculated raw, set to 111 (true)
 uint8_t TurnOffVibrationsCalcRaw = 100;
 // If you want to see unfiltered raw, set to 111 (true)
-uint8_t TurnOnUnfilteredRaw = 111;
+//uint8_t TurnOnUnfilteredRaw = 111;
 
 // ** END OF CONSTANTS THAT CAN BE CHANGED; DO NOT CHANGE IF YOU DO NOT KNOW WHAT YOU ARE DOING **
 
@@ -336,12 +341,14 @@ enum CgmKey {
     CGM_NAME_KEY = 0x6, // TUPLE_CSTRING, MAX 9 BYTES (Christine)
     CGM_VALS_KEY = 0x7,   // TUPLE_CSTRING, MAX 60 BYTES (0,000,000,000,000,0,0,0,0,0)
     CGM_CLRW_KEY = 0x8,   // TUPLE_CSTRING, MAX 4 BYTES (253 OR 22.2)
-    CGM_RWUF_KEY = 0x9,   // TUPLE_CSTRING, MAX 4 BYTES (253 OR 22.2)
-    CGM_BGSX_KEY = 0xA, // TUPLE_CSTRING, MAX 28 BYTES
-    CGM_BGTY_KEY = 0xB, // TUPLE_CSTRING, MAX 28 BYTES
-    CGM_NOIZ_KEY = 0xC, // MAX 4 BYTE (4)
-    CGM_COB_KEY = 0xD, // COB MAX 4 BYTES
-    CGM_MODE_SWITCH_KEY = 0xE, //MODE SHARE TUPLE_INT, MAX 4 BYTES
+    CGM_BGSX_KEY = 0x9, // TUPLE_CSTRING, MAX 28 BYTES
+    CGM_BGTY_KEY = 0xA, // TUPLE_CSTRING, MAX 28 BYTES
+    //CGM_NOIZ_KEY = 0x11, // MAX 4 BYTE (4)
+    CGM_COB_KEY = 0xB, // COB MAX 4 BYTES
+    //CGM_MODE_SWITCH_KEY = 0x13, //MODE SHARE TUPLE_INT, MAX 4 BYTES
+    CGM_SYM_KEY = 0xC,
+    CGM_TIME_KEY = 0xD,
+    CGM_BASAL_KEY = 0xE,
 };
 // TOTAL MESSAGE DATA 4x5+2+5+3+9+25+28+28 = 120 BYTES
 // TOTAL KEY HEADER DATA (STRINGS) 4x15+2 = 62 BYTES
@@ -531,7 +538,7 @@ static void load_colour() {
       text_layer_set_background_color(happymsg_layer, GColorBabyBlueEyes);
       text_layer_set_text_color(happymsg_layer, GColorIndigo);
       text_layer_set_text_color(date_app_layer, GColorBabyBlueEyes);
-      text_layer_set_text_color(raw_unfilt_layer, GColorIndigo);
+      text_layer_set_text_color(symbol_layer, GColorIndigo);
       text_layer_set_text_color(raw_calc_layer, GColorIndigo);
       text_layer_set_text_color(message_layer, GColorIndigo);
       text_layer_set_text_color(t1dname_layer, GColorIndigo);
@@ -554,7 +561,7 @@ static void load_colour() {
       text_layer_set_text_color(happymsg_layer, GColorBlack);
       text_layer_set_text_color(date_app_layer, GColorWhite);
       //text_layer_set_background_color(tophalf_layer, GColorWhite);
-      text_layer_set_text_color(raw_unfilt_layer, GColorBlack);
+      text_layer_set_text_color(symbol_layer, GColorBlack);
       text_layer_set_text_color(raw_calc_layer, GColorBlack);
       text_layer_set_text_color(message_layer, GColorBlack);
       text_layer_set_text_color(t1dname_layer, GColorBlack);
@@ -577,7 +584,7 @@ static void load_colour() {
       text_layer_set_text_color(happymsg_layer, GColorWhite);
       text_layer_set_text_color(date_app_layer, GColorMalachite );
      // text_layer_set_background_color(tophalf_layer, GColorWhite);
-      text_layer_set_text_color(raw_unfilt_layer, GColorDarkGreen);
+      text_layer_set_text_color(symbol_layer, GColorDarkGreen);
       text_layer_set_text_color(raw_calc_layer, GColorDarkGreen);
       text_layer_set_text_color(message_layer, GColorDarkGreen);
       text_layer_set_text_color(t1dname_layer, GColorDarkGreen);
@@ -598,7 +605,7 @@ static void load_colour() {
       text_layer_set_background_color(happymsg_layer, GColorFashionMagenta);
       text_layer_set_text_color(happymsg_layer, GColorWhite);
       text_layer_set_text_color(date_app_layer, GColorRichBrilliantLavender);
-      text_layer_set_text_color(raw_unfilt_layer, GColorJazzberryJam);
+      text_layer_set_text_color(symbol_layer, GColorJazzberryJam);
       text_layer_set_text_color(raw_calc_layer, GColorJazzberryJam);
       //text_layer_set_background_color(tophalf_layer, GColorRichBrilliantLavender);
       text_layer_set_text_color(message_layer, GColorJazzberryJam);
@@ -2065,6 +2072,7 @@ static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_ti
   }
 
 } // end set_cgm_timeago
+
 static void load_cgmtime() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
     // VARIABLES
@@ -2216,7 +2224,6 @@ static void load_cgmtime() {
 
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD CGMTIME, CGM TIMEAGO LABEL OUT: %s", cgm_label_buffer);
 } // end load_cgmtime
-
 
 static void load_apptime(){
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD APPTIME, READ APP TIME FUNCTION START");
@@ -2793,18 +2800,6 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 
             break; // break for CGM_CLRW_KEY
 
-        case CGM_RWUF_KEY:;
-            //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: RAW UNFILTERED");
-            text_layer_set_text_color(raw_unfilt_layer, text_colour);
-            strncpy(last_raw_unfilt, new_tuple->value->cstring, BG_MSGSTR_SIZE);
-            if ( (strcmp(last_raw_unfilt, "0") == 0) || (strcmp(last_raw_unfilt, "0.0") == 0) || (TurnOnUnfilteredRaw == 100) ) {
-                strncpy(last_raw_unfilt, " ", BG_MSGSTR_SIZE);
-            }
-            text_layer_set_text(raw_unfilt_layer, last_raw_unfilt);
-
-            //APP_LOG(APP_LOG_LEVEL_INFO, "rwuf key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
-
-          break; // break for CGM_RWUF_KEY
 
         case CGM_BGSX_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BGS X AXIS");
@@ -2885,7 +2880,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CGM_BGTY_KEY: %s ", new_tuple->value->cstring);
             //APP_LOG(APP_LOG_LEVEL_INFO, "bgty key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
           break;
-          case CGM_NOIZ_KEY:;
+          /*case CGM_NOIZ_KEY:;
                 //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: NOISE");
                 current_noise_value = new_tuple->value->uint8;
                 text_layer_set_text_color(noise_layer, text_colour);
@@ -2893,6 +2888,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 //                APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, NOISE: %i ", current_noise_value);
                 load_noise();
                 break; // break for CGM_NOIZ_KEY
+                */
 
         case CGM_COB_KEY:;
            // APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: COB: ");
@@ -2914,7 +2910,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           //APP_LOG(APP_LOG_LEVEL_INFO, "cob key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
           break; // break for CGM_COB_KEY
-          case CGM_MODE_SWITCH_KEY:;
+          /*case CGM_MODE_SWITCH_KEY:;
                 current_mode_value= new_tuple->value->uint8;
                 //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, MODE: %i ", current_mode_value);
 
@@ -2926,7 +2922,34 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                     layer_set_bounds(text_layer_get_layer(bg_layer), GRect(Horizontal,Vertical, 102, 40));
                 }
                 break;
+          */
+          case CGM_SYM_KEY:;
+            APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
+            strncpy(current_symbol, new_tuple->value->cstring, 6);
+           
+            text_layer_set_text(symbol_layer, current_symbol);
+            text_layer_set_text_color(symbol_layer, text_colour);
 
+
+          break; // break for CGM_SYM_KEY
+          
+          case CGM_TIME_KEY:;
+            //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ APP TIME NOW");
+            current_time = new_tuple->value->uint32;
+           // APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, APP TIME VALUE: %lu ", current_app_time);
+           // load_apptime();
+             //APP_LOG(APP_LOG_LEVEL_INFO, "tapp key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+
+            break; // break for CGM_TAPP_KEY
+
+          case CGM_BASAL_KEY:;
+            APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BASAL");
+            strncpy(current_basal, new_tuple->value->cstring, BG_MSGSTR_SIZE);
+            //text_layer_set_text(basal_layer, current_basal);
+            //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            break; // break for CGM_BASAL_KEY
+          
+          
         default:
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "new_tuple->value->cstring: %s" ,new_tuple->value->cstring);
             break;
@@ -3247,17 +3270,32 @@ void window_load_cgm(Window *window_cgm) {
     #endif
       text_layer_set_text_color(raw_calc_layer, text_colour);
 
-
-// RAW UNFILT
+// SYMBOL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&raw_unfilt_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&symbol_layer, GRect(91, 7, 25, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&raw_unfilt_layer, GRect(74, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&symbol_layer, GRect(74, 5, 25, 25), FONT_KEY_GOTHIC_24_BOLD);
     #endif
-        text_layer_set_text_color(raw_unfilt_layer, text_colour);
+        text_layer_set_text_color(symbol_layer, text_colour);
+
+// BASAL
+    #ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&basal_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    #else
+        window_cgm_add_text_layer(&basal_layer, GRect(74, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    #endif
+        text_layer_set_text_color(basal_layer, text_colour);
+
+// BASAL
+    #ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&time_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    #else
+        window_cgm_add_text_layer(&time_layer, GRect(74, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+    #endif
+        text_layer_set_text_color(time_layer, text_colour);
 
 // BG
-        window_cgm_add_text_layer(&bg_layer, GRect(Horizontal, Vertical, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+        window_cgm_add_text_layer(&bg_layer, GRect(0, 20, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 
 // DELTA BG / MESSAGE LAYER
     #ifdef PBL_PLATFORM_CHALK
@@ -3306,12 +3344,15 @@ void window_load_cgm(Window *window_cgm) {
             TupletCString(CGM_NAME_KEY, " "),
             TupletCString(CGM_VALS_KEY, " "),
             TupletCString(CGM_CLRW_KEY, " "),
-            TupletCString(CGM_RWUF_KEY, " "),
+//            TupletCString(CGM_RWUF_KEY, " "),
             TupletCString(CGM_BGSX_KEY, " "),
             TupletInteger(CGM_BGTY_KEY, 0),
-            TupletInteger(CGM_NOIZ_KEY, 0),
-            TupletInteger(CGM_MODE_SWITCH_KEY, 0),//add share mode
+            //TupletInteger(CGM_NOIZ_KEY, 0),
+            //TupletInteger(CGM_MODE_SWITCH_KEY, 0),//add share mode
             TupletCString(CGM_COB_KEY,  " "),
+            TupletCString(CGM_SYM_KEY, " "),
+            TupletCString(CGM_TIME_KEY,  " "),
+            TupletCString(CGM_BASAL_KEY, " "),
         };
 
         //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW LOAD, ABOUT TO CALL APP SYNC INIT");
@@ -3393,9 +3434,12 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&date_app_layer);
     destroy_null_TextLayer(&happymsg_layer);
     destroy_null_TextLayer(&raw_calc_layer);
-    destroy_null_TextLayer(&raw_unfilt_layer);
+    destroy_null_TextLayer(&symbol_layer);
     destroy_null_TextLayer(&noise_layer);
     destroy_null_TextLayer(&cob_layer);
+    destroy_null_TextLayer(&basal_layer);
+    destroy_null_TextLayer(&time_layer);
+
 
       //APP_LOG(APP_LOG_LEVEL_INFO, "10 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
