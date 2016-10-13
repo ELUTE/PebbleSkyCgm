@@ -38,7 +38,6 @@ TextLayer *time_watch_layer = NULL;
 TextLayer *date_app_layer = NULL;
 TextLayer *happymsg_layer = NULL;
 TextLayer *raw_calc_layer = NULL;
-TextLayer *symbol_layer = NULL;
 TextLayer *noise_layer = NULL;
 TextLayer *cob_layer = NULL;
 TextLayer *basal_layer = NULL;
@@ -49,12 +48,15 @@ TextLayer *time_layer = NULL;
 BitmapLayer *icon_layer = NULL;
 BitmapLayer *perfectbg_layer = NULL;
 BitmapLayer *battery_layer = NULL;
+BitmapLayer *symbol_layer = NULL;
 
 // main window layer
 GBitmap *icon_bitmap = NULL;
 GBitmap *specialvalue_bitmap = NULL;
 GBitmap *perfectbg_bitmap = NULL;
 GBitmap *battery_bitmap = NULL;
+GBitmap *symbol_bitmap = NULL;
+
 
 static Layer *circle_layer;
 static Layer *cob_circle_layer;
@@ -115,7 +117,7 @@ uint8_t ClearedBTOutage = 100;
 uint32_t current_app_time = 0;
 static char current_bg_delta[6] = {0};
 static char last_calc_raw[6] = {0};
-static char current_symbol[4] = {0};
+static char current_symbol[8] = {1};
 static char current_cob[8] = {0};
 static char current_name[6] = {0};
 static char current_basal[6] = {0};
@@ -363,7 +365,10 @@ static const uint8_t SPECIAL_VALUE_ICONS[] = {
     RESOURCE_ID_IMAGE_HOURGLASS,        //4
     RESOURCE_ID_IMAGE_QUESTION_MARKS,   //5
     RESOURCE_ID_IMAGE_LOGO,      //6
-   // RESOURCE_ID_IMAGE_GAUGE //7
+    RESOURCE_ID_IMAGE_LIGHTNING, //7
+    RESOURCE_ID_IMAGE_LOOP, //8
+    RESOURCE_ID_IMAGE_X, //9
+  
 };
 
 // INDEX FOR ARRAY OF SPECIAL VALUE ICONS
@@ -374,6 +379,10 @@ static const uint8_t STOP_LIGHT_ICON_INDX = 3;
 static const uint8_t HOURGLASS_ICON_INDX = 4;
 static const uint8_t QUESTION_MARKS_ICON_INDX = 5;
 static const uint8_t LOGOSPECIAL_ICON_INDX = 6;
+static const uint8_t LIGHTNING_ICON_INDX = 7;
+static const uint8_t LOOP_ICON_INDX = 8;
+static const uint8_t X_ICON_INDX = 9;
+
 
 
 //ADD SHARE LOCATION VARIABLES
@@ -494,6 +503,33 @@ int myBGAtoi(char *str) {
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "myBGAtoi, FINAL RESULT OUT: %i", res );
     return res;
 } // end myBGAtoi
+
+/*static void load_symbol() {
+      // CONSTANTS
+#define L 0
+#define E 1
+#define X 2
+  switch (current_symbol) {
+
+        case L:;
+            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
+            //text_layer_set_text(noise_layer, " \0");
+            break;
+        case E:;
+            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
+            //text_layer_set_text(noise_layer, " \0");
+            break;
+        case X:;
+            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
+            //text_layer_set_text(noise_layer, ".\0");
+            break;
+    
+        default:;
+            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[PIXEL_ICON_INDX]);
+    }
+
+
+} */
 static void load_colour() {
 
   //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD COLOR, FUNCTION START");
@@ -520,9 +556,8 @@ static void load_colour() {
       text_layer_set_text_color(message_layer, GColorOxfordBlue);
       text_layer_set_text_color(t1dname_layer, GColorOxfordBlue);
       text_layer_set_text_color(cob_layer, GColorOxfordBlue);
-
-
       break;
+    
     // Purples
     case 1:;
       top_colour =    GColorWhite;
@@ -538,7 +573,6 @@ static void load_colour() {
       text_layer_set_background_color(happymsg_layer, GColorBabyBlueEyes);
       text_layer_set_text_color(happymsg_layer, GColorIndigo);
       text_layer_set_text_color(date_app_layer, GColorBabyBlueEyes);
-      text_layer_set_text_color(symbol_layer, GColorIndigo);
       text_layer_set_text_color(raw_calc_layer, GColorIndigo);
       text_layer_set_text_color(message_layer, GColorIndigo);
       text_layer_set_text_color(t1dname_layer, GColorIndigo);
@@ -561,7 +595,6 @@ static void load_colour() {
       text_layer_set_text_color(happymsg_layer, GColorBlack);
       text_layer_set_text_color(date_app_layer, GColorWhite);
       //text_layer_set_background_color(tophalf_layer, GColorWhite);
-      text_layer_set_text_color(symbol_layer, GColorBlack);
       text_layer_set_text_color(raw_calc_layer, GColorBlack);
       text_layer_set_text_color(message_layer, GColorBlack);
       text_layer_set_text_color(t1dname_layer, GColorBlack);
@@ -584,7 +617,6 @@ static void load_colour() {
       text_layer_set_text_color(happymsg_layer, GColorWhite);
       text_layer_set_text_color(date_app_layer, GColorMalachite );
      // text_layer_set_background_color(tophalf_layer, GColorWhite);
-      text_layer_set_text_color(symbol_layer, GColorDarkGreen);
       text_layer_set_text_color(raw_calc_layer, GColorDarkGreen);
       text_layer_set_text_color(message_layer, GColorDarkGreen);
       text_layer_set_text_color(t1dname_layer, GColorDarkGreen);
@@ -605,7 +637,6 @@ static void load_colour() {
       text_layer_set_background_color(happymsg_layer, GColorFashionMagenta);
       text_layer_set_text_color(happymsg_layer, GColorWhite);
       text_layer_set_text_color(date_app_layer, GColorRichBrilliantLavender);
-      text_layer_set_text_color(symbol_layer, GColorJazzberryJam);
       text_layer_set_text_color(raw_calc_layer, GColorJazzberryJam);
       //text_layer_set_background_color(tophalf_layer, GColorRichBrilliantLavender);
       text_layer_set_text_color(message_layer, GColorJazzberryJam);
@@ -2897,13 +2928,9 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             text_layer_set_text_color(cob_layer, text_colour);
 
             if ( (strcmp(current_cob, " ") == 0) || (strcmp(current_cob, "0") == 0) ) {
-                //layer_set_hidden((Layer*)cob_circle_layer, true);
-                //layer_set_hidden((Layer*)cob_layer,true);
                layer_set_hidden(cob_circle_layer, true);
                layer_set_hidden(text_layer_get_layer(cob_layer), true);
             }else {
-               // layer_set_hidden((Layer*)cob_circle_layer, false);
-               // layer_set_hidden((Layer*)cob_layer,false);
                   layer_set_hidden(cob_circle_layer, false);
                   layer_set_hidden(text_layer_get_layer(cob_layer), false);
             }
@@ -2925,14 +2952,40 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           */
           case CGM_SYM_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
-            strncpy(current_symbol, new_tuple->value->cstring, 6);
-           
-            text_layer_set_text(symbol_layer, current_symbol);
-            text_layer_set_text_color(symbol_layer, text_colour);
+            strncpy(current_symbol, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
+            //load_symbol();
+          if (strchr(current_symbol, *"E"))
+          //if (current_symbol==="E")
+         // if (strcmp(cstring, "E") ==0) 
+             {
+                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
+    
+} 
+else if 
+  (strchr(current_symbol, *"L"))
+  //(strcmp(cstring, "L") == 0)
+{
+            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
+}
+          else if
+            //(strcmp(cstring, "X") == 0)
+            
+            (strchr(current_symbol, *"X"))
+            {
+            
+                        create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
 
+            
+          }else{
+                        create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
 
+          }
+            //text_layer_set_text(symbol_layer, current_symbol);
+            //text_layer_set_text_color(symbol_layer, text_colour);
+
+             APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, Symbol: %s", current_symbol);
           break; // break for CGM_SYM_KEY
-          
+       /*
           case CGM_TIME_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ APP TIME NOW");
             current_time = new_tuple->value->uint32;
@@ -2941,11 +2994,11 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
              //APP_LOG(APP_LOG_LEVEL_INFO, "tapp key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
             break; // break for CGM_TAPP_KEY
-
+            */
           case CGM_BASAL_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BASAL");
             strncpy(current_basal, new_tuple->value->cstring, BG_MSGSTR_SIZE);
-            //text_layer_set_text(basal_layer, current_basal);
+            text_layer_set_text(basal_layer, current_basal);
             //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             break; // break for CGM_BASAL_KEY
           
@@ -3145,11 +3198,11 @@ void window_load_cgm(Window *window_cgm) {
 //CHART LAYER
     chart_layer = chart_layer_create((GRect) {
 #ifdef PBL_PLATFORM_CHALK
-        .origin = { 4, 88},
-            .size = { 173, 48 } });
+        .origin = { 4, 100},
+            .size = { 173, 38 } });
 #else
-        .origin = { -1, 94},
-            .size = { 145, 53 } });
+        .origin = { -1, 104},
+            .size = { 145, 43 } });
 #endif
         //chart_layer_set_plot_colour(chart_layer, plot_colour);
         chart_layer_set_canvas_color(chart_layer, GColorPictonBlue);
@@ -3182,8 +3235,6 @@ void window_load_cgm(Window *window_cgm) {
     #else
         window_cgm_add_text_layer(&tophalf_layer, GRect(0, 0, 145, 77), FONT_KEY_GOTHIC_28_BOLD);
     #endif
-        //text_layer_set_background_color(tophalf_layer, top_colour);
-
 
 //NAME CIRCLE LAYER
         name_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
@@ -3211,9 +3262,9 @@ void window_load_cgm(Window *window_cgm) {
 
 // RIG BATTERY LEVEL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(2, 66, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(48, 75, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
     #else
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(8, 74, 45, 50), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(54, 83, 45, 50), FONT_KEY_GOTHIC_18_BOLD);
     #endif
         text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
 
@@ -3248,7 +3299,6 @@ void window_load_cgm(Window *window_cgm) {
     #else
         window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 150, 50, 22), FONT_KEY_GOTHIC_14_BOLD);
     #endif
-        //text_layer_set_text_color(watch_battlevel_layer, GColorMidnightGreen);
         handle_watch_battery_cgm(battery_state_service_peek());
 
 // T1D NAME/IOB
@@ -3264,29 +3314,28 @@ void window_load_cgm(Window *window_cgm) {
 
 // RAW CALCULATED
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&raw_calc_layer, GRect(55, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&raw_calc_layer, GRect(200, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&raw_calc_layer, GRect(39, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&raw_calc_layer, GRect(200, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
     #endif
-      text_layer_set_text_color(raw_calc_layer, text_colour);
+      text_layer_set_text_color(raw_calc_layer, GColorWhite);
 
 // SYMBOL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&symbol_layer, GRect(91, 7, 25, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(38, 0, 80, 40), GAlignCenter);
     #else
-        window_cgm_add_text_layer(&symbol_layer, GRect(74, 5, 25, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(38, 0, 80, 40), GAlignCenter);
     #endif
-        text_layer_set_text_color(symbol_layer, text_colour);
 
 // BASAL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&basal_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&basal_layer, GRect(16, 67, 50, 23), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&basal_layer, GRect(74, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&basal_layer, GRect(0, 75, 50, 23), FONT_KEY_GOTHIC_24_BOLD);
     #endif
-        text_layer_set_text_color(basal_layer, text_colour);
+        text_layer_set_text_color(basal_layer, GColorWhite);
 
-// BASAL
+// TIME
     #ifdef PBL_PLATFORM_CHALK
         window_cgm_add_text_layer(&time_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
@@ -3315,9 +3364,9 @@ void window_load_cgm(Window *window_cgm) {
 
 // CGM TIME AGO READING
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(115, 61, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(115, 65, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(91, 69, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(91, 74, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
     #endif
         text_layer_set_text_color(cgmtime_layer, GColorWhite);
         text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
@@ -3405,6 +3454,7 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_GBitmap(&specialvalue_bitmap);
     destroy_null_GBitmap(&perfectbg_bitmap);
     destroy_null_GBitmap(&battery_bitmap);
+    destroy_null_GBitmap(&symbol_bitmap);
 
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW UNLOAD, DESTROY LAYERS IF EXIST");
     destroy_null_Layer(&circle_layer);
@@ -3421,6 +3471,8 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_BitmapLayer(&icon_layer);
     destroy_null_BitmapLayer(&perfectbg_layer);
     destroy_null_BitmapLayer(&battery_layer);
+    destroy_null_BitmapLayer(&symbol_layer);
+
 
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW UNLOAD, DESTROY TEXT LAYERS IF EXIST");
     destroy_null_TextLayer(&tophalf_layer);
@@ -3434,7 +3486,6 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&date_app_layer);
     destroy_null_TextLayer(&happymsg_layer);
     destroy_null_TextLayer(&raw_calc_layer);
-    destroy_null_TextLayer(&symbol_layer);
     destroy_null_TextLayer(&noise_layer);
     destroy_null_TextLayer(&cob_layer);
     destroy_null_TextLayer(&basal_layer);

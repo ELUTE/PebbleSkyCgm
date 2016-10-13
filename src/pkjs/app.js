@@ -171,7 +171,7 @@ function getLoopData(opts) {
          // console.log("Typeof" typeof loopsymbol);
         } else {
             opts.Last =  loopn.loop.lastOkMoment;
-            opts.Symbol = loopn.loop.display.symbol; 
+            opts.Symbol = loopn.loop.display.label; 
             opts.Basal = loopn.basal.display;
     
           console.log("loop body: " + opts.Last + opts.Symbol + opts.Basal);
@@ -223,7 +223,7 @@ function nightscout(opts) {
             cob: " ",
            // noiz: 0,
             sym: " ",
-            last: 0,
+            last: " ",
             basal: " ",
 
         };
@@ -300,11 +300,14 @@ function nightscout(opts) {
                         currentBGDelta = responsebgs[0].bgdelta,
                         //currentBGDelta = -8,
                         formatBGDelta = " ",
+                        
+                        
                         //get loop information'
                         loopSym = opts.Symbol,
                         loopBasal = opts.Basal,
                         loopLast = opts.Last,
-
+                        currentSym = loopSym,
+                    
                         // get battery level
                         currentBattery = responsebgs[0].battery,
                         //currentBattery = "100",
@@ -525,7 +528,19 @@ function nightscout(opts) {
                         values += ",0"; // Do not vibrate on raw value when in special values                        
                     }
                     values += "," + opts.mycolors; // Color field
-
+                   switch (loopSym) {
+                        case "Enacted":
+                            currentSym = "E";
+                            break;
+                        case "Looping":
+                            currentSym = "L";
+                            break;
+                        case "Error":
+                            currentSym = "X";
+                        default:
+                            currentSym = " ";
+                       console.log("CurrentSym" + currentSym);
+                    }
                     var mode_switch = getModeAsInteger(opts);
                     // load message data  
                     message = {
@@ -544,7 +559,7 @@ function nightscout(opts) {
                         //mode_switch: 3,
                         bgsx: arraydata.bgsx,
                         bgty: arraydata.bgty,
-                        sym: loopSym,
+                        sym: currentSym,
                         last: loopLast,
                         basal: loopBasal,
                     };
