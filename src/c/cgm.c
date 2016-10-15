@@ -26,6 +26,7 @@ Window *window_cgm = NULL;
 Layer *window_layer_cgm = NULL;
 ChartLayer* chart_layer = NULL;
 
+
 // MAIN WINDOW LAYER
 TextLayer *tophalf_layer = NULL;
 TextLayer *bg_layer = NULL;
@@ -42,6 +43,7 @@ TextLayer *noise_layer = NULL;
 TextLayer *cob_layer = NULL;
 TextLayer *basal_layer = NULL;
 TextLayer *time_layer = NULL;
+TextLayer *s_layer =NULL;
 
 
 // main window layer
@@ -61,6 +63,7 @@ static Layer *circle_layer;
 static Layer *cob_circle_layer;
 static Layer *name_circle_layer;
 static Layer *batteryGraphicsLayer;
+
 static GPath *batteryOutlinePath = NULL;
 
 //BATTERY CODE
@@ -87,10 +90,19 @@ static uint8_t sync_buffer_cgm[408]; //was 560
 // variables for timers and time
 AppTimer *timer_cgm = NULL;
 AppTimer *BT_timer = NULL;
+AppTimer *timer = NULL;
+AppTimer *layer_timer = NULL;
 time_t cgm_time_now = 0;
 time_t app_time_now = 0;
 int timeformat = 0;
 
+
+    //SHAKE
+void timer_callback(void *data) {
+  layer_set_hidden(text_layer_get_layer(s_layer), true);
+}
+ 
+  
 // global variable for bluetooth connection
 bool bt_connected=true;
 // global variables for sync tuple functions
@@ -120,6 +132,7 @@ static char current_cob[8] = {0};
 static char current_name[6] = {0};
 static char current_basal[6] = {0};
 static char last_ok_time[6] = {1};
+static char pump_status[30] = {0};
 
 int color_value = 0;
 GColor top_colour = GColorWhiteInit;
@@ -317,6 +330,7 @@ static const uint8_t WATCH_MSGSEND_SECS = 60;
 static const uint8_t LOADING_MSGSEND_SECS = 5;
 static const uint8_t PERFECTBG_ANIMATE_SECS = 10;
 static const uint8_t HAPPYMSG_ANIMATE_SECS = 10;
+//static const uint8_t LAYER_ANIMATE_SECS = 10;
 
 // App Sync / Message retries, for timeout / busy problems
 // Change to see if there is a temp or long term problem
@@ -330,7 +344,7 @@ static const uint8_t APPSYNCANDMSG_RETRIES_MAX = 50;
 static const uint8_t DATAOFFLINE_RETRIES_MAX = 14;
 //REMOVE
 //global variable for mode share
-uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
+//uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
 
 enum CgmKey {
     CGM_ICON_KEY = 0x0, // TUPLE_CSTRING, MAX 2 BYTES (10)
@@ -348,6 +362,7 @@ enum CgmKey {
     CGM_SYM_KEY = 0xC,
     CGM_TIME_KEY = 0xD,
     CGM_BASAL_KEY = 0xE,
+    CGM_PUMP_KEY = 0xF,
 };
 
 // ARRAY OF SPECIAL VALUE ICONS
@@ -378,15 +393,21 @@ static const uint8_t LOOP_ICON_INDX = 8;
 static const uint8_t X_ICON_INDX = 9;
 static const uint8_t CIRCLE_ICON_INDX = 10;
 
-//REMOVE
-//ADD SHARE LOCATION VARIABLES
-uint8_t Vertical = 0;
-uint8_t Horizontal =0;
-static const uint8_t SHARE_MODE = 1;
-static const uint8_t SHARE_NON_US_MODE = 2;
-static const uint8_t NIGHTSCOUT_MODE = 3;
-void load_mod();
 
+
+//SHAKE HANDLER
+static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+  bool did_vibrate = NULL;
+  if(!did_vibrate) {
+    if((axis == ACCEL_AXIS_X) || (axis == ACCEL_AXIS_Z) || (axis == ACCEL_AXIS_Y)) {
+    layer_set_hidden(text_layer_get_layer(s_layer), false);
+    timer = app_timer_register(5000, timer_callback, NULL);
+}
+  } else {
+    // Discard with a warning
+    APP_LOG(APP_LOG_LEVEL_WARNING, "Vibration occured during collection");
+  }
+}  
 
 static char *translate_app_error(AppMessageResult result) {
     switch (result) {
@@ -525,7 +546,7 @@ static void load_colour() {
       text_layer_set_text_color(t1dname_layer, GColorOxfordBlue);
       text_layer_set_text_color(cob_layer, GColorOxfordBlue);
       break;
-    
+
     // Purples
     case 1:;
       top_colour =    GColorWhite;
@@ -617,7 +638,7 @@ static void load_colour() {
 } // end load_colour
 
 static void load_values(){
-    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Loaded Values: %s", current_values);
+    APP_LOG(APP_LOG_LEVEL_DEBUG,"Loaded Values: %s", current_values);
 
     int num_a_items = 0;
     char *o;
@@ -1485,6 +1506,7 @@ void animate_perfectbg() {
 
 } //end animate_perfectbg
 
+
 void destroy_happymsg_animation(PropertyAnimation **happymsg_animation) {
     if (*happymsg_animation == NULL) {
         return;
@@ -1569,6 +1591,8 @@ void animate_happymsg(char *happymsg_to_display) {
     animation_schedule((Animation*) happymsg_animation);
 
 } //end animate_happymsg
+
+
 
 void bg_vibrator (uint16_t BG_BOTTOM_INDX, uint16_t BG_TOP_INDX, uint8_t BG_SNOOZE, uint8_t *bg_overwrite, uint8_t BG_VIBE) {
 
@@ -2373,8 +2397,8 @@ static void load_bg_delta() {
 
     // check if LOADING.., if true set message
     // put " " (space) in bg field so logo continues to show
-    if (strcmp(current_bg_delta, "LOAD") == 0) {
-        strncpy(formatted_bg_delta, "LOAD", MSGLAYER_BUFFER_SIZE);
+    if (strcmp(current_bg_delta, "LOOP") == 0) {
+        strncpy(formatted_bg_delta, "LOOP", MSGLAYER_BUFFER_SIZE);
         text_layer_set_text(message_layer, formatted_bg_delta);
         text_layer_set_text(bg_layer, " ");
         specvalue_alert = 100;
@@ -2605,14 +2629,14 @@ static void cob_circle_update_proc(Layer *this_layer, GContext *ctx) {
 static void circle_update_proc(Layer *this_layer, GContext *ctx) {
 #ifdef PBL_PLATFORM_CHALK
     graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_radial(ctx, GRect(48, 8, 85, 75), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_fill_radial(ctx, GRect(48, 7, 85, 69), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
     graphics_context_set_fill_color(ctx, text_colour);
-    graphics_fill_radial(ctx, GRect(45, 6, 89, 78), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_fill_radial(ctx, GRect(45, 5, 89, 73), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
 #else
     graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_radial(ctx, GRect(34, 3, 82, 88), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_fill_radial(ctx, GRect(34, 2, 82, 81), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
     graphics_context_set_fill_color(ctx, text_colour);
-    graphics_fill_radial(ctx, GRect(31, 1, 86, 90), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_fill_radial(ctx, GRect(31, 0, 86, 84), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
  #endif
 }//END CIRCLE UPDATE PROC
 //TUPLE
@@ -2628,6 +2652,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
     const uint8_t BGDELTA_MSGSTR_SIZE = 6;
     const uint8_t BATTLEVEL_MSGSTR_SIZE = 4;
     const uint8_t VALUE_MSGSTR_SIZE = 48;
+    const uint8_t PUMP_MSGSTR_SIZE = 30;
     // CODE START
     // reset appsync retries counter
     appsyncandmsg_retries_counter = 0;
@@ -2780,7 +2805,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             else {
                 HaveCalcRaw = 111;
             }
-            text_layer_set_text(raw_calc_layer, last_calc_raw);
+            //text_layer_set_text(s_layer, last_calc_raw);
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "clrw key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
@@ -2883,7 +2908,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           //APP_LOG(APP_LOG_LEVEL_INFO, "cob key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
           break; // break for CGM_COB_KEY
-        
+
           case CGM_SYM_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
             strncpy(current_symbol, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
@@ -2899,7 +2924,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
               }else{
                   create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
               }
-           
+
              APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, Symbol: %s", current_symbol);
           break; // break for CGM_SYM_KEY
           //LOOP LAST OK TIME
@@ -2911,7 +2936,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, LAST OK: %s ", last_ok_time);
 
             break; // break for CGM_TIME_KEY
-            
+
           case CGM_BASAL_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BASAL");
             strncpy(current_basal, new_tuple->value->cstring, BG_MSGSTR_SIZE);
@@ -2919,6 +2944,17 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             break; // break for CGM_BASAL_KEY
           
+          case CGM_PUMP_KEY:;
+            //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: CALCULATED RAW");
+            strncpy(pump_status, new_tuple->value->cstring, PUMP_MSGSTR_SIZE);
+
+            text_layer_set_text(s_layer, pump_status);
+
+            //APP_LOG(APP_LOG_LEVEL_INFO, "clrw key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+
+            break; // break for CGM_CLRW_KEY
+
+
         default:
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "new_tuple->value->cstring: %s" ,new_tuple->value->cstring);
             break;
@@ -3051,7 +3087,7 @@ void handle_minute_tick_cgm(struct tm* tick_time_cgm, TimeUnits units_changed_cg
 
 //REMOVE
 //Name field moves based on Nightscout/Share
-void load_mod(){
+/*void load_mod(){
 
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d", current_mode_value);
     if (current_mode_value == NIGHTSCOUT_MODE) {
@@ -3075,7 +3111,7 @@ void load_mod(){
     }
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d, Vertical: %d Horizontal: %d", current_mode_value, Vertical, Horizontal);
 }
-
+*/
 void window_cgm_add_text_layer (TextLayer **cgm_text_layer, GRect cgm_text_layer_pos, char *cgm_text_font) {
 
   *cgm_text_layer = text_layer_create(cgm_text_layer_pos);
@@ -3106,6 +3142,8 @@ void window_load_cgm(Window *window_cgm) {
 
     GRect window_bounds = layer_get_bounds(window_layer_cgm);
     // CODE START
+  
+  
 //CHART LAYER
     chart_layer = chart_layer_create((GRect) {
 #ifdef PBL_PLATFORM_CHALK
@@ -3173,9 +3211,9 @@ void window_load_cgm(Window *window_cgm) {
 
 // RIG BATTERY LEVEL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(48, 75, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(47, 73, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
     #else
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(54, 83, 45, 50), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(52, 81, 45, 50), FONT_KEY_GOTHIC_18_BOLD);
     #endif
         text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
 
@@ -3233,9 +3271,9 @@ void window_load_cgm(Window *window_cgm) {
 
 // SYMBOL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(72, 74, 80, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(82, 72, 50, 40), GAlignCenter);
     #else
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(72, 74, 80, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(82, 72, 50, 40), GAlignCenter);
     #endif
 
 // BASAL
@@ -3248,22 +3286,21 @@ void window_load_cgm(Window *window_cgm) {
 
 // LOOP TIME AGO
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&time_layer, GRect(90, 74, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(87, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&time_layer, GRect(90, 74, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(87, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #endif
         text_layer_set_text_color(time_layer, GColorWhite);
         text_layer_set_text_alignment(time_layer, GTextAlignmentRight);
 
-
 // BG
-        window_cgm_add_text_layer(&bg_layer, GRect(0, 18, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+        window_cgm_add_text_layer(&bg_layer, GRect(0, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 
 // DELTA BG / MESSAGE LAYER
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&message_layer, GRect(18, 56, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&message_layer, GRect(18, 54, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&message_layer, GRect(2, 55, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&message_layer, GRect(2, 53, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
     #endif
        // text_layer_set_text_color(message_layer, text_colour);
 
@@ -3277,20 +3314,29 @@ void window_load_cgm(Window *window_cgm) {
 
 // CGM TIME AGO READING
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(59, 2, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(58, 1, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(49, 2, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(48, 1, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
     #endif
         text_layer_set_text_color(cgmtime_layer, text_colour);
         //text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
 
 // HAPPY MSG LAYER
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&happymsg_layer, GRect(-180, 88, 175, 49), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&happymsg_layer, GRect(-180, 98, 175, 38), FONT_KEY_GOTHIC_24_BOLD);
 #else
-        window_cgm_add_text_layer(&happymsg_layer, GRect(-144, 94, 145, 48), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&happymsg_layer, GRect(-144, 104, 145, 43), FONT_KEY_GOTHIC_24_BOLD);
 #endif
         text_layer_set_text_color(happymsg_layer, plot_colour);
+// PUMP LAYER
+#ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&s_layer, GRect(0, 98, 175, 38), FONT_KEY_GOTHIC_18_BOLD);
+#else
+        window_cgm_add_text_layer(&s_layer, GRect(0, 104, 145, 43), FONT_KEY_GOTHIC_18_BOLD);
+#endif
+        text_layer_set_text_color(s_layer, GColorOxfordBlue);
+        text_layer_set_background_color(s_layer, GColorPictonBlue);
+        layer_set_hidden(text_layer_get_layer(s_layer), true);
 
 
 
@@ -3301,20 +3347,18 @@ void window_load_cgm(Window *window_cgm) {
             TupletCString(CGM_BG_KEY, " "),
             TupletInteger(CGM_TCGM_KEY, 0),
             TupletInteger(CGM_TAPP_KEY, 0),
-            TupletCString(CGM_DLTA_KEY, "LOAD"),
+            TupletCString(CGM_DLTA_KEY, "LOOP"),
             TupletCString(CGM_UBAT_KEY, " "),
             TupletCString(CGM_NAME_KEY, " "),
             TupletCString(CGM_VALS_KEY, " "),
             TupletCString(CGM_CLRW_KEY, " "),
-//            TupletCString(CGM_RWUF_KEY, " "),
             TupletCString(CGM_BGSX_KEY, " "),
             TupletInteger(CGM_BGTY_KEY, 0),
-            //TupletInteger(CGM_NOIZ_KEY, 0),
-            //TupletInteger(CGM_MODE_SWITCH_KEY, 0),//add share mode
             TupletCString(CGM_COB_KEY,  " "),
             TupletCString(CGM_SYM_KEY, " "),
             TupletCString(CGM_TIME_KEY, " "),
             TupletCString(CGM_BASAL_KEY, " "),
+            TupletCString(CGM_PUMP_KEY, " "),
         };
 
         //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW LOAD, ABOUT TO CALL APP SYNC INIT");
@@ -3377,7 +3421,6 @@ void window_unload_cgm(Window *window_cgm) {
 
     chart_layer_destroy(chart_layer);
 
-    //destroy_null_Layer(&window_layer_cgm);//JUNE 18 IS THIS REQUIRED???
     gpath_destroy(batteryOutlinePath);
 
     //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW UNLOAD, DESTROY BITMAPS IF EXIST");
@@ -3403,6 +3446,7 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&cob_layer);
     destroy_null_TextLayer(&basal_layer);
     destroy_null_TextLayer(&time_layer);
+    destroy_null_TextLayer(&s_layer);
 
 
       //APP_LOG(APP_LOG_LEVEL_INFO, "10 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
@@ -3417,8 +3461,10 @@ static void init_cgm(void) {
 
     bgsx_array_set = false;
     bgty_array_set = false;
-
-    tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick_cgm);
+    //TAP
+    accel_tap_service_subscribe(accel_tap_handler);
+  
+  tick_timer_service_subscribe(MINUTE_UNIT, &handle_minute_tick_cgm);
 
     connection_service_subscribe((ConnectionHandlers) {
         .pebble_app_connection_handler = bt_handler
@@ -3490,6 +3536,8 @@ static void deinit_cgm(void) {
     connection_service_unsubscribe();
     // unsubscribe to the watch battery state service
     battery_state_service_unsubscribe();
+    //unsubscribe tap
+    accel_tap_service_unsubscribe();
 
     //FREE MALLOC
     free(bgsx_array);

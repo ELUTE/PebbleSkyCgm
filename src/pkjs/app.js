@@ -159,7 +159,7 @@ function getLoopData(opts) {
         var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
         endpoint = endpoint.replace("/pebble/", "");
         endpoint = endpoint.replace("/pebble", "");
-        var loopurl = endpoint + "/api/v2/properties/loop,basal";
+        var loopurl = endpoint + "/api/v2/properties/loop,basal,pump";
         var http = new XMLHttpRequest();
         http.open("GET", loopurl, false);
         http.onload = function(e) {
@@ -178,10 +178,15 @@ function getLoopData(opts) {
                         var d = new Date(opts.Last);
                         opts.LoopTime = timeSince(d);
                     }
+                  var pumpbat= loopn.pump.pump.battery.voltage;
+                  var pumpres = (loopn.pump.pump.reservoir + "u");
+                  var pumpdat = loopn.pump.data.clock.display;
+                  opts.Pump = ("Bat: " + pumpbat + "v" + " " + "Res: " + pumpres + "\n" + pumpdat);
+                  
+                  console.log ("pump info " + opts.Pump);
                     opts.Symbol = loopn.loop.display.label;
                     opts.Basal = loopn.basal.display;
-                    console.log("loop body: " + " " + opts.LoopTime + " " +
-                        opts.Symbol + " " + opts.Basal);
+                    console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
                 }
             }
         };
@@ -224,12 +229,12 @@ function nightscout(opts) {
             bgsx: " ",
             bgty: " ",
             clrw: " ",
-            //rwuf: " ",
             cob: " ",
-            // noiz: 0,
             sym: " ",
             time: " ",
             basal: " ",
+            pump:  " ",
+
         };
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
         MessageQueue.sendAppMessage(message);
@@ -295,6 +300,7 @@ function nightscout(opts) {
                         loopBasal = opts.Basal,
                         loopLast = opts.LoopTime,
                         currentSym = loopSym,
+                        loopPump = opts.Pump,
                         // get battery level
                         currentBattery = responsebgs[0].battery,
                         //currentBattery = "100",
@@ -544,7 +550,8 @@ function nightscout(opts) {
                         values += ",0"; // Do not vibrate on raw value when in special values                        
                     }
                     values += "," + opts.mycolors; // Color field
-                    switch (loopSym) {
+                  //loop symbol  
+                  switch (loopSym) {
                         case "Enacted":
                             currentSym = "E";
                             break;
@@ -553,7 +560,7 @@ function nightscout(opts) {
                             break;
                         case "Error":
                             currentSym = "X";
-                      case "Recomendation":
+                        case "Recomendation":
                             currentSym = "R";
                         default:
                             currentSym = " ";
@@ -571,15 +578,14 @@ function nightscout(opts) {
                         name: NameofT1DPerson,
                         vals: values,
                         clrw: formatCalcRaw,
-                        //rwuf: formatRawUnfilt,
-                        //noiz: currentNoise,
                         cob: currentCOB,
-                        //mode_switch: 3,
                         bgsx: arraydata.bgsx,
                         bgty: arraydata.bgty,
                         sym: currentSym,
                         time: loopLast,
                         basal: loopBasal,
+                        pump: loopPump,
+
                     };
                     // send message data to log and to watch
                     console.log("JS send message: " + JSON.stringify(
