@@ -57,7 +57,6 @@ GBitmap *perfectbg_bitmap = NULL;
 GBitmap *battery_bitmap = NULL;
 GBitmap *symbol_bitmap = NULL;
 
-
 static Layer *circle_layer;
 static Layer *cob_circle_layer;
 static Layer *name_circle_layer;
@@ -82,8 +81,7 @@ static char date_app_text[] = "Wed 13 ";
 AppSync sync_cgm;
 uint8_t AppSyncErrAlert = 100;
 
-// Pebble needs additional 62 Bytes?!? Total 232; Pad with additional 60 bytes
-//June 24static uint8_t sync_buffer_cgm[292];
+// BUFFER
 static uint8_t sync_buffer_cgm[408]; //was 560
 
 // variables for timers and time
@@ -103,7 +101,7 @@ uint8_t current_battlevel = 0;
 uint32_t current_cgm_time = 0;
 uint32_t stored_cgm_time = 0;
 uint32_t current_cgm_timeago = 0;
-uint32_t current_time = 0;
+//uint32_t last_loop_ok = 0;
 uint8_t init_loading_cgm_timeago = 111;
 char cgm_label_buffer[6] = {0};
 int cgm_timeago_diff = 0;
@@ -121,6 +119,7 @@ static char current_symbol[8] = {1};
 static char current_cob[8] = {0};
 static char current_name[6] = {0};
 static char current_basal[6] = {0};
+static char last_ok_time[6] = {1};
 
 int color_value = 0;
 GColor top_colour = GColorWhiteInit;
@@ -329,7 +328,7 @@ static const uint8_t APPSYNCANDMSG_RETRIES_MAX = 50;
 // Change to see if there is a temp or long term problem
 // This is number of minutes, so if set to 11 timeout is at 11 minutes
 static const uint8_t DATAOFFLINE_RETRIES_MAX = 14;
-
+//REMOVE
 //global variable for mode share
 uint8_t current_mode_value = 0;// US_Share 1, Other_Share 2, Nightscout 3
 
@@ -345,16 +344,11 @@ enum CgmKey {
     CGM_CLRW_KEY = 0x8,   // TUPLE_CSTRING, MAX 4 BYTES (253 OR 22.2)
     CGM_BGSX_KEY = 0x9, // TUPLE_CSTRING, MAX 28 BYTES
     CGM_BGTY_KEY = 0xA, // TUPLE_CSTRING, MAX 28 BYTES
-    //CGM_NOIZ_KEY = 0x11, // MAX 4 BYTE (4)
     CGM_COB_KEY = 0xB, // COB MAX 4 BYTES
-    //CGM_MODE_SWITCH_KEY = 0x13, //MODE SHARE TUPLE_INT, MAX 4 BYTES
     CGM_SYM_KEY = 0xC,
     CGM_TIME_KEY = 0xD,
     CGM_BASAL_KEY = 0xE,
 };
-// TOTAL MESSAGE DATA 4x5+2+5+3+9+25+28+28 = 120 BYTES
-// TOTAL KEY HEADER DATA (STRINGS) 4x15+2 = 62 BYTES
-// TOTAL MESSAGE 170 BYTES
 
 // ARRAY OF SPECIAL VALUE ICONS
 static const uint8_t SPECIAL_VALUE_ICONS[] = {
@@ -382,9 +376,7 @@ static const uint8_t LOGOSPECIAL_ICON_INDX = 6;
 static const uint8_t LIGHTNING_ICON_INDX = 7;
 static const uint8_t LOOP_ICON_INDX = 8;
 static const uint8_t X_ICON_INDX = 9;
-
-
-
+//REMOVE
 //ADD SHARE LOCATION VARIABLES
 uint8_t Vertical = 0;
 uint8_t Horizontal =0;
@@ -504,32 +496,6 @@ int myBGAtoi(char *str) {
     return res;
 } // end myBGAtoi
 
-/*static void load_symbol() {
-      // CONSTANTS
-#define L 0
-#define E 1
-#define X 2
-  switch (current_symbol) {
-
-        case L:;
-            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
-            //text_layer_set_text(noise_layer, " \0");
-            break;
-        case E:;
-            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
-            //text_layer_set_text(noise_layer, " \0");
-            break;
-        case X:;
-            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
-            //text_layer_set_text(noise_layer, ".\0");
-            break;
-    
-        default:;
-            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[PIXEL_ICON_INDX]);
-    }
-
-
-} */
 static void load_colour() {
 
   //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD COLOR, FUNCTION START");
@@ -777,16 +743,16 @@ static void set_container_image(GBitmap **bmp_image, BitmapLayer *bmp_layer, con
 
 }
 //END CONTAINER
-
+//NULL AND CANCEL TIMER
 static void null_and_cancel_timer (AppTimer **timer_to_null, bool cancel_timer) {
 
     if (*timer_to_null != NULL) {
       if (cancel_timer == true) { app_timer_cancel(*timer_to_null); }
         *timer_to_null = NULL;
     }
+} // end null_and_cancel_timer
 
-} // null_and_cancel_timer
-
+//DESTROY NULL BITMAP
 static void destroy_null_GBitmap(GBitmap **GBmp_image) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL GBITMAP: ENTER CODE");
     if (*GBmp_image != NULL) {
@@ -797,10 +763,9 @@ static void destroy_null_GBitmap(GBitmap **GBmp_image) {
             *GBmp_image = NULL;
         }
     }
-
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL GBITMAP: EXIT CODE");
 } // end destroy_null_GBitmap
-
+//DESTROY NULL BITMAP LAYER
 static void destroy_null_BitmapLayer(BitmapLayer **bmp_layer) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL BITMAP: ENTER CODE");
     if (*bmp_layer != NULL) {
@@ -811,10 +776,10 @@ static void destroy_null_BitmapLayer(BitmapLayer **bmp_layer) {
             *bmp_layer = NULL;
         }
     }
-
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL BITMAP: EXIT CODE");
 } // end destroy_null_BitmapLayer
 
+//DESTROY NULL TEXT LAYER
 static void destroy_null_TextLayer(TextLayer **txt_layer) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL TEXT LAYER: ENTER CODE");
     if (*txt_layer != NULL) {
@@ -828,6 +793,7 @@ static void destroy_null_TextLayer(TextLayer **txt_layer) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL TEXT LAYER: EXIT CODE");
 } // end destroy_null_TextLayer
 
+//DESTROY NULL LAYER
 static void destroy_null_Layer(Layer **layer) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "DESTROY NULL LAYER: ENTER CODE");
     if (*layer != NULL) {
@@ -864,12 +830,9 @@ static void create_update_bitmap(GBitmap **bmp_image, BitmapLayer *bmp_layer, co
 
 //SET MESSAGE LAYER
 void set_message_layer (char *msg_string, char *msg_buffer, bool use_msg_buffer, GColor msg_colour) {
-
   text_layer_set_text_color(message_layer, msg_colour);
-
   if (use_msg_buffer) { text_layer_set_text(message_layer, (char *)msg_buffer); }
   else { text_layer_set_text(message_layer, (char *)msg_string); }
-
 } // end set_message_layer
 
 //CLEAR TIME AGO
@@ -963,7 +926,6 @@ void bt_handler(bool bt_connected) {
             return;
         }
     }
-    //}
     // Check to see if the BT_timer needs to be set; if BT_timer is not null we're still waiting
     if (BT_timer == NULL) {
         // check to see if timer has popped
@@ -988,6 +950,7 @@ void bt_handler(bool bt_connected) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "NO BLUETOOTH");
     if (TurnOff_NOBLUETOOTH_Msg == 111) {
         //text_layer_set_text(message_layer, "NO BT\0");
+          window_stack_pop_all(false); //ADDED Oct13
           set_message_layer("NO BT\0", "", false, text_colour);
     }
     //}
@@ -1088,7 +1051,8 @@ static void draw_date_from_app() {
     }
 
 } // end draw_date_from_app
-//June 23
+
+//NULL DICT BUFFER
 static void null_dict_buffer (DictionaryIterator **iter_to_null) {
 
   if (*iter_to_null != NULL) {
@@ -1424,7 +1388,6 @@ static void load_apptime();
 static void load_rig_battlevel();
 
 // ANIMATION CODE
-
 void destroy_perfectbg_animation(PropertyAnimation **perfectbg_animation) {
     if (*perfectbg_animation == NULL) {
         return;
@@ -1541,10 +1504,6 @@ void happymsg_animation_started(Animation *animation, void *data) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "HAPPY MSG ANIMATE, ANIMATION STARTED ROUTINE, CLEAR OUT BG DELTA");
 
     text_layer_set_text(message_layer, current_bg_delta);
-
-    //text_layer_set_text(cgmtime_layer, "");
-    //text_layer_set_text(rig_battlevel_layer, "");
-//    create_update_bitmap(&cgmicon_bitmap,cgmicon_layer,TIMEAGO_ICONS[RCVRNONE_ICON_INDX]);
 
 } // end happymsg_animation_started
 
@@ -2103,18 +2062,23 @@ static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_ti
   }
 
 } // end set_cgm_timeago
+/*static void load_looptime() {
+    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
+    // VARIABLES
 
+    static uint32_t loop_time_offset = 0;
+    int loop_timeago_diff = 0;
+    time_t loop_temp_time = time(NULL);
+    struct tm *loop_local_time = localtime(&loop_temp_time);
+    size_t draw_loop_time = 0;
+    static char looptime_text[] = "00:00";
+}*/
 static void load_cgmtime() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
     // VARIABLES
 
     static uint32_t cgm_time_offset = 0;
-    int cgm_timeago_diff = 0;//JULY 24
-
-    //JULY 24static char formatted_cgm_timeago[10] = {0};
-
-    //JULY 24char cgm_label_buffer[6] = {0};
-
+    int cgm_timeago_diff = 0;
     time_t current_temp_time = time(NULL);
     struct tm *current_local_time = localtime(&current_temp_time);
     size_t draw_cgm_time = 0;
@@ -2122,18 +2086,12 @@ static void load_cgmtime() {
 
     // CODE START
     // initialize label buffer
-    //JULY 24strncpy(cgm_label_buffer, "", LABEL_BUFFER_SIZE);
-
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD CGMTIME, NEW CGM TIME: %lu", current_cgm_time);
 
     if (current_cgm_time == 0) {
         // Init code or error code; set text layer & icon to empty value
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD CGMTIME, CGM TIME AGO INIT OR ERROR CODE: %s", cgm_label_buffer);
-        //JULY 24text_layer_set_text(cgmtime_layer, "");
-        //JULY24init_loading_cgm_timeago = 111;
-      // clear cgm timeago icon and set init flag
-       clear_cgm_timeago();//JULY24
-
+       clear_cgm_timeago();
     }
   else {
 
@@ -2480,7 +2438,6 @@ static void load_bg_delta() {
     if (message_layer != NULL) { text_layer_set_text(message_layer, formatted_bg_delta); }
 } // end load_bg_delta
 
-
 //RIG BATTERY
 static void load_rig_battlevel() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, FUNCTION START");
@@ -2656,8 +2613,7 @@ static void circle_update_proc(Layer *this_layer, GContext *ctx) {
     graphics_fill_radial(ctx, GRect(31, 1, 86, 90), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
  #endif
 }//END CIRCLE UPDATE PROC
-
-
+//TUPLE
 void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
 //    APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE");
     // VARIABLES
@@ -2712,7 +2668,6 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                     current_cgm_timeago = 0;
                     init_loading_cgm_timeago = 111;
                     need_to_reset_outage_flag = 111;
-
             }
             // get stored cgm time again for bluetooth race condition
             if (get_new_cgm_time == 111) {
@@ -2751,7 +2706,6 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                     need_to_reset_outage_flag = 100;
                 }
               //APP_LOG(APP_LOG_LEVEL_INFO, "tcgm key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
-
             }
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ CGM TIME OUT");
@@ -2763,7 +2717,6 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
            // APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, APP TIME VALUE: %lu ", current_app_time);
             load_apptime();
              //APP_LOG(APP_LOG_LEVEL_INFO, "tapp key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
-
             break; // break for CGM_TAPP_KEY
 
         case CGM_DLTA_KEY:;
@@ -2911,15 +2864,6 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CGM_BGTY_KEY: %s ", new_tuple->value->cstring);
             //APP_LOG(APP_LOG_LEVEL_INFO, "bgty key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
           break;
-          /*case CGM_NOIZ_KEY:;
-                //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: NOISE");
-                current_noise_value = new_tuple->value->uint8;
-                text_layer_set_text_color(noise_layer, text_colour);
-
-//                APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, NOISE: %i ", current_noise_value);
-                load_noise();
-                break; // break for CGM_NOIZ_KEY
-                */
 
         case CGM_COB_KEY:;
            // APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: COB: ");
@@ -2937,71 +2881,39 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           //APP_LOG(APP_LOG_LEVEL_INFO, "cob key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
           break; // break for CGM_COB_KEY
-          /*case CGM_MODE_SWITCH_KEY:;
-                current_mode_value= new_tuple->value->uint8;
-                //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, MODE: %i ", current_mode_value);
-
-                if(bg_layer != NULL)
-                {
-                    load_mod();
-                    //GRect bounds = layer_get_bounds(text_layer_get_layer(t1dname_layer));
-                    //APP_LOG(APP_LOG_LEVEL_DEBUG, "ORIGIN, x: %d, y:%d ", bounds.origin.x, bounds.origin.y);
-                    layer_set_bounds(text_layer_get_layer(bg_layer), GRect(Horizontal,Vertical, 102, 40));
-                }
-                break;
-          */
+        
           case CGM_SYM_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
             strncpy(current_symbol, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
             //load_symbol();
-          if (strchr(current_symbol, *"E"))
-          //if (current_symbol==="E")
-         // if (strcmp(cstring, "E") ==0) 
-             {
-                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
-    
-} 
-else if 
-  (strchr(current_symbol, *"L"))
-  //(strcmp(cstring, "L") == 0)
-{
-            create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
-}
-          else if
-            //(strcmp(cstring, "X") == 0)
-            
-            (strchr(current_symbol, *"X"))
-            {
-            
-                        create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
-
-            
-          }else{
-                        create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
-
-          }
-            //text_layer_set_text(symbol_layer, current_symbol);
-            //text_layer_set_text_color(symbol_layer, text_colour);
-
+              if (strchr(current_symbol, *"E")){
+                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
+              } else if (strchr(current_symbol, *"L")){
+                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
+              }else if (strchr(current_symbol, *"X")){
+                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
+              }else{
+                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
+              }
+           
              APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, Symbol: %s", current_symbol);
           break; // break for CGM_SYM_KEY
-       /*
+          //LOOP LAST OK TIME
           case CGM_TIME_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ APP TIME NOW");
-            current_time = new_tuple->value->uint32;
-           // APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, APP TIME VALUE: %lu ", current_app_time);
-           // load_apptime();
-             //APP_LOG(APP_LOG_LEVEL_INFO, "tapp key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
-            break; // break for CGM_TAPP_KEY
-            */
+            strncpy(last_ok_time, new_tuple->value->cstring, BG_MSGSTR_SIZE);
+            text_layer_set_text(time_layer, last_ok_time);
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, LAST OK: %s ", last_ok_time);
+
+            break; // break for CGM_TIME_KEY
+            
           case CGM_BASAL_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BASAL");
             strncpy(current_basal, new_tuple->value->cstring, BG_MSGSTR_SIZE);
             text_layer_set_text(basal_layer, current_basal);
             //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             break; // break for CGM_BASAL_KEY
-          
           
         default:
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "new_tuple->value->cstring: %s" ,new_tuple->value->cstring);
@@ -3011,8 +2923,6 @@ else if
 	if(bgsx_array_set  && bgty_array_set && chart_layer != NULL)
 	{
 		//APP_LOG(APP_LOG_LEVEL_DEBUG, "TRYING TO CREATE GRAPH AS DATA EXISTS");
-//		time_t t = time(NULL);
-//		struct tm * time_now = localtime(&t);
     for(int index = 0; index < bgsx_array_counter; ++index)
       {
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "x: %d, y: %d",bgsx_array[index], bgty_array[index] );
@@ -3046,9 +2956,7 @@ bt_connected = connection_service_peek_pebble_app_connection(); //was bluetooth_
             if (TurnOff_NOBLUETOOTH_Msg == 100) {
                    text_layer_set_text(message_layer, "NO BT\0");
             } // if turnoff nobluetooth msg
-        //}// if !bluetooth connected
-
-        }//ADDED JUNE 20 ^
+        }
     DictionaryIterator *iter = NULL;
     AppMessageResult sendcmd_openerr = APP_MSG_OK;
     AppMessageResult sendcmd_senderr = APP_MSG_OK;
@@ -3137,7 +3045,7 @@ void handle_minute_tick_cgm(struct tm* tick_time_cgm, TimeUnits units_changed_cg
 
 } // end handle_minute_tick_cgm
 
-
+//REMOVE
 //Name field moves based on Nightscout/Share
 void load_mod(){
 
@@ -3167,7 +3075,6 @@ void load_mod(){
 void window_cgm_add_text_layer (TextLayer **cgm_text_layer, GRect cgm_text_layer_pos, char *cgm_text_font) {
 
   *cgm_text_layer = text_layer_create(cgm_text_layer_pos);
- // text_layer_set_text_color(*cgm_text_layer, text_colour);
   text_layer_set_background_color(*cgm_text_layer, GColorClear);
   text_layer_set_font(*cgm_text_layer, fonts_get_system_font(cgm_text_font));
   text_layer_set_text_alignment(*cgm_text_layer, GTextAlignmentCenter);
@@ -3322,24 +3229,24 @@ void window_load_cgm(Window *window_cgm) {
 
 // SYMBOL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(38, 0, 80, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(20, 2, 80, 40), GAlignCenter);
     #else
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(38, 0, 80, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(20, 2, 80, 40), GAlignCenter);
     #endif
 
 // BASAL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&basal_layer, GRect(16, 67, 50, 23), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&basal_layer, GRect(11, 66, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
     #else
-        window_cgm_add_text_layer(&basal_layer, GRect(0, 75, 50, 23), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&basal_layer, GRect(-5, 80, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
     #endif
         text_layer_set_text_color(basal_layer, GColorWhite);
 
-// TIME
+// LOOP TIME AGO
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&time_layer, GRect(91, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(58, 10, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&time_layer, GRect(74, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(58, 10, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #endif
         text_layer_set_text_color(time_layer, text_colour);
 
@@ -3400,7 +3307,7 @@ void window_load_cgm(Window *window_cgm) {
             //TupletInteger(CGM_MODE_SWITCH_KEY, 0),//add share mode
             TupletCString(CGM_COB_KEY,  " "),
             TupletCString(CGM_SYM_KEY, " "),
-            TupletCString(CGM_TIME_KEY,  " "),
+            TupletCString(CGM_TIME_KEY, " "),
             TupletCString(CGM_BASAL_KEY, " "),
         };
 
