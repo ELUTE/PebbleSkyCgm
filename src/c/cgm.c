@@ -362,7 +362,7 @@ static const uint8_t SPECIAL_VALUE_ICONS[] = {
     RESOURCE_ID_IMAGE_LIGHTNING, //7
     RESOURCE_ID_IMAGE_LOOP, //8
     RESOURCE_ID_IMAGE_X, //9
-  
+    RESOURCE_ID_IMAGE_CIRCLE, //10
 };
 
 // INDEX FOR ARRAY OF SPECIAL VALUE ICONS
@@ -376,6 +376,8 @@ static const uint8_t LOGOSPECIAL_ICON_INDX = 6;
 static const uint8_t LIGHTNING_ICON_INDX = 7;
 static const uint8_t LOOP_ICON_INDX = 8;
 static const uint8_t X_ICON_INDX = 9;
+static const uint8_t CIRCLE_ICON_INDX = 10;
+
 //REMOVE
 //ADD SHARE LOCATION VARIABLES
 uint8_t Vertical = 0;
@@ -2892,6 +2894,8 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                   create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
               }else if (strchr(current_symbol, *"X")){
                   create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
+                }else if (strchr(current_symbol, *"R")){
+                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[CIRCLE_ICON_INDX]);
               }else{
                   create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
               }
@@ -3229,9 +3233,9 @@ void window_load_cgm(Window *window_cgm) {
 
 // SYMBOL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(20, 2, 80, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(72, 74, 80, 40), GAlignCenter);
     #else
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(20, 2, 80, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(72, 74, 80, 40), GAlignCenter);
     #endif
 
 // BASAL
@@ -3244,20 +3248,22 @@ void window_load_cgm(Window *window_cgm) {
 
 // LOOP TIME AGO
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&time_layer, GRect(58, 10, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(90, 74, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&time_layer, GRect(58, 10, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(90, 74, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #endif
-        text_layer_set_text_color(time_layer, text_colour);
+        text_layer_set_text_color(time_layer, GColorWhite);
+        text_layer_set_text_alignment(time_layer, GTextAlignmentRight);
+
 
 // BG
-        window_cgm_add_text_layer(&bg_layer, GRect(0, 20, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+        window_cgm_add_text_layer(&bg_layer, GRect(0, 18, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 
 // DELTA BG / MESSAGE LAYER
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&message_layer, GRect(18, 58, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&message_layer, GRect(18, 56, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&message_layer, GRect(2, 57, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&message_layer, GRect(2, 55, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
     #endif
        // text_layer_set_text_color(message_layer, text_colour);
 
@@ -3271,12 +3277,12 @@ void window_load_cgm(Window *window_cgm) {
 
 // CGM TIME AGO READING
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(115, 65, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(59, 2, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(91, 74, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(49, 2, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
     #endif
-        text_layer_set_text_color(cgmtime_layer, GColorWhite);
-        text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
+        text_layer_set_text_color(cgmtime_layer, text_colour);
+        //text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
 
 // HAPPY MSG LAYER
     #ifdef PBL_PLATFORM_CHALK

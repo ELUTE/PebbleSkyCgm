@@ -553,11 +553,13 @@ function nightscout(opts) {
                             break;
                         case "Error":
                             currentSym = "X";
+                      case "Recomendation":
+                            currentSym = "R";
                         default:
                             currentSym = " ";
                             console.log("CurrentSym" + currentSym);
                     }
-                    var mode_switch = getModeAsInteger(opts);
+                    //var mode_switch = getModeAsInteger(opts);
                     // load message data  
                     message = {
                         icon: currentIcon,
@@ -616,7 +618,7 @@ function nightscout(opts) {
     //}, 59000); // timeout in ms; set at 45 seconds; can not go beyond 59 seconds   
 }
 
-function getModeAsInteger(opts) {
+/*function getModeAsInteger(opts) {
         console.log("getModeAsInteger");
         var mode_switch = 0;
         var mode = opts.mode.toLowerCase();
@@ -629,7 +631,7 @@ function getModeAsInteger(opts) {
             mode_switch = 3;
         }
         return mode_switch;
-    }
+    }*/
     //**********************SHARE**********************//
 
 function share(options) {
@@ -792,7 +794,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                 // add name
                 var name = options.t1name;
                 //add mode 
-                var mode_switch = getModeAsInteger(options);;
+                //var mode_switch = getModeAsInteger(options);;
                 var values = null;
                 if (options.radio == "mgdl_form") {
                     values = "0"; //mgdl selected
@@ -881,7 +883,7 @@ function getShareGlucoseData(sessionId, defaults, options) {
                     "vals": values,
                     "tcgm": tcgm,
                     "name": name,
-                    "mode_switch": mode_switch,
+                   // "mode_switch": mode_switch,
                     "bgsx": createShareBgArray(data),
                     "bgty": createShareBgTimeArray(data)
                 });
@@ -1095,11 +1097,11 @@ Pebble.addEventListener("ready", function(e) {
     console.log("Pebble JS ready");
     var opts = [].slice.call(arguments).pop();
     opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
-    var current_mode = getModeAsInteger(opts);
+    //var current_mode = getModeAsInteger(opts);
     console.log("opts: " + JSON.stringify(opts));
     // send message data  
     var message = {
-        mode_switch: current_mode
+   //     mode_switch: current_mode
     };
     //send message data to log and to watch
     Pebble.sendAppMessage(message);
