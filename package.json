@@ -2,12 +2,12 @@
     "author": "Dexterity",
     "dependencies": {},
     "keywords": [],
-    "name": "skyline",
+    "name": "skyloop",
     "pebble": {
         "capabilities": [
             "configurable"
         ],
-        "displayName": "Sky Line",
+        "displayName": "Sky Line Loop",
         "enableMultiJS": true,
         "messageKeys": {
             "basal": 14,
@@ -31,12 +31,6 @@
         "resources": {
             "media": [
                 {
-                    "file": "images/circle icon",
-                    "name": "IMAGE_CIRCLE",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
                     "file": "images/x.png",
                     "name": "IMAGE_X",
                     "targetPlatforms": null,
@@ -49,7 +43,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -60,7 +55,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -71,7 +67,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -82,7 +79,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -93,7 +91,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -104,7 +103,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -115,7 +115,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -126,19 +127,15 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
                 {
                     "file": "images/pixel.png",
                     "name": "IMAGE_PIXEL",
-                    "targetPlatforms": [
-                        "aplite",
-                        "basalt",
-                        "chalk",
-                        "diorite"
-                    ],
+                    "targetPlatforms": null,
                     "type": "bitmap"
                 },
                 {
@@ -148,7 +145,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -159,7 +157,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -170,7 +169,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -181,8 +181,15 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/circle icon",
+                    "name": "IMAGE_CIRCLE",
+                    "targetPlatforms": null,
                     "type": "bitmap"
                 },
                 {
@@ -192,7 +199,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -203,7 +211,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -220,7 +229,8 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery"
                     ],
                     "type": "bitmap"
                 },
@@ -236,12 +246,13 @@
         "targetPlatforms": [
             "basalt",
             "chalk",
-            "diorite"
+            "diorite",
+            "emery"
         ],
         "uuid": "1dede643-e273-4c4a-b7ea-12d12d0811aa",
         "watchapp": {
             "watchface": true
         }
     },
-    "version": "1.5.0"
+    "version": "0.1.0"
 }

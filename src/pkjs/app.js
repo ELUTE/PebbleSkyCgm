@@ -17,8 +17,6 @@ function fetchCgmData() {
         var opts = [].slice.call(arguments).pop();
         opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
         //console.log("-------- opts 1: " + opts);
-        switch (opts.mode) {
-            case "Nightscout":
                 console.log("Nightscout data to be loaded");
                 //subscribeBy(opts.endpoint);
                 opts.endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
@@ -26,23 +24,7 @@ function fetchCgmData() {
                 opts.endpoint = opts.endpoint.replace("/pebble", "");
                 nightscout(opts);
                 getLoopData(opts);
-                break;
-            case "US_Share":
-            case "Non_US_Share":
-                console.log("Share data to be loaded");
-                //subscribeBy(opts.accountName);
-                share(opts);
-                break;
-            default:
-                Pebble.sendAppMessage({
-                    "icon": " ",
-                    "bg": " ",
-                    "tcgm": 0,
-                    "tapp": 0,
-                    "dlta": "NOEP",
-                });
-                break;
-        }
+        
         //console.log("fetchCgmData 5");
     } // end fetchCgmData
     //Get last 9 SGV's
@@ -84,7 +66,6 @@ function getNightScoutArrayData(message, opts) {
         return message;
     } //end 
     //Create BG ARRAY
-
 function createBgArray(data, opts) {
         var toReturn = "";
         //console.log("-----------------------data.length:" + data.length);
@@ -105,7 +86,7 @@ function createBgArray(data, opts) {
         toReturn = toReturn.replace(/,\s*$/, "");
         return toReturn;
     } //end createBgTimeArray
-
+ 
 function createBgTimeArray(data, opts) {
         //  var bgHour = "00";
         //  var bgMin = "00";
@@ -178,14 +159,25 @@ function getLoopData(opts) {
                         var d = new Date(opts.Last);
                         opts.LoopTime = timeSince(d);
                     }
+                  if ((loopn.pump.pump === null)){
+                    opts.Pump = "null";
+                  } else {
                   var pumpbat= loopn.pump.pump.battery.voltage;
                   var pumpres = (loopn.pump.pump.reservoir + "u");
                   var pumpdat = loopn.pump.data.clock.display;
                   opts.Pump = ("Bat: " + pumpbat + "v" + " " + "Res: " + pumpres + "\n" + pumpdat);
-                  
+                  }
                   console.log ("pump info " + opts.Pump);
+                  if ((loopn.loop.display.label === null)){
+                    opts.Symbol = " ";
+                  } else { 
                     opts.Symbol = loopn.loop.display.label;
+                  }
+                  if ((loopn.basal.display === null)){
+                    opts.Symbol = " ";
+                  } else { 
                     opts.Basal = loopn.basal.display;
+                  }
                     console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
                 }
             }
@@ -205,7 +197,6 @@ function getLoopData(opts) {
         //return messageLoop;
     } //end 
     //get icon, bg, timeago, delta, name, noiz, raw, options
-
 function nightscout(opts) {
     //var loopok = loopn.loop.lastOkMoment;
     // getLoopData();
@@ -550,6 +541,10 @@ function nightscout(opts) {
                         values += ",0"; // Do not vibrate on raw value when in special values                        
                     }
                     values += "," + opts.mycolors; // Color field
+                    values += "," + opts.animateon; // Animation ON or OFF
+                    values += "," + opts.vibeon;  // Vibrate on or off
+
+
                   //loop symbol  
                   switch (loopSym) {
                         case "Enacted":
@@ -560,13 +555,15 @@ function nightscout(opts) {
                             break;
                         case "Error":
                             currentSym = "X";
+                            break;
                         case "Recomendation":
                             currentSym = "R";
+                            break;
                         default:
                             currentSym = " ";
                             console.log("CurrentSym" + currentSym);
                     }
-                    //var mode_switch = getModeAsInteger(opts);
+                   // var mode_switch = getModeAsInteger(opts);
                     // load message data  
                     message = {
                         icon: currentIcon,
@@ -638,9 +635,7 @@ function nightscout(opts) {
         }
         return mode_switch;
     }*/
-    //**********************SHARE**********************//
-
-function share(options) {
+/*function share(options) {
     //if (options.unit == "mgdl" || options.unit == "mg/dL")
     if (options.radio == "mgdl_form") {
         //fix = 0;
@@ -714,7 +709,7 @@ function authenticateShare(options, defaults) {
     };
     http.send(JSON.stringify(body));
 }
-
+*/
 function sendAuthError() {
     console.log("===============ERROR: sendAuthError");
     Pebble.sendAppMessage({
@@ -965,8 +960,8 @@ function msToMinutes(millisec) {
         return 1;
     }
     return 0;
-}
-*/
+}*/
+
 function logging(message) {
         if (logging) console.log(message);
     }
@@ -1107,19 +1102,19 @@ Pebble.addEventListener("ready", function(e) {
     console.log("opts: " + JSON.stringify(opts));
     // send message data  
     var message = {
-   //     mode_switch: current_mode
+     //   mode_switch: current_mode
     };
     //send message data to log and to watch
     Pebble.sendAppMessage(message);
 });
 Pebble.addEventListener("appmessage", function(e) {
-    console.log("JS Recvd Msg From Watch: " + JSON.stringify(e.payload));
-    fetchCgmData();
+      fetchCgmData();  
+  console.log("JS Recvd Msg From Watch: " + JSON.stringify(e.payload));
 });
 Pebble.addEventListener("showConfiguration", function(e) {
     console.log("Showing Configuration", JSON.stringify(e));
     Pebble.openURL(
-        'http://cgminthecloud.github.io/CGMClassicPebble/skysharesparkconfigV2.html'
+        'http://cgminthecloud.github.io/CGMClassicPebble/skylineloop.html'
     );
 });
 Pebble.addEventListener("webviewclosed", function(e) {

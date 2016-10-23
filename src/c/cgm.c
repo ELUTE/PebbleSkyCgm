@@ -26,7 +26,6 @@ Window *window_cgm = NULL;
 Layer *window_layer_cgm = NULL;
 ChartLayer* chart_layer = NULL;
 
-
 // MAIN WINDOW LAYER
 TextLayer *tophalf_layer = NULL;
 TextLayer *bg_layer = NULL;
@@ -95,13 +94,6 @@ AppTimer *layer_timer = NULL;
 time_t cgm_time_now = 0;
 time_t app_time_now = 0;
 int timeformat = 0;
-
-
-    //SHAKE
-void timer_callback(void *data) {
-  layer_set_hidden(text_layer_get_layer(s_layer), true);
-}
- 
   
 // global variable for bluetooth connection
 bool bt_connected=true;
@@ -113,7 +105,6 @@ uint8_t current_battlevel = 0;
 uint32_t current_cgm_time = 0;
 uint32_t stored_cgm_time = 0;
 uint32_t current_cgm_timeago = 0;
-//uint32_t last_loop_ok = 0;
 uint8_t init_loading_cgm_timeago = 111;
 char cgm_label_buffer[6] = {0};
 int cgm_timeago_diff = 0;
@@ -190,6 +181,7 @@ static uint8_t BT_timer_pop = 100;
 static uint8_t DataOfflineAlert = 100;
 static uint8_t CGMOffAlert = 100;
 static uint8_t PhoneOffAlert = 100;
+static uint8_t LoopOutAlert = 100;
 
 // global constants for time durations; seconds
 static const uint8_t  MINUTEAGO = 60;
@@ -204,8 +196,8 @@ static const uint16_t MS_IN_A_SECOND = 1000;
 static const uint8_t TIME_TEXTBUFF_SIZE = 6;
 static const uint8_t DATE_TEXTBUFF_SIZE = 8;
 static const uint8_t LABEL_BUFFER_SIZE = 6;
-static const uint8_t TIMEAGO_BUFFER_SIZE = 10;
-static const uint8_t BATTLEVEL_FORMAT_SIZE = 12;
+//static const uint8_t TIMEAGO_BUFFER_SIZE = 10;
+//static const uint8_t BATTLEVEL_FORMAT_SIZE = 12;
 
 // ** START OF CONSTANTS THAT CAN BE CHANGED; DO NOT CHANGE IF YOU DO NOT KNOW WHAT YOU ARE DOING **
 // ** FOR MMOL, ALL VALUES ARE STORED AS INTEGER; LAST DIGIT IS USED AS DECIMAL **
@@ -274,7 +266,7 @@ uint8_t CGMOUT_VIBE = 1;
 uint8_t PHONEOUT_VIBE = 1;
 uint8_t LOWBATTERY_VIBE = 1;
 uint8_t DATAOFFLINE_VIBE = 1;
-
+uint8_t NOLOOP_VIBE = 1;
 // Icon Cross Out & Vibrate Once Wait Times, in Minutes
 // RANGE 0-240
 // IF YOU WANT TO WAIT LONGER TO GET CONDITION, INCREASE NUMBER
@@ -394,21 +386,6 @@ static const uint8_t X_ICON_INDX = 9;
 static const uint8_t CIRCLE_ICON_INDX = 10;
 
 
-
-//SHAKE HANDLER
-static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
-  bool did_vibrate = NULL;
-  if(!did_vibrate) {
-    if((axis == ACCEL_AXIS_X) || (axis == ACCEL_AXIS_Z) || (axis == ACCEL_AXIS_Y)) {
-    layer_set_hidden(text_layer_get_layer(s_layer), false);
-    timer = app_timer_register(5000, timer_callback, NULL);
-}
-  } else {
-    // Discard with a warning
-    APP_LOG(APP_LOG_LEVEL_WARNING, "Vibration occured during collection");
-  }
-}  
-
 static char *translate_app_error(AppMessageResult result) {
     switch (result) {
     case APP_MSG_OK: return "APP_MSG_OK";
@@ -448,7 +425,6 @@ register const char *delim;
     register int c, sc;
     char *tok;
     static char *last;
-
 
     if (s == NULL && (s = last) == NULL)
         return (NULL);
@@ -518,12 +494,29 @@ int myBGAtoi(char *str) {
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "myBGAtoi, FINAL RESULT OUT: %i", res );
     return res;
 } // end myBGAtoi
+  
+//SHAKE
+void timer_callback(void *data) {
+  layer_set_hidden(text_layer_get_layer(s_layer), true);
+}
+ 
 
+//SHAKE HANDLER
+static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+  bool did_vibrate = NULL;
+  if(!did_vibrate) {
+    if((axis == ACCEL_AXIS_X) || (axis == ACCEL_AXIS_Z) || (axis == ACCEL_AXIS_Y)) {
+    layer_set_hidden(text_layer_get_layer(s_layer), false);
+    timer = app_timer_register(5000, timer_callback, NULL);
+}
+  } else {
+    // Discard with a warning
+    APP_LOG(APP_LOG_LEVEL_WARNING, "Vibration occured during collection");
+  }
+}  
 static void load_colour() {
 
   //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD COLOR, FUNCTION START");
-//  int number_of_colors = 2;
-
   // can select colors
 
   switch (color_value)  {
@@ -645,6 +638,9 @@ static void load_values(){
     int mgormm = 0;
     int vibes = 0;
     int rawvibrate = 0;
+    int animateon = 0;
+    int vibeon = 0;
+
     if (current_values == NULL) {
         return;
     } else {
@@ -741,13 +737,30 @@ static void load_values(){
                 //APP_LOG(APP_LOG_LEVEL_DEBUG, "color_value: %s", o);
                 color_value = atoi(o);
                 break;
-
-            }
-            o = strtok(NULL,",");
-        }
+            case 12:
+          //APP_LOG(APP_LOG_LEVEL_DEBUG, "animateon: %s", o);
+          animateon = atoi(o);
+          if (animateon == 0) { HardCodeNoAnimations = 111; }
+          else { HardCodeNoAnimations = 100; }
+          break; 
+           case 13:
+                    //APP_LOG(APP_LOG_LEVEL_DEBUG, "vibeon: %s", o);
+          vibeon = atoi(o);
+          if (vibeon == 0) { 
+            // turn vibrator off; emoji will be set to sleep so have visual indication
+            HardCodeNoVibrations = 111; 
+          }
+          else { 
+            // turn vibrator on 
+            HardCodeNoVibrations = 100;
+          }
+          break;
+   }
+      o = strtok(NULL,",");
     }
+  }
+   
 } //End load_values
-
 //CONTAINER FOR ARROWS & SPECIAL ICONS
 static void set_container_image(GBitmap **bmp_image, BitmapLayer *bmp_layer, const int resource_id, GPoint origin) {
     GBitmap *old_image = *bmp_image;
@@ -944,6 +957,7 @@ void bt_handler(bool bt_connected) {
     } else {
         //  APP_LOG(APP_LOG_LEVEL_INFO, "Phone is not connected!");
         text_layer_set_text(message_layer, "√PHN\0");
+        window_stack_pop_all(false); //ADDED Oct13
         alert_handler_cgm(BTOUT_VIBE);
         if (BluetoothAlert == 111) {
             return;
@@ -1221,9 +1235,7 @@ void outbox_failed_handler_cgm(DictionaryIterator *failed, AppMessageResult appm
         appmsg_outfail_error, translate_app_error(appmsg_outfail_error));
     sync_error_callback_cgm(outboxfail_dicterr, outboxfail_apperr, iter);
 
-
 } // end outbox_failed_handler_cgm
-
 
 static void load_icon() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD ICON ARROW FUNCTION START");
@@ -1277,6 +1289,7 @@ static void load_icon() {
         DataOfflineAlert = 100;
         dataoffline_retries_counter = 0;
     }
+  
     //ARROW LOCATIONS
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD ARROW ICON, BEFORE CHECK SPEC VALUE BITMAP");
     // check if special value set
@@ -1566,11 +1579,11 @@ void animate_happymsg(char *happymsg_to_display) {
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "ANIMATE HAPPY MSG, MSG IN BUFFER: %s", animate_happymsg_buffer);
     animate_happymsg_layer = text_layer_get_layer(happymsg_layer);
 #ifdef PBL_ROUND
-    from_happymsg_rect = GRect(144, 87, 150, 48);
-    to_happymsg_rect = GRect(-184, 87, 150, 48);
+    from_happymsg_rect = GRect(144, 98, 150, 38);
+    to_happymsg_rect = GRect(-184, 98, 150, 38);
 #else
-    from_happymsg_rect = GRect(144, 94, 150, 52);
-    to_happymsg_rect = GRect(-180, 94, 150, 52);
+    from_happymsg_rect = GRect(144, 104, 150, 43);
+    to_happymsg_rect = GRect(-180, 104, 150, 43);
 #endif
 
 
@@ -1808,7 +1821,7 @@ static void load_bg() {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
             //if (TurnOff_NOBLUETOOTH_Msg == 100) {
             set_message_layer("NO BT\0", "", false, text_colour);
-
+            window_stack_pop_all(false); //ADDED Oct13
           //text_layer_set_text(message_layer, "NO BT");
             //} // if turnoff nobluetooth msg
         }// if !bluetooth connected
@@ -2088,7 +2101,9 @@ static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_ti
   }
 
 } // end set_cgm_timeago
-/*static void load_looptime() {
+//LOAD LOOP TIME
+/*
+static void load_looptime() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
     // VARIABLES
 
@@ -2098,6 +2113,32 @@ static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_ti
     struct tm *loop_local_time = localtime(&loop_temp_time);
     size_t draw_loop_time = 0;
     static char looptime_text[] = "00:00";
+  if (current_cgm_timeago < MINUTEAGO) {
+          loop_timeago_diff = 0;
+          set_current_loop("now", loop_timeago_diff, true, "");
+          // We've cleared Check Rig, so make sure reset flag is set.
+          CGMOffAlert = 100;
+        }
+        else if (current_cgm_timeago < HOURAGO) {
+          cgm_timeago_diff = (current_cgm_timeago / MINUTEAGO);
+          set_cgm_timeago("", cgm_timeago_diff, false, "m");
+
+        }
+        else if (current_cgm_timeago < DAYAGO) {
+          cgm_timeago_diff = (current_cgm_timeago / HOURAGO);
+          set_cgm_timeago("", cgm_timeago_diff, false, "h");
+
+        }
+        else if (current_cgm_timeago < WEEKAGO) {
+          cgm_timeago_diff = (current_cgm_timeago / DAYAGO);
+          set_cgm_timeago("", cgm_timeago_diff, false, "d");
+
+        }
+        else {
+          // clear cgm timeago icon and set init flag
+          clear_cgm_timeago();
+        }
+    
 }*/
 static void load_cgmtime() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
@@ -2273,6 +2314,8 @@ static void load_apptime(){
                 alert_handler_cgm(PHONEOUT_VIBE);
                 PhoneOffAlert = 111;
                 text_layer_set_text(message_layer, "√PHN\0");
+                window_stack_pop_all(false); //ADDED Oct13
+
         }
     }
     else {
@@ -2314,6 +2357,8 @@ static void load_bg_delta() {
 
         && (TurnOff_CHECKPHONE_Msg == 100)) {
             text_layer_set_text(message_layer, "√PHN\0");
+            window_stack_pop_all(false); //ADDED Oct13
+
            return;
     }
 
@@ -2322,7 +2367,7 @@ static void load_bg_delta() {
     if ((CGMOffAlert == 111) && (ClearedOutage == 100) && (ClearedBTOutage == 100)
         && (current_cgm_timeago != 0) && (stored_cgm_time == current_cgm_time) &&
         (TurnOff_CHECKCGM_Msg == 100)) {
-            text_layer_set_text(bg_layer, "OLD\0"); //added August 4
+            text_layer_set_text(bg_layer, "OLD\0");
             text_layer_set_text(message_layer, "√RIG\0");
             return;
     }
@@ -2331,6 +2376,9 @@ static void load_bg_delta() {
     if ((CGMOffAlert == 111) && (current_cgm_timeago == 0) &&
         (TurnOff_CHECKCGM_Msg == 100)) {
             init_loading_cgm_timeago = 100;
+            text_layer_set_text(bg_layer, last_bg); //added Oct13
+            text_layer_set_text(message_layer, current_bg_delta);
+
             return;
     }
     //START AGAIN HERE WITH MESSAGE LAYER AND SPECIAL VALUE
@@ -2538,63 +2586,6 @@ static void load_rig_battlevel() {
 
 }
 
-static void load_noise() {
-    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD NOISE, FUNCTION START");
-
-    // CONSTANTS
-#define NO_NOISE 0
-#define CLEAN_NOISE 1
-#define LIGHT_NOISE 2
-#define MEDIUM_NOISE 3
-#define HEAVY_NOISE 4
-#define WARMUP_NOISE 5
-#define OTHER_NOISE 6
-
-    const uint8_t NOISE_FORMATTED_SIZE = 8;
-
-    // VARIABLES
-    static char formatted_noise[8] = {0};
-    text_layer_set_text_color(noise_layer, text_colour);
-    //APP_LOG(APP_LOG_LEVEL_DEBUG, "LOAD NOISE, CURRENT NOISE VALUE: %i ", current_noise_value);
-
-    switch (current_noise_value) {
-
-        case NO_NOISE:;
-            strncpy(formatted_noise, " ", NOISE_FORMATTED_SIZE);
-            //text_layer_set_text(noise_layer, " \0");
-            break;
-        case CLEAN_NOISE:;
-            strncpy(formatted_noise, " ", NOISE_FORMATTED_SIZE);
-            //text_layer_set_text(noise_layer, " \0");
-            break;
-        case LIGHT_NOISE:;
-            strncpy(formatted_noise, ".", NOISE_FORMATTED_SIZE);
-            //text_layer_set_text(noise_layer, ".\0");
-            break;
-        case MEDIUM_NOISE:;
-            strncpy(formatted_noise, "..", NOISE_FORMATTED_SIZE);
-           //text_layer_set_text(noise_layer, "..\0");
-            break;
-        case HEAVY_NOISE:;
-            strncpy(formatted_noise, "...", NOISE_FORMATTED_SIZE);
-            //text_layer_set_text(noise_layer, "...\0");
-            break;
-        case WARMUP_NOISE:;
-            strncpy(formatted_noise, " ", NOISE_FORMATTED_SIZE);
-            break;
-        case OTHER_NOISE:;
-            strncpy(formatted_noise, " ", NOISE_FORMATTED_SIZE);
-            break;
-        default:;
-            strncpy(formatted_noise, "ERR", NOISE_FORMATTED_SIZE);
-    }
-
-//    APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, NOISE: %s ", formatted_noise);
-
-    text_layer_set_text(noise_layer, formatted_noise);
-
-    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD NOISE, END FUNCTION");
-} // end load_noise
 //NAME CIRCLE update proc
 static void name_circle_update_proc(Layer *this_layer, GContext *ctx) {
 #ifdef PBL_PLATFORM_CHALK
@@ -2918,7 +2909,12 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
               } else if (strchr(current_symbol, *"L")){
                   create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
               }else if (strchr(current_symbol, *"X")){
-                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
+                 if (LoopOutAlert == 100) {
+            //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, ZERO BATTERY, VIBRATE");
+            alert_handler_cgm(NOLOOP_VIBE);
+            LoopOutAlert = 111;
+        }
+                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);                   
                 }else if (strchr(current_symbol, *"R")){
                   create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[CIRCLE_ICON_INDX]);
               }else{
@@ -2995,6 +2991,8 @@ bt_connected = connection_service_peek_pebble_app_connection(); //was bluetooth_
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
             if (TurnOff_NOBLUETOOTH_Msg == 100) {
                    text_layer_set_text(message_layer, "NO BT\0");
+                   window_stack_pop_all(false); //ADDED Oct13
+
             } // if turnoff nobluetooth msg
         }
     DictionaryIterator *iter = NULL;
@@ -3077,41 +3075,14 @@ void handle_minute_tick_cgm(struct tm* tick_time_cgm, TimeUnits units_changed_cg
         //APP_LOG(APP_LOG_LEVEL_DEBUG, "lastAlertTime OUT:  %i", lastAlertTime);
         // check watch battery
         // handle_watch_battery_cgm(battery_state_service_peek()); THIS WAS DUPLICATED REMOVED NOV4
-      bt_connected = connection_service_peek_pebble_app_connection ();//June 23
-    if ((bt_connected == true) && (BluetoothAlert == 111)) {//June 23
-      bt_handler(bt_connected);//June 23
+      bt_connected = connection_service_peek_pebble_app_connection ();
+    if ((bt_connected == true) && (BluetoothAlert == 111)) {
+      bt_handler(bt_connected);
     }
     }
 
 } // end handle_minute_tick_cgm
 
-//REMOVE
-//Name field moves based on Nightscout/Share
-/*void load_mod(){
-
-    //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d", current_mode_value);
-    if (current_mode_value == NIGHTSCOUT_MODE) {
-#ifdef PBL_ROUND
-        Vertical = 11;
-        Horizontal = 19;
-#else
-        Vertical = 10;
-        Horizontal = 11;
-#endif
-    }
-    else
-    {
-#ifdef PBL_ROUND
-        Vertical = 8;
-        Horizontal = 19;
-#else
-        Vertical = 8;
-        Horizontal = 11;
-#endif
-    }
-    //APP_LOG(APP_LOG_LEVEL_DEBUG, "Load Mode: %d, Vertical: %d Horizontal: %d", current_mode_value, Vertical, Horizontal);
-}
-*/
 void window_cgm_add_text_layer (TextLayer **cgm_text_layer, GRect cgm_text_layer_pos, char *cgm_text_font) {
 
   *cgm_text_layer = text_layer_create(cgm_text_layer_pos);
@@ -3147,8 +3118,10 @@ void window_load_cgm(Window *window_cgm) {
 //CHART LAYER
     chart_layer = chart_layer_create((GRect) {
 #ifdef PBL_PLATFORM_CHALK
-        .origin = { 4, 100},
+        .origin = { 4, 98},
             .size = { 173, 38 } });
+  
+
 #else
         .origin = { -1, 104},
             .size = { 145, 43 } });
@@ -3211,7 +3184,7 @@ void window_load_cgm(Window *window_cgm) {
 
 // RIG BATTERY LEVEL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(47, 73, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(66, 78, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
     #else
         window_cgm_add_text_layer(&rig_battlevel_layer, GRect(52, 81, 45, 50), FONT_KEY_GOTHIC_18_BOLD);
     #endif
@@ -3271,30 +3244,36 @@ void window_load_cgm(Window *window_cgm) {
 
 // SYMBOL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(82, 72, 50, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(100, 65, 50, 40), GAlignCenter);
     #else
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(82, 72, 50, 40), GAlignCenter);
+        window_cgm_add_bitmap_layer(&symbol_layer, GRect(80, 72, 50, 40), GAlignCenter);
     #endif
 
 // BASAL
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&basal_layer, GRect(11, 66, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&basal_layer, GRect(5, 68, 60, 24), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&basal_layer, GRect(-5, 80, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
+        window_cgm_add_text_layer(&basal_layer, GRect(5, 80, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
     #endif
         text_layer_set_text_color(basal_layer, GColorWhite);
+        text_layer_set_text_alignment(basal_layer, GTextAlignmentLeft);
 
 // LOOP TIME AGO
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&time_layer, GRect(87, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(140, 68, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #else
-        window_cgm_add_text_layer(&time_layer, GRect(87, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&time_layer, GRect(115, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
     #endif
         text_layer_set_text_color(time_layer, GColorWhite);
-        text_layer_set_text_alignment(time_layer, GTextAlignmentRight);
+        text_layer_set_text_alignment(time_layer, GTextAlignmentLeft);
 
 // BG
-        window_cgm_add_text_layer(&bg_layer, GRect(0, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+#ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&bg_layer, GRect(17, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+#else
+        window_cgm_add_text_layer(&bg_layer, GRect(1, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+
+#endif
 
 // DELTA BG / MESSAGE LAYER
     #ifdef PBL_PLATFORM_CHALK
@@ -3314,12 +3293,22 @@ void window_load_cgm(Window *window_cgm) {
 
 // CGM TIME AGO READING
     #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(58, 1, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
+        window_cgm_add_text_layer(&cgmtime_layer, GRect(63, 1, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
     #else
         window_cgm_add_text_layer(&cgmtime_layer, GRect(48, 1, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
     #endif
         text_layer_set_text_color(cgmtime_layer, text_colour);
         //text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
+
+// PUMP LAYER
+#ifdef PBL_PLATFORM_CHALK
+        window_cgm_add_text_layer(&s_layer, GRect(0, 97, 175, 38), FONT_KEY_GOTHIC_18_BOLD);
+#else
+        window_cgm_add_text_layer(&s_layer, GRect(-1, 104, 150, 43), FONT_KEY_GOTHIC_18_BOLD);
+#endif
+        text_layer_set_text_color(s_layer, GColorOxfordBlue);
+        text_layer_set_background_color(s_layer, GColorPictonBlue);
+        layer_set_hidden(text_layer_get_layer(s_layer), true);
 
 // HAPPY MSG LAYER
     #ifdef PBL_PLATFORM_CHALK
@@ -3328,16 +3317,6 @@ void window_load_cgm(Window *window_cgm) {
         window_cgm_add_text_layer(&happymsg_layer, GRect(-144, 104, 145, 43), FONT_KEY_GOTHIC_24_BOLD);
 #endif
         text_layer_set_text_color(happymsg_layer, plot_colour);
-// PUMP LAYER
-#ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&s_layer, GRect(0, 98, 175, 38), FONT_KEY_GOTHIC_18_BOLD);
-#else
-        window_cgm_add_text_layer(&s_layer, GRect(0, 104, 145, 43), FONT_KEY_GOTHIC_18_BOLD);
-#endif
-        text_layer_set_text_color(s_layer, GColorOxfordBlue);
-        text_layer_set_background_color(s_layer, GColorPictonBlue);
-        layer_set_hidden(text_layer_get_layer(s_layer), true);
-
 
 
         // put " " (space) in bg field so logo continues to show
