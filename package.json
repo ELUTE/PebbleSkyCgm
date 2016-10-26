@@ -1,6 +1,8 @@
 {
     "author": "Dexterity",
-    "dependencies": {},
+    "dependencies": {
+        "pebble-clay": "^1.0.2"
+    },
     "keywords": [],
     "name": "cgmduo",
     "pebble": {
@@ -8,7 +10,7 @@
             "configurable"
         ],
         "displayName": "CGMduo",
-        "enableMultiJS": false,
+        "enableMultiJS": true,
         "messageKeys": {
             "bg": 1,
             "bg2": 13,
@@ -17,10 +19,9 @@
             "dlta": 4,
             "dlta2": 15,
             "icon": 0,
-            "icon2": 12,
-            "mode_switch": 11,
             "name": 6,
             "name2": 17,
+            "newicon": 12,
             "noiz": 10,
             "noiz2": 20,
             "rwuf": 9,
@@ -216,7 +217,7 @@
             "basalt",
             "chalk"
         ],
-        "uuid": "ede09d0f-69f2-41e9-951b-f86fbc8be959",
+        "uuid": "22cf9267-1829-4de5-9538-b02c26966183",
         "watchapp": {
             "watchface": true
         }

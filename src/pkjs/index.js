@@ -1,3 +1,11 @@
+// Import the Clay package
+var Clay = require('pebble-clay');
+// Load our Clay configuration file
+var clayConfig = require('./config');
+// Initialize Clay
+var clay = new Clay(clayConfig);
+
+
 //var hasTimeline = 1;
 //var topic = "not_set";
 var fix = 0;
@@ -49,11 +57,11 @@ function fetchCgmData() {
                 "tcgm": 0,
                 "tapp": 0,
                 "dlta": "NOEP",
-                "icon2": " ",
-                "bg2": " ",
-                "tcgm2": 0,
-                "tapp2": 0,
-                "dlta2": "NOEP",
+                //"icon2": " ",
+                //"bg2": " ",
+                //"tcgm2": 0,
+                //"tapp2": 0,
+                //"dlta2": "NOEP",
                 });
          break;
     }
@@ -64,7 +72,7 @@ function fetchCgmData() {
 //**********************NIGHTSCOUT**********************//
 function nightscout(opts){
   
-    var response2, responsebgs2, responsecals2, message;
+    var response2, responsebgs2, responsecals2, message2;
   
    opts.endpoint2 = opts.endpoint2 + "/pebble";
 
@@ -73,22 +81,22 @@ var req2 = new XMLHttpRequest();
  if (!opts.endpoint2) {
         // endpoint doesn't exist, return no endpoint to watch
   // " " (space) shows these are init values, not bad or null values
-        message = {
-          icon: " ",
-          bg: " ",
-          tcgm: 0,
-          tapp: 0,
-          dlta: "NOEP",
-          ubat: " ",
-          name: " ",
-          vals: " ",
-          clrw: " ",
-          rwuf: " ",
-          noiz: 0,  
+        message2 = {
+          icon2: " ",
+          bg2: " ",
+          tcgm2: 0,
+          //tapp: 0,
+          dlta2: "NOEP",
+          ubat2: " ",
+          name2: " ",
+          //vals: " ",
+          clrw2: " ",
+          rwuf2: " ",
+          noiz2: 0,  
 
         };
-        console.log("NO ENDPOINT JS message", JSON.stringify(message));
-        MessageQueue.sendAppMessage(message);
+        console.log("NO ENDPOINT JS message", JSON.stringify(message2));
+        MessageQueue.sendAppMessage(message2);
         return;
     } // if (!opts.endpoint2)
  
@@ -100,13 +108,13 @@ var req2 = new XMLHttpRequest();
       message = {
         dlta: "OFF"
       };          
-      console.log("TIMEOUT, DATA OFFLINE JS message", JSON.stringify(message));
-      MessageQueue2.sendAppMessage(message);
+      console.log("TIMEOUT, DATA OFFLINE JS message", JSON.stringify(message2));
+      MessageQueue.sendAppMessage(message2);
     }, 59000 ); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds JUNE 23 ^
   
 
 //SECOND USER
-       req2.onload = function(o) {
+       req2.onload = function(e) {
 
         if (req2.readyState == 4) {
 
@@ -301,9 +309,9 @@ var req2 = new XMLHttpRequest();
                     if ( (typeof currentNoise2 == "undefined") || (currentNoise2 === null) ) {
                       currentNoise2 = 0;  
                     }
-                     message = {
-                      icon2: currentIcon2,
-                      bg2: currentBG2,
+                 /*    message = {
+                      newicon: currentIcon2,
+                      bg2:   currentBG2,
                       tcgm2: formatReadTime2,
                       dlta2: formatBGDelta2,
                       ubat2: currentBattery2,
@@ -311,11 +319,11 @@ var req2 = new XMLHttpRequest();
                       clrw2: formatCalcRaw2,
                       rwuf2: formatRawUnfilt2,
                       noiz2: currentNoise2,
-                    };
+                    };*/
                      
                     // send message data to log and to watch
-                    console.log("JS send message2: " + JSON.stringify(message));
-                    MessageQueue.sendAppMessage(message);
+                   // console.log("JS send message2: " + JSON.stringify(message));
+                   // MessageQueue.sendAppMessage(message);
                 // response data is not good; format error message and send to watch
                 // have to send space in BG field for logo to show up on screen    
                // } else {
@@ -332,24 +340,7 @@ var req2 = new XMLHttpRequest();
               console.log("XMLHttpRequest error, not 200: " + req2.statusText);
             } // end req.status == 200
         } // end req.readyState == 4 
-    }; // req.onload
-                    
-           
-   
-  req2.onerror = function (o,message) {
-      console.log("XMLHttpRequest error: " + req2.statusText);
-    }; // end req2.onerror
- 
-    // set rest of req
-      req2.open('GET', opts.endpoint2, true);  
-
-      req2.setRequestHeader('Cache-Control', 'no-cache');  
-  
-    req2.send(null); 
-
-//}//END CGM TIMEOUT
-
-
+         
     opts.endpoint1 = opts.endpoint1 + "/pebble"; 
    //console.log ("START fetchCgmData");
     // declare local variables for message data
@@ -621,9 +612,21 @@ var req2 = new XMLHttpRequest();
                       values += ",0";  // Do not vibrate on raw value when in special values                        
                     }
                   
-                    var mode_switch = getModeAsInteger(opts); 
+                  //  var mode_switch = getModeAsInteger(opts); 
                      // load message data  
-                    message = {
+                    message2 = {
+                      newicon: currentIcon2,
+                      bg2:   currentBG2,
+                      tcgm2: formatReadTime2,
+                      dlta2: formatBGDelta2,
+                      ubat2: currentBattery2,
+                      name2: NameofT1DPerson2,
+                      clrw2: formatCalcRaw2,
+                      rwuf2: formatRawUnfilt2,
+                      noiz2: currentNoise2,
+                    };
+                  
+                  message = {
                       icon: currentIcon,
                       bg: currentBG,
                       tcgm: formatReadTime,
@@ -635,13 +638,16 @@ var req2 = new XMLHttpRequest();
                       clrw: formatCalcRaw,
                       rwuf: formatRawUnfilt,
                       noiz: currentNoise,
-                      mode_switch: 3,
+                      
+                      //mode_switch: 3,
                     
                     };
                     
                     // send message data to log and to watch
-                    console.log("JS send message: " + JSON.stringify(message));
+                    console.log("JS send message1: " + JSON.stringify(message));
                     MessageQueue.sendAppMessage(message);
+                    console.log("JS send message2: " + JSON.stringify(message2));
+                    MessageQueue.sendAppMessage(message2);
                 // response data is not good; format error message and send to watch
                 // have to send space in BG field for logo to show up on screen    
                 //} else {
@@ -671,6 +677,24 @@ var req2 = new XMLHttpRequest();
     // get cgm data
   
     req.send(null); 
+    }; // req.onload
+                    
+           
+   
+  req2.onerror = function (o,message) {
+      console.log("XMLHttpRequest error: " + req2.statusText);
+    }; // end req2.onerror
+ 
+    // set rest of req
+      req2.open('GET', opts.endpoint2, true);  
+
+      req2.setRequestHeader('Cache-Control', 'no-cache');  
+  
+    req2.send(null); 
+
+//}//END CGM TIMEOUT
+
+
 }
 
 
@@ -1003,15 +1027,18 @@ var MessageQueue = (function () {
                     sending = false;
                     }
                     
-                    function sendAppMessage(message, ack, nack) {
+                    function sendAppMessage(message, ack, nack, message2) {
                     
                     if (! isValidMessage(message)) {
                     return false;
                     }
-                      
+                    if (! isValidMessage(message2)) {
+                    return false;
+                    }  
                     
                     queue.push({
                                message: message,
+                               message2: message2,
                                ack: ack || null,
                                nack: nack || null,
                                attempts: 0
@@ -1028,9 +1055,12 @@ var MessageQueue = (function () {
                     return queue.length;
                     }
                     
-                    function isValidMessage(message) {
+                    function isValidMessage(message, message2) {
                     // A message must be an object.
                     if (message !== Object(message)) {
+                    return false;
+                    }
+                    if (message2 !== Object(message2)) {
                     return false;
                     }
                     var keys = Object.keys(message);
@@ -1038,6 +1068,7 @@ var MessageQueue = (function () {
                     if (! keys.length) {
                     return false;
                     }
+
                     for (var k = 0; k < keys.length; k += 1) {
                     var validKey = /^[0-9a-zA-Z-_]*$/.test(keys[k]);
                     if (! validKey) {
@@ -1071,10 +1102,14 @@ var MessageQueue = (function () {
                     if (sending) { return; }
                     var message = queue.shift();
                     if (! message) { return; }
+                    var message2 = queue.shift();
+                    if (! message2) { return; }
                     
                     message.attempts += 1;
                     sending = true;
                     Pebble.sendAppMessage(message.message, ack, nack);
+                    Pebble.sendAppMessage(message2.message2, ack, nack);
+
                     
                     timer = setTimeout(function () {
                                        timeout();
@@ -1089,6 +1124,9 @@ var MessageQueue = (function () {
                     if (message.ack) {
                     message.ack.apply(null, arguments);
                     }
+                    if (message2.ack) {
+                    message2.ack.apply(null, arguments);
+                    }
                     }
                     
                     function nack() {
@@ -1100,9 +1138,19 @@ var MessageQueue = (function () {
                                sendNextMessage();
                                }, 400 * message.attempts);
                     }
+                      if (message2.attempts < RETRY_MAX) {
+                    queue.unshift(message2);
+                    setTimeout(function () {
+                               sending = false;
+                               sendNextMessage();
+                               }, 400 * message2.attempts);
+                    }
                     else {
                     if (message.nack) {
                     message.nack.apply(null, arguments);
+                    }
+                      if (message2.nack) {
+                    message2.nack.apply(null, arguments);
                     }
                     }
                     }
@@ -1115,12 +1163,15 @@ var MessageQueue = (function () {
                     if (message.ack) {
                     message.ack.apply(null, arguments);
                     }
+                      if (message2.ack) {
+                    message2.ack.apply(null, arguments);
+                    }
                     }
                     
                     }
                     
                     }());     
-var MessageQueue2 = (function () {
+/*var MessageQueue2 = (function () {
                     
                     var RETRY_MAX = 5;
                     
@@ -1130,7 +1181,7 @@ var MessageQueue2 = (function () {
                     
                     return {
                     reset: reset,
-                    sendAppMessage: sendAppMessage,
+                    sendAppMessage2: sendAppMessage2,
                     size: size
                     };
                     
@@ -1139,7 +1190,7 @@ var MessageQueue2 = (function () {
                     sending = false;
                     }
                     
-                    function sendAppMessage( ack, nack, message2) {
+                    function sendAppMessage2( ack, nack, message2) {
                     
                     if (! isValidMessage(message2)) {
                     return false;
@@ -1147,7 +1198,7 @@ var MessageQueue2 = (function () {
                       
                     
                     queue.push({
-                               message: message2,
+                               message2: message2,
                                ack: ack || null,
                                nack: nack || null,
                                attempts: 0
@@ -1210,7 +1261,7 @@ var MessageQueue2 = (function () {
                     
                     message2.attempts += 1;
                     sending = true;
-                    Pebble.sendAppMessage(message2.message2, ack, nack);
+                    Pebble.sendAppMessage2(message2.message2, ack, nack);
                     
                     timer = setTimeout(function () {
                                        timeout();
@@ -1255,7 +1306,7 @@ var MessageQueue2 = (function () {
                     
                     }
                     
-                    }());     
+                    }());  */   
 
 /*function clear_defaults(opts) {
    console.log ("START clear_defaults");
@@ -1287,13 +1338,13 @@ Pebble.addEventListener("ready",
                   var opts = [ ].slice.call(arguments).pop( );
                   opts = JSON.parse(localStorage.getItem('cgmPebble_duo'));
              
-                  var current_mode = getModeAsInteger(opts);
-                          console.log("opts: " + JSON.stringify(opts));
+                 // var current_mode = getModeAsInteger(opts);
+                   //       console.log("opts: " + JSON.stringify(opts));
                   // send message data  
-                  var message = { mode_switch: current_mode };
+                  //var message = { mode_switch: current_mode };
                   
                   // send message data to log and to watch
-                  Pebble.sendAppMessage(message); 
+                  //Pebble.sendAppMessage(message); 
                         });
 
 Pebble.addEventListener("appmessage",
@@ -1302,10 +1353,10 @@ Pebble.addEventListener("appmessage",
                         fetchCgmData();
                         });
 
-Pebble.addEventListener("showConfiguration", function(e) {
-                        console.log("Showing Configuration", JSON.stringify(e));
-                        Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skyduov1.html');
-                        });
+//Pebble.addEventListener("showConfiguration", function(e) {
+  //                      console.log("Showing Configuration", JSON.stringify(e));
+    //                    Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skyduov1.html');
+      //                  });
 
 Pebble.addEventListener("webviewclosed", function(e) {
                         var opts = JSON.parse(decodeURIComponent(e.response));
