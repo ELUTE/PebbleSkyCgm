@@ -27,7 +27,6 @@ function fetchCgmData() {
         
         //console.log("fetchCgmData 5");
     } // end fetchCgmData
-    //Get last 9 SGV's
 
 function getNightScoutArrayData(message, opts) {
         // opts.vibe = parseInt(opts.vibe, 10);
@@ -35,17 +34,20 @@ function getNightScoutArrayData(message, opts) {
         var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
         endpoint = endpoint.replace("/pebble/", "");
         endpoint = endpoint.replace("/pebble", "");
-        var url = endpoint + "/api/v1/entries/sgv.json?count=12";
+        var url = endpoint + "/api/v2/properties/iob,basal,loop";
         var http = new XMLHttpRequest();
         http.open("GET", url, false);
         http.onload = function(e) {
             if (http.status == 200) {
                 var data = JSON.parse(http.responseText);
                 // Add the array data for graph
-                message.bgsx = createBgArray(data, opts);
-                message.bgty = createBgTimeArray(data, opts);
-                console.log("Data from treatments call:" + JSON.stringify(
-                    message));
+                //message.bgsy = data.loop.lastLoop.predicted.values;
+                message.bgty = createBgArray(data, opts);
+                message.bgsx = createBgTimeArray(data, opts);
+              console.log ("predicted values: " + JSON.stringify(message));
+               // message.bgty = createBgTimeArray(data, opts);
+                //console.log("Data from treatments call:" + JSON.stringify(
+                  //  message));
                 return message;
             } else {
                 sendUnknownError("dataerr");
@@ -65,51 +67,71 @@ function getNightScoutArrayData(message, opts) {
         //console.log("Message 4:" + JSON.stringify(message));
         return message;
     } //end 
-    //Create BG ARRAY
+
+
 function createBgArray(data, opts) {
-        var toReturn = "";
-        //console.log("-----------------------data.length:" + data.length);
-        var now = new Date();
-        var minLimit = mmol_MinLimit; // mmol
-        if (opts.radio == 'mgdl_form') {
-            minLimit = mgdl_MinLimit;
+    var toReturn = "";
+    //console.log("-----------------------data.length:" + data.length);
+    var now = new Date();
+   
+    var minLimit = mmol_MinLimit; // mmol
+    if (opts.radio == 'mgdl_form') {
+      minLimit = mgdl_MinLimit;
+    }
+  
+    for (var i = 0; i < data.length; i++) {
+        var wall = parseInt(data[i].date);
+        var timeAgo = msToMinutes(now.getTime() - wall);
+      
+        //console.log("----createBgArray------ data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
+      
+        if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >= minLimit) {
+            toReturn = toReturn + data[i].sgv.toString() + ",";
         }
-        for (var i = 0; i < data.length; i++) {
-            var wall = parseInt(data[i].date);
-            var timeAgo = msToMinutes(now.getTime() - wall);
-            //console.log("----createBgArray------ data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
-            if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >=
-                minLimit) {
-                toReturn = toReturn + data[i].sgv.toString() + ",";
-            }
-        }
-        toReturn = toReturn.replace(/,\s*$/, "");
-        return toReturn;
-    } //end createBgTimeArray
- 
+    }
+    toReturn = toReturn.replace(/,\s*$/, "");
+    return toReturn;
+} //end createBgTimeArray
+
+
 function createBgTimeArray(data, opts) {
-        //  var bgHour = "00";
-        //  var bgMin = "00";
-        var toReturn2 = "";
-        var now = new Date();
-        var minLimit = mmol_MinLimit; // mmol
-        if (opts.radio == 'mgdl_form') {
-            minLimit = mgdl_MinLimit;
+    //  var bgHour = "00";
+    //  var bgMin = "00";
+    var toReturn2 = "";
+    var now = new Date();
+
+    var minLimit = mmol_MinLimit; // mmol
+    if (opts.radio == 'mgdl_form') {
+      minLimit = mgdl_MinLimit;
+    }
+  
+  
+    for (var i = 0; i < data.length; i++) {
+        var wall = parseInt(data[i].date);
+        var timeAgo = msToMinutes(now.getTime() - wall);
+      
+        console.log("-----createBgTimeArray----- data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
+
+        if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >= minLimit) {
+            toReturn2 = toReturn2 + (120 - timeAgo).toString() + ",";
         }
-        for (var i = 0; i < data.length; i++) {
-            var wall = parseInt(data[i].date);
-            var timeAgo = msToMinutes(now.getTime() - wall);
-            //console.log("-----createBgTimeArray----- data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
-            if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >=
-                minLimit) {
-                toReturn2 = toReturn2 + (120 - timeAgo).toString() + ",";
-            }
-        }
+      
+//         if (opts.radio == 'mgdl_form') {
+//             if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >= 39) {
+//                 toReturn2 = toReturn2 + (120 - timeAgo).toString() + ",";
+//             }
+//         } else {
+//             if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >= 0.9) {
+//                 toReturn2 = toReturn2 + (120 - timeAgo).toString() + ",";
+//             }
+//         }
+    }
         toReturn2 = toReturn2.replace(/,\s*$/, "");
         // console.log("createBgTimeArray: " + toReturn2);
         return toReturn2;
-    } // end createBgTimeArray
-
+   
+} // end createBgTimeArray
+//TIME SINCE FOR LOOP TIME AGO
 function timeSince(date) {
     var seconds = Math.floor((new Date() - date) / 1000);
     //var seconds = Math.floor(((new Date().getTime()/1000) - date)) 
@@ -135,18 +157,33 @@ function timeSince(date) {
     }
     return Math.floor(seconds) + "s";
 }
-
+//GET LOOP DATA
 function getLoopData(opts) {
         var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
         endpoint = endpoint.replace("/pebble/", "");
         endpoint = endpoint.replace("/pebble", "");
+    //    var req = new XMLHttpRequest();
+
         var loopurl = endpoint + "/api/v2/properties/loop,basal,pump";
         var http = new XMLHttpRequest();
         http.open("GET", loopurl, false);
+  //    req.setRequestHeader('Cache-Control', 'no-cache');
+
+ 
         http.onload = function(e) {
             if (http.status == 200) {
                 //var loopdata = (http.responseText);
                 var loopn = JSON.parse(http.responseText);
+              //if ((loopn.loop.lastLoop.predicted.values !== undefined)) {
+               // opts.predict = "null";
+              //}else {
+              opts.predict = loopn.loop.lastLoop.predicted.values;
+
+              //}
+              console.log ("predict: " + opts.predict);
+              
+                var now = new Date();
+                var toReturn2 = "";
                 if (loopn.length === 0) {
                     sendUnknownError("dataerr");
                     //return loopok;
@@ -162,10 +199,10 @@ function getLoopData(opts) {
                   if ((loopn.pump.pump === null)){
                     opts.Pump = "null";
                   } else {
-                  var pumpbat= loopn.pump.pump.battery.voltage;
+                  var pumpbat= loopn.pump.pump.battery.voltage + "v";
                   var pumpres = (loopn.pump.pump.reservoir + "u");
                   var pumpdat = loopn.pump.data.clock.display;
-                  opts.Pump = ("Bat: " + pumpbat + "v" + " " + "Res: " + pumpres + "\n" + pumpdat);
+                  opts.Pump = ("Bat: " + pumpbat + " " + "Res: " + pumpres + "\n" + pumpdat);
                   }
                   console.log ("pump info " + opts.Pump);
                   if ((loopn.loop.display.label === null)){
@@ -178,7 +215,14 @@ function getLoopData(opts) {
                   } else { 
                     opts.Basal = loopn.basal.display;
                   }
-                    console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
+                var date = new Date(), interval=(-5), arr=[];
+                for(var i=0;i<opts.predict.length;i++){
+                  date.setMinutes(date.getMinutes() + interval);
+                  arr.push(date.getHours() + '.' + date.getMinutes());
+                    }
+                  opts.bx = arr;
+                  console.log("opts.bx: " + opts.bx);
+                  console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
                 }
             }
         };
@@ -195,7 +239,9 @@ function getLoopData(opts) {
         }
         //console.log("Message 4:" + JSON.stringify(message));
         //return messageLoop;
-    } //end 
+    } //end
+
+ 
     //get icon, bg, timeago, delta, name, noiz, raw, options
 function nightscout(opts) {
     //var loopok = loopn.loop.lastOkMoment;
@@ -218,7 +264,7 @@ function nightscout(opts) {
             name: " ",
             vals: " ",
             bgsx: " ",
-            bgty: " ",
+            bgty: 0,
             clrw: " ",
             cob: " ",
             sym: " ",
@@ -246,8 +292,12 @@ function nightscout(opts) {
         MessageQueue.sendAppMessage(message);
     }, 59000); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds  
     // get cgm data
+   // var arraydata = {};
+   //arraydata = opts.bx;
+  
     var arraydata = {};
     arraydata = getNightScoutArrayData(arraydata, opts);
+
     req.onload = function(e) {
         if (req.readyState == 4) {
             if (req.status == 200) {
@@ -274,8 +324,7 @@ function nightscout(opts) {
                         specialValue = false,
                         calibrationValue = false,
                         // get CGM time delta and format
-                        readingTime = new Date(responsebgs[0].datetime)
-                        .getTime(),
+                        readingTime = new Date(responsebgs[0].datetime).getTime(),
                         //readingTime = null,
                         formatReadTime = Math.floor((readingTime / 1000)),
                         // get app time and format
@@ -543,6 +592,7 @@ function nightscout(opts) {
                     values += "," + opts.mycolors; // Color field
                     values += "," + opts.animateon; // Animation ON or OFF
                     values += "," + opts.vibeon;  // Vibrate on or off
+                     //var y = opts.X;
 
 
                   //loop symbol  
@@ -576,7 +626,7 @@ function nightscout(opts) {
                         vals: values,
                         clrw: formatCalcRaw,
                         cob: currentCOB,
-                        bgsx: arraydata.bgsx,
+                        bgsx: arraydata.bgsx,//opts.predict,
                         bgty: arraydata.bgty,
                         sym: currentSym,
                         time: loopLast,

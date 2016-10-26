@@ -2824,7 +2824,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             ProcessingState* state = data_processor_create(nonconst, ',');
 
             uint8_t num_strings = data_processor_count(state);
-            //APP_LOG(APP_LOG_LEVEL_DEBUG, "BG num: %i", num_strings);
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "BG num: %i", num_strings);
              //APP_LOG(APP_LOG_LEVEL_INFO, "bgsxNUM STRINGS key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
           bgsx_array = (int*)malloc((num_strings-1)*sizeof(int));
@@ -2837,7 +2837,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                 }
                 else {
                     bgsx_array[n-1] = data_processor_get_int(state);
-                    //APP_LOG(APP_LOG_LEVEL_DEBUG, "BG Split: %i", bgs[n-1]);
+                    APP_LOG(APP_LOG_LEVEL_DEBUG, "BG Split: %i", bgsx_array[n-1]);
                 //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx7 key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
                 }
@@ -3033,9 +3033,6 @@ void timer_callback_cgm(void *data) {
 
     //  APP_LOG(APP_LOG_LEVEL_INFO, "TIMER CALLBACK IN, TIMER POP, ABOUT TO CALL SEND CMD");
     // reset msg timer to NULL
-    /*June 25if (timer_cgm != NULL) {
-        timer_cgm = NULL;
-    }*/
     null_and_cancel_timer (&timer_cgm, false);
 
     // send message
@@ -3475,7 +3472,7 @@ static void init_cgm(void) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, ABOUT TO CALL APP MSG OPEN");
      //app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 
-  app_message_open(800, 800);
+  app_message_open(900, 900);
     //  APP_LOG(APP_LOG_LEVEL_INFO, "INIT CODE, APP MSG OPEN DONE");
     if(chart_layer != NULL)
     {
