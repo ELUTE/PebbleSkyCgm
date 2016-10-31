@@ -43,8 +43,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -55,8 +54,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -67,8 +65,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -79,8 +76,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -91,8 +87,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -103,8 +98,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -115,8 +109,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -127,15 +120,19 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
                 {
                     "file": "images/pixel.png",
                     "name": "IMAGE_PIXEL",
-                    "targetPlatforms": null,
+                    "targetPlatforms": [
+                        "aplite",
+                        "basalt",
+                        "chalk",
+                        "diorite"
+                    ],
                     "type": "bitmap"
                 },
                 {
@@ -145,8 +142,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -157,8 +153,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -169,8 +164,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -181,8 +175,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -199,8 +192,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -211,8 +203,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -229,8 +220,7 @@
                         "aplite",
                         "basalt",
                         "chalk",
-                        "diorite",
-                        "emery"
+                        "diorite"
                     ],
                     "type": "bitmap"
                 },
@@ -246,10 +236,9 @@
         "targetPlatforms": [
             "basalt",
             "chalk",
-            "diorite",
-            "emery"
+            "diorite"
         ],
-        "uuid": "269ad280-79e9-4624-a185-c606552934d9",
+        "uuid": "f2c509bd-1aab-48de-bdf3-245c95964ede",
         "watchapp": {
             "watchface": true
         }

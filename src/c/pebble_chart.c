@@ -46,7 +46,7 @@ static void chart_layer_update_func(Layer*, GContext*);
 static void chart_layer_update_layout(ChartLayer* layer);
 static void animation_started(Animation*, void*);
 static void animation_stopped(Animation*, bool, void*);
-static void animation_update(Animation*, const uint32_t);
+//static void animation_update(Animation*, const uint32_t);
 
 // helper to extract ChartLayerData from ChartLayer
 static ChartLayerData* get_chart_data(ChartLayer* layer) {
@@ -385,6 +385,8 @@ static void chart_layer_update_layout(ChartLayer* layer) {
       fMinY = 40;
     if (fMaxY > 400)
       fMaxY = 400;
+    //const float fYScale = (float)(bounds.size.h - (2 * pData->iMargin)) / (fMaxY - fMinY); 
+
       
     pData->fXYRange = 30;
   }
@@ -402,6 +404,7 @@ static void chart_layer_update_layout(ChartLayer* layer) {
       // calc y tick spacing
       pData->iYTicks = (int)(fYScale * exponential10(closest_log10(fMaxY - fMinY)));
 
+      
       // figure out X-scale
       float fMaxX = pData->pXOrigData[0];
       float fMinX = pData->pXOrigData[0];
@@ -508,13 +511,13 @@ static void chart_layer_update_func(Layer* l, GContext* ctx) {
 
   if (data->iNumPoints) {
     // x-axis
-    graphics_draw_line(ctx,
-		       ((GPoint) {
-			 .x = data->iMargin,
-			   .y = data->iYAxisIntercept }),
-		       ((GPoint) { 
-			 .x = bounds.size.w - data->iMargin,
-			   .y = data->iYAxisIntercept }));
+    // graphics_draw_line(ctx,
+		//        ((GPoint) {
+		// 	 .x = data->iMargin,
+		// 	   .y = data->iYAxisIntercept }),
+		//        ((GPoint) { 
+		// 	 .x = bounds.size.w - data->iMargin,
+		// 	   .y = data->iYAxisIntercept }));
     
     // y-axis major ticks
     // for (int i = data->iYAxisIntercept; i <= (bounds.size.h - data->iMargin); i += data->iYTicks)
@@ -553,18 +556,18 @@ static void chart_layer_update_func(Layer* l, GContext* ctx) {
 		// 	     .y = i }));
 
     //y-axis
-    graphics_draw_line(ctx,
-		       ((GPoint) {
-			 .x = data->iXAxisIntercept,
-			   .y = data->iMargin }),
-		       ((GPoint) { 
-			 .x = data->iXAxisIntercept,
-			   .y = bounds.size.h - data->iMargin }));
+    // graphics_draw_line(ctx,
+		//        ((GPoint) {
+		// 	 .x = data->iXAxisIntercept,
+		// 	   .y = data->iMargin }),
+		//        ((GPoint) { 
+		// 	 .x = data->iXAxisIntercept,
+		// 	   .y = bounds.size.h - data->iMargin }));
     
-  //  int range = (int)(data->fYMax) - (int)(data->fYMin); 
+//    int range = (int)(data->fYMax) - (int)(data->fYMin); 
     uint16_t iPointRadius = 1;  
 
-     APP_LOG(APP_LOG_LEVEL_DEBUG, "range2: %i", (int)(data->fXYRange));
+//     APP_LOG(APP_LOG_LEVEL_DEBUG, "range2: %i", (int)(data->fXYRange));
  
     if ((int)(data->fXYRange)<= 30) {
 
@@ -603,7 +606,7 @@ static void chart_layer_update_func(Layer* l, GContext* ctx) {
     //const uint16_t iPointRadius = ((data->typePlot == eLINE) || (data->iNumOrigPoints < ((unsigned int)bounds.size.w / 3))) ? 4 : 3;
 #endif
 
-APP_LOG(APP_LOG_LEVEL_DEBUG, "radius: %i", iPointRadius);  
+//APP_LOG(APP_LOG_LEVEL_DEBUG, "radius: %i", iPointRadius);  
 
     const bool bShowPoints = (data->typePlot != eBAR) && ((data->typePlot == eSCATTER) || (data->bShowPoints && (data->iNumOrigPoints < ((unsigned int)bounds.size.w / 3))));
 
