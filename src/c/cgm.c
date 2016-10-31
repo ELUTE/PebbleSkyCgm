@@ -190,6 +190,7 @@ static uint8_t BT_timer_pop = 100;
 static uint8_t DataOfflineAlert = 100;
 static uint8_t CGMOffAlert = 100;
 static uint8_t PhoneOffAlert = 100;
+static uint8_t LoopOutAlert = 100;
 
 // global constants for time durations; seconds
 static const uint8_t  MINUTEAGO = 60;
@@ -204,8 +205,6 @@ static const uint16_t MS_IN_A_SECOND = 1000;
 static const uint8_t TIME_TEXTBUFF_SIZE = 6;
 static const uint8_t DATE_TEXTBUFF_SIZE = 8;
 static const uint8_t LABEL_BUFFER_SIZE = 6;
-static const uint8_t TIMEAGO_BUFFER_SIZE = 10;
-static const uint8_t BATTLEVEL_FORMAT_SIZE = 12;
 
 // ** START OF CONSTANTS THAT CAN BE CHANGED; DO NOT CHANGE IF YOU DO NOT KNOW WHAT YOU ARE DOING **
 // ** FOR MMOL, ALL VALUES ARE STORED AS INTEGER; LAST DIGIT IS USED AS DECIMAL **
@@ -274,6 +273,7 @@ uint8_t CGMOUT_VIBE = 1;
 uint8_t PHONEOUT_VIBE = 1;
 uint8_t LOWBATTERY_VIBE = 1;
 uint8_t DATAOFFLINE_VIBE = 1;
+uint8_t NOLOOP_VIBE = 1;
 
 // Icon Cross Out & Vibrate Once Wait Times, in Minutes
 // RANGE 0-240
@@ -1566,11 +1566,11 @@ void animate_happymsg(char *happymsg_to_display) {
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "ANIMATE HAPPY MSG, MSG IN BUFFER: %s", animate_happymsg_buffer);
     animate_happymsg_layer = text_layer_get_layer(happymsg_layer);
 #ifdef PBL_ROUND
-    from_happymsg_rect = GRect(144, 87, 150, 48);
-    to_happymsg_rect = GRect(-184, 87, 150, 48);
+ from_happymsg_rect = GRect(144, 98, 150, 38);
+  to_happymsg_rect = GRect(-184, 98, 150, 38);
 #else
-    from_happymsg_rect = GRect(144, 94, 150, 52);
-    to_happymsg_rect = GRect(-180, 94, 150, 52);
+    from_happymsg_rect = GRect(144, 104, 150, 43);
+    to_happymsg_rect = GRect(-180, 104, 150, 43);
 #endif
 
 
@@ -1918,11 +1918,12 @@ static void load_bg() {
             set_message_layer("\0", "", false, text_colour);
 
 
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX], GPoint(40, 25));
-#else
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX], GPoint(25, 25));
-#endif
+#define specialvalue_OFFSET PBL_IF_ROUND_ELSE(GPoint(40, 25), GPoint(25, 25))
+
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX],(specialvalue_OFFSET));
+//#else
+//            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX], GPoint(25, 25));
+//#endif
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
 
             specvalue_alert = 111;
@@ -2911,23 +2912,27 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 
           case CGM_SYM_KEY:;
             APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
-            strncpy(current_symbol, new_tuple->value->cstring, BGDELTA_MSGSTR_SIZE);
+            strncpy(current_symbol, new_tuple->value->cstring, sizeof(current_symbol));
             //load_symbol();
-              if (strchr(current_symbol, *"E")){
-                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
-              } else if (strchr(current_symbol, *"L")){
-                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
-              }else if (strchr(current_symbol, *"X")){
-                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
-                }else if (strchr(current_symbol, *"R")){
-                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[CIRCLE_ICON_INDX]);
-              }else{
-                  create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
-              }
+            if (strchr(current_symbol, *"E")){
+                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
+            } else if (strchr(current_symbol, *"L")){
+                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
+            }else if (strchr(current_symbol, *"X")){
+                if (LoopOutAlert == 100) {
+                    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, ZERO BATTERY, VIBRATE");
+                    alert_handler_cgm(NOLOOP_VIBE);
+                    LoopOutAlert = 111;
+                }
+                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
+            }else if (strchr(current_symbol, *"R")){
+                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[CIRCLE_ICON_INDX]);
+            }else{
+                create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[NONE_ICON_INDX]);
+            }
 
-             APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, Symbol: %s", current_symbol);
-          break; // break for CGM_SYM_KEY
-          //LOOP LAST OK TIME
+            APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, Symbol: %s", current_symbol);
+            break; // break for CGM_SYM_KEY
           case CGM_TIME_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: READ APP TIME NOW");
 
@@ -3147,7 +3152,7 @@ void window_load_cgm(Window *window_cgm) {
 //CHART LAYER
     chart_layer = chart_layer_create((GRect) {
 #ifdef PBL_PLATFORM_CHALK
-        .origin = { 4, 100},
+        .origin = { 4, 98},
             .size = { 173, 38 } });
 #else
         .origin = { -1, 104},
@@ -3162,180 +3167,128 @@ void window_load_cgm(Window *window_cgm) {
         //    window_set_click_config_provider(window_cgm,(ClickConfigProvider)click_config_provider);
 
 // TIME; CURRENT ACTUAL TIME FROM WATCH
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&time_watch_layer, GRect(0, 141, 180, 30), FONT_KEY_BITHAM_30_BLACK);
-    #else
-        window_cgm_add_text_layer(&time_watch_layer, GRect(4, 139, 144, 30), FONT_KEY_GOTHIC_28_BOLD);
-    #endif
-        text_layer_set_text_color(time_watch_layer, GColorWhite);
+#define TIME_WATCH_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 141, 180, 30), GRect(4, 139, 144, 30))
+    window_cgm_add_text_layer(&time_watch_layer, (TIME_WATCH_OFFSET), FONT_KEY_GOTHIC_28_BOLD);
+    text_layer_set_text_color(time_watch_layer, GColorWhite);
 
 // DATE
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&date_app_layer, GRect(58, 130, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
-        text_layer_set_text_color(date_app_layer, GColorWhite);
-    #else
-        window_cgm_add_text_layer(&date_app_layer, GRect(-1, 147, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
-    #endif
-        draw_date_from_app();
+#ifdef PBL_PLATFORM_CHALK
+    window_cgm_add_text_layer(&date_app_layer, GRect(58, 130, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
+    text_layer_set_text_color(date_app_layer, GColorWhite);
+#else
+    window_cgm_add_text_layer(&date_app_layer, GRect(-1, 147, 50, 22), FONT_KEY_GOTHIC_18_BOLD);
+#endif
+    draw_date_from_app();
 
 // TOPHALF
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&tophalf_layer, GRect(0, 0, 200, 68), FONT_KEY_GOTHIC_28_BOLD);
-    #else
-        window_cgm_add_text_layer(&tophalf_layer, GRect(0, 0, 145, 77), FONT_KEY_GOTHIC_28_BOLD);
-    #endif
+#define TOPHALF_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 0, 200, 68), GRect(0, 0, 145, 77))
+    window_cgm_add_text_layer(&tophalf_layer, (TOPHALF_OFFSET), FONT_KEY_GOTHIC_28_BOLD);
 
 //NAME CIRCLE LAYER
-        name_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
-        layer_add_child(window_layer_cgm, name_circle_layer);
-        layer_set_update_proc(name_circle_layer, name_circle_update_proc);
-        layer_set_hidden(name_circle_layer, true);
+    name_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
+    layer_add_child(window_layer_cgm, name_circle_layer);
+    layer_set_update_proc(name_circle_layer, name_circle_update_proc);
+    layer_set_hidden(name_circle_layer, true);
 
 //CIRCLE LAYER
-        circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
-        layer_add_child(window_layer_cgm, circle_layer);
-        layer_set_update_proc(circle_layer, circle_update_proc);
+    circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
+    layer_add_child(window_layer_cgm, circle_layer);
+    layer_set_update_proc(circle_layer, circle_update_proc);
 
 //COB CIRCLE LAYER
-        cob_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
-        layer_add_child(window_layer_cgm, cob_circle_layer);
-        layer_set_update_proc(cob_circle_layer, cob_circle_update_proc);
-        layer_set_hidden(cob_circle_layer, true);
+    cob_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
+    layer_add_child(window_layer_cgm, cob_circle_layer);
+    layer_set_update_proc(cob_circle_layer, cob_circle_update_proc);
+    layer_set_hidden(cob_circle_layer, true);
 
 // NOISE
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&noise_layer, GRect(71, -15, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
-    #else
-        window_cgm_add_text_layer(&noise_layer, GRect(54, -16, 40, 28), FONT_KEY_GOTHIC_28_BOLD);
-    #endif
+#define NOISE_LAYER_OFFSET PBL_IF_ROUND_ELSE(GRect(71, -15, 40, 28), GRect(54, -16, 40, 28))
+
+    window_cgm_add_text_layer(&noise_layer, (NOISE_LAYER_OFFSET), FONT_KEY_GOTHIC_28_BOLD);
 
 // RIG BATTERY LEVEL
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(47, 73, 50, 50), FONT_KEY_GOTHIC_18_BOLD);
-    #else
-        window_cgm_add_text_layer(&rig_battlevel_layer, GRect(52, 81, 45, 50), FONT_KEY_GOTHIC_18_BOLD);
-    #endif
-        text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
+#define RIG_BATTLEVEL_OFFSET PBL_IF_ROUND_ELSE(GRect(66, 78, 50, 50), GRect(52, 81, 45, 50))
+    window_cgm_add_text_layer(&rig_battlevel_layer, (RIG_BATTLEVEL_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+    text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
 
 //WATCH BATTERY ICON LAYER
-    #ifdef PBL_PLATFORM_CHALK
-        batteryGraphicsLayer = layer_create(GRect(110, 139, 31, 15));
-    #else
-        batteryGraphicsLayer = layer_create(GRect(110, 155, 31, 15));
-    #endif
-        layer_set_update_proc( batteryGraphicsLayer, batteryGraphicsLayerDraw );
-        layer_add_child( window_get_root_layer(window_cgm), batteryGraphicsLayer );
-        batteryOutlinePath = gpath_create(&BATTERY_OUTLINE);
+#define BATTERY_GRAPHICS_OFFSET PBL_IF_ROUND_ELSE(GRect(110, 139, 31, 15), GRect(110, 155, 31, 15))
+    batteryGraphicsLayer = layer_create((BATTERY_GRAPHICS_OFFSET));
+    layer_set_update_proc( batteryGraphicsLayer, batteryGraphicsLayerDraw );
+    layer_add_child( window_get_root_layer(window_cgm), batteryGraphicsLayer );
+    batteryOutlinePath = gpath_create(&BATTERY_OUTLINE);
 
 // WATCH CHARGING ICON
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&battery_layer, GRect(110, 139, 14, 6), GAlignCenter);
-    #else
-        window_cgm_add_bitmap_layer(&battery_layer, GRect(110, 155, 21, 9), GAlignCenter);
-    #endif
+#define BATTERY_OFFSET PBL_IF_ROUND_ELSE(GRect(110, 139, 14, 6), GRect(110, 155, 21, 9))
+    window_cgm_add_bitmap_layer(&battery_layer, (BATTERY_OFFSET), GAlignCenter);
 
 // COB
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&cob_layer, GRect(18, 130, 40, 28), FONT_KEY_GOTHIC_18_BOLD);
-    #else
-        window_cgm_add_text_layer(&cob_layer, GRect(-12, 47, 60 , 30), FONT_KEY_GOTHIC_18_BOLD);
-    #endif
-        layer_set_hidden(text_layer_get_layer(cob_layer), true);
+#define COB_OFFSET PBL_IF_ROUND_ELSE(GRect(18, 130, 40, 28), GRect(-12, 47, 60 , 30))
+
+    window_cgm_add_text_layer(&cob_layer, (COB_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+    layer_set_hidden(text_layer_get_layer(cob_layer), true);
 
 // WATCH BATTERY LEVEL TEXT
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 157, 31, 15), FONT_KEY_GOTHIC_14_BOLD);
-    #else
-        window_cgm_add_text_layer(&watch_battlevel_layer, GRect(110, 150, 50, 22), FONT_KEY_GOTHIC_14_BOLD);
-    #endif
-        handle_watch_battery_cgm(battery_state_service_peek());
+#define watch_battlevel_OFFSET PBL_IF_ROUND_ELSE(GRect(110, 157, 31, 15), GRect(110, 150, 50, 22))
+
+    window_cgm_add_text_layer(&watch_battlevel_layer, (watch_battlevel_OFFSET), FONT_KEY_GOTHIC_14_BOLD);
+    handle_watch_battery_cgm(battery_state_service_peek());
 
 // T1D NAME/IOB
-#ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&t1dname_layer, GRect(8,33, 44, 44), FONT_KEY_GOTHIC_24_BOLD);
-#else
-        window_cgm_add_text_layer(&t1dname_layer, GRect(0, 3, 40, 40), FONT_KEY_GOTHIC_24_BOLD);
-#endif
-        text_layer_set_text_color(t1dname_layer, text_colour);
+#define t1dname_OFFSET PBL_IF_ROUND_ELSE(GRect(8,33, 44, 44), GRect(0, 3, 40, 40))
+    window_cgm_add_text_layer(&t1dname_layer, (t1dname_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
+    text_layer_set_text_color(t1dname_layer, text_colour);
 
 // ICON, ARROW OR SPECIAL VALUE
-        window_cgm_add_bitmap_layer(&icon_layer, GRect(33, 3, 135, 144), GAlignLeft);
+    window_cgm_add_bitmap_layer(&icon_layer, GRect(33, 3, 135, 144), GAlignLeft);
 
 // RAW CALCULATED
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&raw_calc_layer, GRect(200, 7, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
-    #else
-        window_cgm_add_text_layer(&raw_calc_layer, GRect(200, 5, 35, 25), FONT_KEY_GOTHIC_24_BOLD);
-    #endif
-      text_layer_set_text_color(raw_calc_layer, GColorWhite);
+#define raw_calc_OFFSET PBL_IF_ROUND_ELSE(GRect(200, 7, 35, 25), GRect(200, 5, 35, 25))
+    window_cgm_add_text_layer(&raw_calc_layer, (raw_calc_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
+    text_layer_set_text_color(raw_calc_layer, GColorWhite);
 
 // SYMBOL
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(82, 72, 50, 40), GAlignCenter);
-    #else
-        window_cgm_add_bitmap_layer(&symbol_layer, GRect(82, 72, 50, 40), GAlignCenter);
-    #endif
+#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(82, 72, 50, 40), GRect(94, 72, 50, 40))
+        window_cgm_add_bitmap_layer(&symbol_layer, (symbol_OFFSET), GAlignLeft);
 
 // BASAL
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&basal_layer, GRect(11, 66, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
-    #else
-        window_cgm_add_text_layer(&basal_layer, GRect(-5, 80, 60, 24), FONT_KEY_GOTHIC_18_BOLD);
-    #endif
+#define basal_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(11, 66, 60, 24), GRect(-5, 80, 60, 24))
+        window_cgm_add_text_layer(&basal_layer, (basal_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
         text_layer_set_text_color(basal_layer, GColorWhite);
 
 // LOOP TIME AGO
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&time_layer, GRect(87, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
-    #else
-        window_cgm_add_text_layer(&time_layer, GRect(87, 75, 50, 25), FONT_KEY_GOTHIC_24_BOLD);
-    #endif
+#define time_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(140, 68, 50, 25), GRect(113, 80, 50, 25))
+        window_cgm_add_text_layer(&time_layer, (time_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
         text_layer_set_text_color(time_layer, GColorWhite);
-        text_layer_set_text_alignment(time_layer, GTextAlignmentRight);
+        text_layer_set_text_alignment(time_layer, GTextAlignmentLeft);
 
 // BG
         window_cgm_add_text_layer(&bg_layer, GRect(0, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
 
 // DELTA BG / MESSAGE LAYER
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&message_layer, GRect(18, 54, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
-    #else
-        window_cgm_add_text_layer(&message_layer, GRect(2, 53, 144, 50), FONT_KEY_GOTHIC_24_BOLD);
-    #endif
+#define message_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(18, 54, 144, 50), GRect(2, 53, 144, 50))
+        window_cgm_add_text_layer(&message_layer, (message_layer_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
        // text_layer_set_text_color(message_layer, text_colour);
 
-
 // PERFECT BG
-    #ifdef PBL_PLATFORM_CHALK
-      window_cgm_add_bitmap_layer(&perfectbg_layer, GRect(-140, 88, 50, 49), GAlignLeft);
-    #else
-      window_cgm_add_bitmap_layer(&perfectbg_layer, GRect(-140, 94, 50, 53), GAlignLeft);
-    #endif
+#define perfectbg_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(-140, 88, 50, 49), GRect(-140, 94, 50, 53))
+      window_cgm_add_bitmap_layer(&perfectbg_layer, (perfectbg_layer_OFFSET), GAlignLeft);
 
 // CGM TIME AGO READING
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(58, 1, 50, 24), FONT_KEY_GOTHIC_24_BOLD);
-    #else
-        window_cgm_add_text_layer(&cgmtime_layer, GRect(48, 1, 50, 28), FONT_KEY_GOTHIC_24_BOLD);
-    #endif
+#define cgmtime_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(58, 1, 50, 24), GRect(48, 1, 50, 28))
+        window_cgm_add_text_layer(&cgmtime_layer, (cgmtime_layer_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
         text_layer_set_text_color(cgmtime_layer, text_colour);
         //text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
 
 // HAPPY MSG LAYER
-    #ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&happymsg_layer, GRect(-180, 98, 175, 38), FONT_KEY_GOTHIC_24_BOLD);
-#else
-        window_cgm_add_text_layer(&happymsg_layer, GRect(-144, 104, 145, 43), FONT_KEY_GOTHIC_24_BOLD);
-#endif
+#define happymsg_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(-180, 98, 175, 38), GRect(-144, 104, 145, 43))
+        window_cgm_add_text_layer(&happymsg_layer, (happymsg_layer_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
         text_layer_set_text_color(happymsg_layer, plot_colour);
 // PUMP LAYER
-#ifdef PBL_PLATFORM_CHALK
-        window_cgm_add_text_layer(&s_layer, GRect(0, 98, 175, 38), FONT_KEY_GOTHIC_18_BOLD);
-#else
-        window_cgm_add_text_layer(&s_layer, GRect(0, 104, 145, 43), FONT_KEY_GOTHIC_18_BOLD);
-#endif
-        text_layer_set_text_color(s_layer, GColorOxfordBlue);
-        text_layer_set_background_color(s_layer, GColorPictonBlue);
+#define s_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 98, 175, 388), GRect(0, 104, 145, 43))
+        window_cgm_add_text_layer(&s_layer, (s_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+        text_layer_set_text_color(s_layer, text_colour);
+        text_layer_set_background_color(s_layer, chart_colour);
         layer_set_hidden(text_layer_get_layer(s_layer), true);
 
 

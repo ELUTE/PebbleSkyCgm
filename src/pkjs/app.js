@@ -178,11 +178,15 @@ function getLoopData(opts) {
                         var d = new Date(opts.Last);
                         opts.LoopTime = timeSince(d);
                     }
-                  var pumpbat= loopn.pump.pump.battery.voltage;
+                  
+                  if ((loopn.pump.pump === undefined)) {
+                       opts.Pump = "No Data Available";
+                  }else{
+                  var pumpbat = loopn.pump.pump.battery.voltage;
                   var pumpres = (loopn.pump.pump.reservoir + "u");
                   var pumpdat = loopn.pump.data.clock.display;
                   opts.Pump = ("Bat: " + pumpbat + "v" + " " + "Res: " + pumpres + "\n" + pumpdat);
-                  
+                  }
                   console.log ("pump info " + opts.Pump);
                     opts.Symbol = loopn.loop.display.label;
                     opts.Basal = loopn.basal.display;
@@ -560,8 +564,10 @@ function nightscout(opts) {
                             break;
                         case "Error":
                             currentSym = "X";
+                            break;
                         case "Recomendation":
                             currentSym = "R";
+                            break;
                         default:
                             currentSym = " ";
                             console.log("CurrentSym" + currentSym);
