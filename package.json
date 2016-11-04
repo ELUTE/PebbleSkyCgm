@@ -31,6 +31,12 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/Warning",
+                    "name": "IMAGE_WARNING",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/x.png",
                     "name": "IMAGE_X",
                     "targetPlatforms": null,
@@ -243,5 +249,5 @@
             "watchface": true
         }
     },
-    "version": "0.1.0"
+    "version": "0.2.0"
 }

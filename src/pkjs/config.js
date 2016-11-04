@@ -22,7 +22,7 @@ module.exports = [
       },
       {
         "type": "color",
-        "messageKey": "ForegroundColor",
+        "messageKey": "Blues",
         "defaultValue": "0xFFFFFF",
         "label": "Foreground Color"
       }
