@@ -122,7 +122,7 @@ static char current_cob[8] = {0};
 static char current_name[6] = {0};
 static char current_basal[6] = {0};
 static char last_ok_time[6] = {1};
-static char pump_status[30] = {0};
+static char pump_status[60] = {0};
 
 int color_value = 0;
 GColor top_colour = GColorWhiteInit;
@@ -139,7 +139,7 @@ int current_calc_raw = 0;
 int current_calc_raw1 = 0;
 uint8_t currentBG_isMMOL = 100;
 int converted_bgDelta = 0;
-static char current_values[60] = {0};
+static char current_values[40] = {0};
 uint8_t HaveCalcRaw = 100;
 
 // chart values
@@ -3193,8 +3193,9 @@ void window_load_cgm(Window *window_cgm) {
         window_cgm_add_text_layer(&happymsg_layer, (happymsg_layer_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
         text_layer_set_text_color(happymsg_layer, plot_colour);
 // PUMP LAYER
-#define s_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 98, 175, 388), GRect(0, 104, 150, 43))
+#define s_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 98, 175, 388), GRect(0, 104, 145, 43))
         window_cgm_add_text_layer(&s_layer, (s_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+        text_layer_set_overflow_mode(s_layer, GTextOverflowModeWordWrap);
         text_layer_set_text_color(s_layer, text_colour);
         text_layer_set_background_color(s_layer, chart_colour);
         layer_set_hidden(text_layer_get_layer(s_layer), true);

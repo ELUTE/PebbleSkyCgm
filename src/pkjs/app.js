@@ -179,7 +179,7 @@ function getLoopData(opts) {
                   var pumpbat = loopn.pump.pump.battery.voltage;
                   var pumpres = (loopn.pump.pump.reservoir + "u");
                   var pumpdat = loopn.pump.data.clock.display;
-                  opts.Pump = ("Bat: " + pumpbat + "v" + " " + "Res: " + pumpres + "\n" + pumpdat);
+                  opts.Pump = ("Bat:" + pumpbat + "v" + " " + "Res:" + pumpres + " " + pumpdat);
                   }
                   console.log ("pump info " + opts.Pump);
                     opts.Basal = loopn.basal.display;
@@ -297,7 +297,6 @@ function nightscout(opts) {
                         loopBasal = opts.Basal,
                         loopLast = opts.LoopTime,
                         currentSym = loopSym,
-                        loopPump = opts.Pump,
                         // get battery level
                         currentBattery = responsebgs[0].battery,
                         //currentBattery = "100",
@@ -518,10 +517,13 @@ function nightscout(opts) {
                     } // if currentRawUnfilt
                     //console.log("Calculated Raw To Be Sent: " + formatCalcRaw);
                     // assign blank noise if it doesn't exist
-                    if ((typeof currentNoise == "undefined") || (
-                        currentNoise === null)) {
-                        currentNoise = 0;
-                    }
+                 //   if ((typeof currentNoise == "undefined") || (
+                 //       currentNoise === null)) {
+                 //       currentNoise = 0;
+                 //   }
+                  //add raw to pump shake data
+                  var loopPump = " Raw:" + formatCalcRaw  + " " + opts.Pump ;
+
                     if (opts.radio == "mgdl_form") {
                         values = "0"; //mgdl selected
                     } else {
@@ -547,6 +549,8 @@ function nightscout(opts) {
                         values += ",0"; // Do not vibrate on raw value when in special values
                     }
                     values += "," + opts.mycolors; // Color field
+                    values += "," + opts.animateon; // Animation ON or OFF
+                    values += "," + opts.vibeon;  // Vibrate on or off
                   //loop symbol
                   switch (loopSym) {
                         case "Enacted":
