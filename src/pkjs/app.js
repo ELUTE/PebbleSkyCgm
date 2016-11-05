@@ -140,7 +140,7 @@ function getLoopData(opts) {
         var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
         endpoint = endpoint.replace("/pebble/", "");
         endpoint = endpoint.replace("/pebble", "");
-        var loopurl = endpoint + "/api/v2/properties/loop,basal,pump,openaps";
+        var loopurl = endpoint + "/api/v2/properties/iob,loop,basal,pump,openaps";
         var http = new XMLHttpRequest();
         http.open("GET", loopurl, false);
         http.onload = function(e) {
@@ -152,14 +152,16 @@ function getLoopData(opts) {
                     //return loopok;
                     // console.log("Typeof" typeof loopsymbol);
                 } else {
-                  if (loopn['openaps']===undefined){
+                  if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
                     if ((loopn.loop.lastLoop.lastOkMoment === null)) {
                         opts.Last = "null";
                     } else {
                         opts.Last = loopn.loop.lastLoop.timestamp;
                     }
                     opts.Symbol = loopn.loop.display.label;
-
+                   // var cob = loopn.loop.lastLoop.cob.cob;
+                   // opts.Cob = (Math.round(cob).toFixed(1));
+                   // console.log("optscob"+opts.Cob);
                   } else {
                     console.log("start openaps");
                     if ((loopn.openaps.lastLoopMoment === null)) {
@@ -173,14 +175,21 @@ function getLoopData(opts) {
                   }
                   var d = new Date(opts.Last);
                   opts.LoopTime = timeSince(d);
+                  console.log("opts.Last " +opts.Last + "opts.LoopTime" + opts.LoopTime);
                   if ((loopn.pump.pump === undefined)) {
                        opts.Pump = "No Data Available";
                   }else{
                   var pumpbat = loopn.pump.pump.battery.voltage;
                   var pumpres = (loopn.pump.pump.reservoir + "u");
                   var pumpdat = loopn.pump.data.clock.display;
+                    
                   opts.Pump = ("Bat:" + pumpbat + "v" + " " + "Res:" + pumpres + " " + pumpdat);
                   }
+                  /*if ((loopn.iob.display === null)) {
+                      opts.iob = "null";
+                    }else{
+                    opts.iob = Math.round(loopn.iob.iob).toFixed(1);
+                    }*/
                   console.log ("pump info " + opts.Pump);
                     opts.Basal = loopn.basal.display;
                     console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
@@ -280,8 +289,7 @@ function nightscout(opts) {
                         specialValue = false,
                         calibrationValue = false,
                         // get CGM time delta and format
-                        readingTime = new Date(responsebgs[0].datetime)
-                        .getTime(),
+                        readingTime = new Date(responsebgs[0].datetime).getTime(),
                         //readingTime = null,
                         formatReadTime = Math.floor((readingTime / 1000)),
                         // get app time and format
@@ -311,16 +319,14 @@ function nightscout(opts) {
                         formatRawFilt = " ",
                         currentRawUnfilt = responsebgs[0].unfiltered,
                         formatRawUnfilt = " ",
-                        currentNoise = responsebgs[0].noise,
+                        //currentNoise = responsebgs[0].noise,
                         currentCOB = responsebgs[0].cob,
                         currentIntercept = "undefined",
                         currentSlope = "undefined",
                         currentScale = "undefined",
                         currentRatio = 0;
                    // get name of T1D; if iob (case insensitive), use IOB
-                    if ((NameofT1DPerson.toUpperCase() === "IOB") &&
-                        ((typeof currentIOB != "undefined") && (currentIOB !== null))) {
-
+                    if ((NameofT1DPerson.toUpperCase() === "IOB") && ((typeof currentIOB != "undefined") && (currentIOB !== null))) {
                         // NameofT1DPerson = currentIOB + "u";
                         NameofT1DPerson = currentIOB;
                     } else {
@@ -515,14 +521,14 @@ function nightscout(opts) {
                             //console.log("Format Unfiltered: " + formatRawUnfilt);
                         }
                     } // if currentRawUnfilt
-                    //console.log("Calculated Raw To Be Sent: " + formatCalcRaw);
-                    // assign blank noise if it doesn't exist
-                 //   if ((typeof currentNoise == "undefined") || (
-                 //       currentNoise === null)) {
-                 //       currentNoise = 0;
-                 //   }
+                    
                   //add raw to pump shake data
-                  var loopPump = " Raw:" + formatCalcRaw  + " " + opts.Pump ;
+                  var loopPump;
+                  if (formatCalcRaw === null){
+                    loopPump = opts.Pump;
+                  } else {
+                    loopPump = " Raw:" + formatCalcRaw  + " " + opts.Pump ;
+                  }
 
                     if (opts.radio == "mgdl_form") {
                         values = "0"; //mgdl selected

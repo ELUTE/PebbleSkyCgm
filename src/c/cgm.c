@@ -345,7 +345,7 @@ enum CgmKey {
     CGM_TAPP_KEY = 0x3, // TUPLE_INT, 4 BYTES (APP / PHONE TIME)
     CGM_DLTA_KEY = 0x4, // TUPLE_CSTRING, MAX 5 BYTES (BG DELTA, -100 or -10.0)
     CGM_UBAT_KEY = 0x5, // TUPLE_CSTRING, MAX 3 BYTES (UPLOADER BATTERY, 100)
-    CGM_NAME_KEY = 0x6, // TUPLE_CSTRING, MAX 9 BYTES (Christine)
+    CGM_NAME_KEY = 0x6, 
     CGM_VALS_KEY = 0x7,   // TUPLE_CSTRING, MAX 60 BYTES (0,000,000,000,000,0,0,0,0,0)
     CGM_CLRW_KEY = 0x8,   // TUPLE_CSTRING, MAX 4 BYTES (253 OR 22.2)
     CGM_BGSX_KEY = 0x9, // TUPLE_CSTRING, MAX 28 BYTES
@@ -1284,11 +1284,8 @@ static void load_icon() {
         else if (strcmp(current_icon, DOUBLEUP_ARROW) == 0) {
 
           
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(129, 15));
-#else
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],GPoint(118, 15));
-#endif
+#define UPUP PBL_IF_ROUND_ELSE(GPoint(129, 15), GPoint(118, 15)) 
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UPUP_SM_ICON_INDX],(UPUP));
             DoubleDownAlert = 100;
             text_layer_set_background_color(tophalf_layer, MED);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
@@ -1296,51 +1293,52 @@ static void load_icon() {
         }
 
         else if (strcmp(current_icon, SINGLEUP_ARROW) == 0) {
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],GPoint(134, 25));
-#else
-            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],GPoint(118, 20));
-#endif
+#define UP PBL_IF_ROUND_ELSE(GPoint(134, 25), GPoint(118, 20)) 
+
+            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],(UP));
+//#else
+//            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],GPoint(118, 20));
+//#endif
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, UP45_ARROW) == 0) {
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UP45_SM_ICON_INDX],GPoint(132, 33));
-#else
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UP45_SM_ICON_INDX],GPoint(98, 5));
-#endif
+#define UP45 PBL_IF_ROUND_ELSE(GPoint(132, 33), GPoint(98, 5)) 
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UP45_SM_ICON_INDX],(UP45));
+//#else
+//            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UP45_SM_ICON_INDX],GPoint(98, 5));
+//#endif
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, FLAT_ARROW) == 0) {
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[FLAT_SM_ICON_INDX],GPoint(122, 22));
-#else
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[FLAT_SM_ICON_INDX],GPoint(105, 23));
-#endif
+#define FLAT PBL_IF_ROUND_ELSE(GPoint(122, 22), GPoint(105, 23)) 
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[FLAT_SM_ICON_INDX],(FLAT));
+//#else
+//            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[FLAT_SM_ICON_INDX],GPoint(105, 23));
+//#endif
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, DOWN45_ARROW) == 0) {
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],GPoint(129, 30));
-#else
-            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],GPoint(113, 38));
-#endif
-          text_layer_set_background_color(tophalf_layer, top_colour);
+#define DOWN45 PBL_IF_ROUND_ELSE(GPoint(129, 30), GPoint(113, 38)) 
+            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],(DOWN45));
+//#else
+//            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],GPoint(113, 38));
+//#endif
+            text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
         }
         else if (strcmp(current_icon, SINGLEDOWN_ARROW) == 0) {
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWN_SM_ICON_INDX],GPoint(133, 32));
-#else
-            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWN_SM_ICON_INDX],GPoint(118, 25));
-#endif
+#define DOWN PBL_IF_ROUND_ELSE(GPoint(133, 32), GPoint(118, 25)) 
+            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWN_SM_ICON_INDX],(DOWN));
+//#else
+//            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWN_SM_ICON_INDX],GPoint(118, 25));
+//#endif
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
@@ -1350,11 +1348,11 @@ static void load_icon() {
                 //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD ICON, ICON ARROW: DOUBLE DOWN");
                 alert_handler_cgm(DOUBLEDOWN_VIBE);
                 DoubleDownAlert = 111;
-#ifdef PBL_PLATFORM_CHALK
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(129, 23));
-#else
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(119, 23));
-#endif
+#define DOUBLEDOWN PBL_IF_ROUND_ELSE(GPoint(129, 23), GPoint(119, 23)) 
+                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],(DOUBLEDOWN));
+//#else
+//                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(119, 23));
+//#endif
                 text_layer_set_background_color(tophalf_layer, ROUGE);
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
@@ -1367,21 +1365,21 @@ static void load_icon() {
             // check to see if we are in the loading screen
             if (bt_connected == false) {
                 // Bluetooth is out; in the loading screen so set logo
-#ifdef PBL_PLATFORM_CHALK
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(40, 25));
-#else
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
-#endif
+#define LOGO PBL_IF_ROUND_ELSE(GPoint(40, 25), GPoint(25, 25)) 
+                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],(LOGO));
+//#else
+//                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
+//#endif
                 text_layer_set_background_color(tophalf_layer, top_colour);
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
             else {
                 // unexpected, set logo icon
-#ifdef PBL_PLATFORM_CHALK
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(40, 25));
-#else
-                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
-#endif
+//#ifdef PBL_PLATFORM_CHALK
+                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],(LOGO));
+//#else
+//                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
+//#endif
                 text_layer_set_background_color(tophalf_layer, top_colour);
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
@@ -1389,12 +1387,6 @@ static void load_icon() {
         }
     }
 }
-
-// if specvalue_alert == 100
-//  else { // this is just for log when need it
-//APP_LOG(APP_LOG_LEVEL_INFO, "LOAD ICON, SPEC VALUE ALERT IS TRUE, DONE");
-//  } // else specvalue_alert == 111
-//} // end load_icon
 
 // forward declarations for animation code
 static void load_bg_delta();
@@ -1472,14 +1464,15 @@ void animate_perfectbg() {
     }
 
     animate_perfectbg_layer = bitmap_layer_get_layer(perfectbg_layer);
-
-  #ifdef PBL_ROUND
-    from_perfectbg_rect = GRect(144, 88, 100, 47);
-    to_perfectbg_rect = GRect(-185, 88, 100, 47);
-#else
-    from_perfectbg_rect = GRect(144, 94, 100, 52);
-    to_perfectbg_rect = GRect(-180, 94, 100, 52);
-#endif
+#define from_perfectbg_rect PBL_IF_ROUND_ELSE(GRect(144, 88, 100, 47), GRect(144, 94, 100, 52)) 
+#define to_perfectbg_rect PBL_IF_ROUND_ELSE(GRect(-185, 88, 100, 47), GRect(-180, 94, 100, 52)) 
+//  #ifdef PBL_ROUND
+//    from_perfectbg_rect = GRect(144, 88, 100, 47);
+//    to_perfectbg_rect = GRect(-185, 88, 100, 47);
+//#else
+//    from_perfectbg_rect = GRect(144, 94, 100, 52);
+ //   to_perfectbg_rect = GRect(-180, 94, 100, 52);
+//#endif
     //  destroy_perfectbg_animation(&perfectbg_animation);
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE BG, CREATE FRAME");
     perfectbg_animation = property_animation_create_layer_frame(animate_perfectbg_layer, &from_perfectbg_rect, &to_perfectbg_rect);
@@ -1831,12 +1824,8 @@ static void load_bg() {
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
             //text_layer_set_text(message_layer, " ");
             set_message_layer("\0", "", false, text_colour);
-#define UPUP PBL_IF_ROUND_ELSE(GPoint(67, 33), GPoint(51, 35)) 
-//#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], (UPUP));
-//#else
-//            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], GPoint(51, 35));
-//#endif
+#define BROKEN_ANTENNA PBL_IF_ROUND_ELSE(GPoint(67, 33), GPoint(51, 35)) 
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BROKEN_ANTENNA_ICON_INDX], (BROKEN_ANTENNA));
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
             specvalue_alert = 111;
         }
@@ -1845,12 +1834,13 @@ static void load_bg() {
             // APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET BLOOD DROP");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
             set_message_layer("\0", "", false, text_colour);
+#define BLOOD_DROP PBL_IF_ROUND_ELSE(GPoint(73, 30), GPoint(58, 30)) 
 
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(73, 30));
-#else
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(58, 30));
-#endif
+//#ifdef PBL_PLATFORM_CHALK
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], (BLOOD_DROP));
+//#else
+//            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(58, 30));
+//#endif
 
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
 
@@ -1861,12 +1851,8 @@ static void load_bg() {
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET STOP LIGHT");
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
             set_message_layer("\0", "", false, text_colour);
-
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[STOP_LIGHT_ICON_INDX], GPoint(79, 33));
-#else
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[STOP_LIGHT_ICON_INDX], GPoint(63, 30));
-#endif
+#define STOP_LIGHT PBL_IF_ROUND_ELSE(GPoint(79, 33), GPoint(63, 30)) 
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[STOP_LIGHT_ICON_INDX], (STOP_LIGHT));
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
 
             specvalue_alert = 111;
@@ -1876,12 +1862,8 @@ static void load_bg() {
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
             set_message_layer("\0", "", false, text_colour);
 
-
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(76, 40));
-#else
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], GPoint(61, 37));
-#endif
+#define HOURGLASS PBL_IF_ROUND_ELSE(GPoint(76, 40), GPoint(61, 37)) 
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[HOURGLASS_ICON_INDX], (HOURGLASS));
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
 
             specvalue_alert = 111;
@@ -1893,12 +1875,8 @@ static void load_bg() {
 
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, SET BITMAP");
-#ifdef PBL_PLATFORM_CHALK
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(58, 35));
-#else
-            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX], GPoint(43, 35));
-
-#endif
+#define QUESTION_MARKS PBL_IF_ROUND_ELSE(GPoint(58, 35), GPoint(43, 35)) 
+            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[QUESTION_MARKS_ICON_INDX],(QUESTION_MARKS));
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, SPECIAL VALUE: SET QUESTION MARKS, DONE");
             specvalue_alert = 111;
@@ -1913,9 +1891,6 @@ static void load_bg() {
 #define specialvalue_OFFSET PBL_IF_ROUND_ELSE(GPoint(40, 25), GPoint(25, 25))
 
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX],(specialvalue_OFFSET));
-//#else
-//            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[LOGOSPECIAL_ICON_INDX], GPoint(25, 25));
-//#endif
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
 
             specvalue_alert = 111;
@@ -2081,17 +2056,7 @@ static void set_cgm_timeago (char *timeago_string, int timeago_diff, bool use_ti
   }
 
 } // end set_cgm_timeago
-/*static void load_looptime() {
-    //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
-    // VARIABLES
 
-    static uint32_t loop_time_offset = 0;
-    int loop_timeago_diff = 0;
-    time_t loop_temp_time = time(NULL);
-    struct tm *loop_local_time = localtime(&loop_temp_time);
-    size_t draw_loop_time = 0;
-    static char looptime_text[] = "00:00";
-}*/
 static void load_cgmtime() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD CGMTIME FUNCTION START");
     // VARIABLES
@@ -3165,10 +3130,10 @@ void window_load_cgm(Window *window_cgm) {
         text_layer_set_text_color(basal_layer, GColorWhite);
 
 // LOOP TIME AGO
-#define time_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(140, 68, 50, 25), GRect(113, 80, 50, 25))
+#define time_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(140, 68, 50, 25), GRect(102, 80, 50, 25))
         window_cgm_add_text_layer(&time_layer, (time_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
         text_layer_set_text_color(time_layer, GColorWhite);
-        text_layer_set_text_alignment(time_layer, GTextAlignmentLeft);
+        text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
 
 // BG
         window_cgm_add_text_layer(&bg_layer, GRect(0, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
