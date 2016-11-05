@@ -1466,13 +1466,7 @@ void animate_perfectbg() {
     animate_perfectbg_layer = bitmap_layer_get_layer(perfectbg_layer);
 #define from_perfectbg_rect PBL_IF_ROUND_ELSE(GRect(144, 88, 100, 47), GRect(144, 94, 100, 52)) 
 #define to_perfectbg_rect PBL_IF_ROUND_ELSE(GRect(-185, 88, 100, 47), GRect(-180, 94, 100, 52)) 
-//  #ifdef PBL_ROUND
-//    from_perfectbg_rect = GRect(144, 88, 100, 47);
-//    to_perfectbg_rect = GRect(-185, 88, 100, 47);
-//#else
-//    from_perfectbg_rect = GRect(144, 94, 100, 52);
- //   to_perfectbg_rect = GRect(-180, 94, 100, 52);
-//#endif
+
     //  destroy_perfectbg_animation(&perfectbg_animation);
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE BG, CREATE FRAME");
     perfectbg_animation = property_animation_create_layer_frame(animate_perfectbg_layer, &from_perfectbg_rect, &to_perfectbg_rect);
@@ -1550,14 +1544,16 @@ void animate_happymsg(char *happymsg_to_display) {
     text_layer_set_text(happymsg_layer, animate_happymsg_buffer);
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "ANIMATE HAPPY MSG, MSG IN BUFFER: %s", animate_happymsg_buffer);
     animate_happymsg_layer = text_layer_get_layer(happymsg_layer);
-#ifdef PBL_ROUND
+#define from_happymsg_rect PBL_IF_ROUND_ELSE(GRect(144, 98, 150, 38), GRect(144, 104, 150, 43)) 
+#define to_happymsg_rect PBL_IF_ROUND_ELSE(GRect(-184, 98, 150, 38), GRect(-180, 104, 150, 43)) 
+/*
  from_happymsg_rect = GRect(144, 98, 150, 38);
   to_happymsg_rect = GRect(-184, 98, 150, 38);
 #else
     from_happymsg_rect = GRect(144, 104, 150, 43);
     to_happymsg_rect = GRect(-180, 104, 150, 43);
 #endif
-
+*/
 
     destroy_happymsg_animation(&happymsg_animation);
     //APP_LOG(APP_LOG_LEVEL_INFO, "ANIMATE HAPPY MSG, CREATE FRAME");
@@ -3098,7 +3094,7 @@ void window_load_cgm(Window *window_cgm) {
     window_cgm_add_bitmap_layer(&battery_layer, (BATTERY_OFFSET), GAlignCenter);
 
 // COB
-#define COB_OFFSET PBL_IF_ROUND_ELSE(GRect(18, 130, 40, 28), GRect(-12, 47, 60 , 30))
+#define COB_OFFSET PBL_IF_ROUND_ELSE(GRect(16, 130, 40, 28), GRect(-12, 47, 60 , 30))
     window_cgm_add_text_layer(&cob_layer, (COB_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
     layer_set_hidden(text_layer_get_layer(cob_layer), true);
 
@@ -3108,7 +3104,7 @@ void window_load_cgm(Window *window_cgm) {
     handle_watch_battery_cgm(battery_state_service_peek());
 
 // T1D NAME/IOB
-#define t1dname_OFFSET PBL_IF_ROUND_ELSE(GRect(8,33, 44, 44), GRect(0, 3, 40, 40))
+#define t1dname_OFFSET PBL_IF_ROUND_ELSE(GRect(7,33, 44, 44), GRect(0, 3, 40, 40))
     window_cgm_add_text_layer(&t1dname_layer, (t1dname_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
     text_layer_set_text_color(t1dname_layer, text_colour);
 
@@ -3121,22 +3117,23 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(raw_calc_layer, GColorWhite);
 
 // SYMBOL
-#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(82, 72, 18, 40), GRect(94, 73, 18, 40))
+#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(117, 64, 18, 40), GRect(94, 73, 18, 40))
         window_cgm_add_bitmap_layer(&symbol_layer, (symbol_OFFSET), GAlignCenter);
 
 // BASAL
-#define basal_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(11, 66, 60, 24), GRect(-5, 80, 60, 24))
-        window_cgm_add_text_layer(&basal_layer, (basal_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+#define basal_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(3, 67, 60, 25), GRect(-5, 80, 60, 24))
+        window_cgm_add_text_layer(&basal_layer, (basal_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_24_BOLD),(FONT_KEY_GOTHIC_18_BOLD))));
         text_layer_set_text_color(basal_layer, GColorWhite);
 
 // LOOP TIME AGO
-#define time_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(140, 68, 50, 25), GRect(102, 80, 50, 25))
-        window_cgm_add_text_layer(&time_layer, (time_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+#define time_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(126, 66, 50, 25), GRect(102, 80, 50, 25))
+        window_cgm_add_text_layer(&time_layer, (time_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_24_BOLD),(FONT_KEY_GOTHIC_18_BOLD))));
         text_layer_set_text_color(time_layer, GColorWhite);
         text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
 
 // BG
-        window_cgm_add_text_layer(&bg_layer, GRect(0, 17, 144, 80), FONT_KEY_BITHAM_42_BOLD);
+#define bg_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(15, 17, 144, 800), GRect(0, 17, 144, 80))
+        window_cgm_add_text_layer(&bg_layer, (bg_layer_OFFSET), FONT_KEY_BITHAM_42_BOLD);
 
 // DELTA BG / MESSAGE LAYER
 #define message_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(18, 54, 144, 50), GRect(2, 53, 144, 50))
@@ -3147,18 +3144,18 @@ void window_load_cgm(Window *window_cgm) {
       window_cgm_add_bitmap_layer(&perfectbg_layer, (perfectbg_layer_OFFSET), GAlignLeft);
 
 // CGM TIME AGO READING
-#define cgmtime_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(58, 1, 50, 24), GRect(48, 1, 50, 28))
+#define cgmtime_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(63, 1, 50, 24), GRect(48, 1, 50, 28))
         window_cgm_add_text_layer(&cgmtime_layer, (cgmtime_layer_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
         text_layer_set_text_color(cgmtime_layer, text_colour);
         //text_layer_set_text_alignment(cgmtime_layer, GTextAlignmentRight);
 
 // HAPPY MSG LAYER
 #define happymsg_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(-180, 98, 175, 38), GRect(-144, 104, 145, 43))
-
         window_cgm_add_text_layer(&happymsg_layer, (happymsg_layer_OFFSET), FONT_KEY_GOTHIC_24_BOLD);
         text_layer_set_text_color(happymsg_layer, plot_colour);
+
 // PUMP LAYER
-#define s_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 98, 175, 388), GRect(0, 104, 145, 43))
+#define s_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(0, 98, 175, 38), GRect(0, 104, 145, 43))
         window_cgm_add_text_layer(&s_layer, (s_layer_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
         text_layer_set_overflow_mode(s_layer, GTextOverflowModeWordWrap);
         text_layer_set_text_color(s_layer, text_colour);
