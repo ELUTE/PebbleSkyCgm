@@ -822,6 +822,11 @@ var MessageQueue = (function() {
     }
 }());
 // pebble specific calls with watch
+var s = 0;
+setInterval(function() {
+    s++;
+    console.log("JavaScript is running for " + s + " seconds.");
+}, 1000);
 
 Pebble.addEventListener("appmessage", function(e) {
     console.log("JS Recvd Msg From Watch: " + JSON.stringify(e.payload));

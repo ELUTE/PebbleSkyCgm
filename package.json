@@ -31,6 +31,13 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/Loop Symbol",
+                    "menuIcon": true,
+                    "name": "IMAGE_LOOPED",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/Warning",
                     "name": "IMAGE_WARNING",
                     "targetPlatforms": null,
@@ -249,5 +256,5 @@
             "watchface": true
         }
     },
-    "version": "0.5.0"
+    "version": "0.6.0"
 }

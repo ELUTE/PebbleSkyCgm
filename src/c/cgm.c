@@ -388,7 +388,6 @@ static const uint8_t CIRCLE_ICON_INDX = 10;
 static const uint8_t WARNING_ICON_INDX = 11;
 
 
-
 //SHAKE HANDLER
 static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
   bool did_vibrate = NULL;
@@ -402,6 +401,20 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
     //APP_LOG(APP_LOG_LEVEL_WARNING, "Vibration occured during collection");
   }
 }  
+//ADD WAKEUP
+static void prv_restart(void* data) {
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "restarting...");
+
+  // will close the app
+  window_stack_pop_all(false);
+
+  // schedule a wakeup 2s after now to make sure the watchface gets restarted
+  // NOTE: we do 2s instead of 1s to avoid a potential rare race condition where the
+  // current second flips after we obtained the current time
+  const time_t future_time = time(NULL) + 2;
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "will restart at %lu", future_time);
+  wakeup_schedule(future_time, 0, false);
+}
 
 static char *translate_app_error(AppMessageResult result) {
     switch (result) {
@@ -639,6 +652,9 @@ static void load_values(){
     int mgormm = 0;
     int vibes = 0;
     int rawvibrate = 0;
+    int vibeon = 0;
+    int animateon = 0;
+
     if (current_values == NULL) {
         return;
     } else {
@@ -731,10 +747,29 @@ static void load_values(){
                 if (rawvibrate == 0) { TurnOffVibrationsCalcRaw = 111; }
                 else { TurnOffVibrationsCalcRaw = 100; }
                 break;
-            case 11:
-                //APP_LOG(APP_LOG_LEVEL_DEBUG, "color_value: %s", o);
+              
+            case 11:              
+              //APP_LOG(APP_LOG_LEVEL_DEBUG, "color_value: %s", o);
                 color_value = atoi(o);
                 break;
+                //APP_LOG(APP_LOG_LEVEL_DEBUG, "vibeon: %s", o);
+         case 12:
+              vibeon = atoi(o);
+          if (vibeon == 0) { 
+            // turn vibrator off; emoji will be set to sleep so have visual indication
+            HardCodeNoVibrations = 111; 
+          }
+          else { 
+            // turn vibrator on 
+            HardCodeNoVibrations = 100;
+          }
+          break;
+            case 13:
+               //APP_LOG(APP_LOG_LEVEL_DEBUG, "animateon: %s", o);
+          animateon = atoi(o);
+          if (animateon == 0) { HardCodeNoAnimations = 111; }
+          else { HardCodeNoAnimations = 100; }
+          break; 
 
             }
             o = strtok(NULL,",");
@@ -1158,7 +1193,9 @@ void sync_error_callback_cgm(DictionaryResult appsync_dict_error, AppMessageResu
     // set message to RESTART WATCH -> PHONE
     text_layer_set_text(message_layer, "RSTR\0");
     text_layer_set_text(bg_layer, "ERR\0");
-
+//WAKEUP
+    app_timer_register(5000, prv_restart, NULL);
+  
 	  alert_handler_cgm(CGMOUT_VIBE);
 
     // reset appsync retries counter
