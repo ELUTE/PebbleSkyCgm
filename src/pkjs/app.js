@@ -101,8 +101,7 @@ function createBgTimeArray(data, opts) {
             var wall = parseInt(data[i].date);
             var timeAgo = msToMinutes(now.getTime() - wall);
             //console.log("-----createBgTimeArray----- data[i].type: " + data[i].type + "   data[i].sgv: " + data[i].sgv);
-            if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >=
-                minLimit) {
+            if (timeAgo < 120 && data[i].type == 'sgv' && data[i].sgv >=minLimit) {
                 toReturn2 = toReturn2 + (120 - timeAgo).toString() + ",";
             }
         }
@@ -152,23 +151,39 @@ function getLoopData(opts) {
                     //return loopok;
                     // console.log("Typeof" typeof loopsymbol);
                 } else {
-                  if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
+                  //if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
+                  if (loopn['openaps'] ===undefined){
+
                     if ((loopn.loop.lastLoop.lastOkMoment === null)) {
                         opts.Last = "null";
                     } else {
                         opts.Last = loopn.loop.lastLoop.timestamp;
+                      opts.Symbol = loopn.loop.display.label;
+                    var Predict =  loopn.loop.lastPredicted.values;
+                   //Predict = Predict.slice(0,40);
+                    
+                    var PredictCut = [];
+
+                    for (var i = 0; i < Predict.length; i = i+2) {
+                  PredictCut.push(Predict[i]);
+                      } 
+                    
+                  //opts.Predict = Predict.toString();
+                  opts.Predict = PredictCut.toString();
                     }
-                    opts.Symbol = loopn.loop.display.label;
-                   // var cob = loopn.loop.lastLoop.cob.cob;
-                   // opts.Cob = (Math.round(cob).toFixed(1));
-                   // console.log("optscob"+opts.Cob);
+                    
+
+                    console.log("predicted: "+opts.Predict);
+         //           var cob = loopn.loop.lastLoop.cob.cob;
+           //         opts.Cob = (Math.round(cob).toFixed(1));
+             //       console.log("optscob"+opts.Cob);
+                  
                   } else {
                     console.log("start openaps");
                     if ((loopn.openaps.lastLoopMoment === null)) {
                         opts.Last = "null";
                     } else {
                         opts.Last = loopn.openaps.lastLoopMoment;
-
                     }
                     opts.Symbol = loopn.openaps.status.label;
 
@@ -193,6 +208,26 @@ function getLoopData(opts) {
                   console.log ("pump info " + opts.Pump);
                     opts.Basal = loopn.basal.display;
                     console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
+               //var date = new Date(), interval=(+5), arr=[];
+               var date = new Date(), interval=(+5), arr=[];
+                  
+                  //var timeAgo = msToMinutes(now.getTime() - wall);
+  
+                  for(var i=0;i<Predict.length;i++){
+                   //date.setMinutes(date.getMinutes() + interval);
+                   //var times = (118.9 - interval);
+
+                  //var times = msToMinutes(date.getTime() + interval);
+                  // arr.push(date.getHours() + '.' + date.getMinutes());
+                  // arr.push(date.getHours() + '.' + date.getMinutes());
+                   //arr.push(times);
+                     }
+                  //"118.9,113.9,108.9,103.9,98.9,93.9,88.9,83.9,78.9,73.9,68.9,63.9"
+                  opts.predictTime = "118,113,108,103,98,93,88,83,78,73,68,63,58,53,48,43,38,33,28,25";
+                 // opts.predictTime = "40, 39, 38, 37, 36, 35,34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1";
+
+                   //opts.predictTime = arr.toString();
+                  console.log("time array: "+ arr);
                 }
             }
         };
@@ -240,6 +275,7 @@ function nightscout(opts) {
             time: " ",
             basal: " ",
             pump:  " ",
+            //predict: " ",
 
         };
         console.log("NO ENDPOINT JS message", JSON.stringify(message));
@@ -261,8 +297,8 @@ function nightscout(opts) {
         MessageQueue.sendAppMessage(message);
     }, 59000); // timeout in ms; set at 59 seconds; can not go beyond 59 seconds
     // get cgm data
-    var arraydata = {};
-    arraydata = getNightScoutArrayData(arraydata, opts);
+    var predict = {};
+    predict = opts.Predict;
     req.onload = function(e) {
         if (req.readyState == 4) {
             if (req.status == 200) {
@@ -305,6 +341,9 @@ function nightscout(opts) {
                         loopBasal = opts.Basal,
                         loopLast = opts.LoopTime,
                         currentSym = loopSym,
+                        predict =  opts.Predict,
+                        predictTime =  opts.predictTime,
+
                         // get battery level
                         currentBattery = responsebgs[0].battery,
                         //currentBattery = "100",
@@ -521,7 +560,9 @@ function nightscout(opts) {
                             //console.log("Format Unfiltered: " + formatRawUnfilt);
                         }
                     } // if currentRawUnfilt
-                    
+                  //predict = predict.tostring();
+
+
                   //add raw to pump shake data
                   var loopPump;
                   if (formatCalcRaw === null){
@@ -591,12 +632,16 @@ function nightscout(opts) {
                         vals: values,
                         clrw: formatCalcRaw,
                         cob: currentCOB,
-                        bgsx: arraydata.bgsx,
-                        bgty: arraydata.bgty,
+                        //bgsx: arraydata.bgsx,
+                        bgsx: predict,
+                        bgty: predictTime,
+                        //bgty: arraydata.bgty,
                         sym: currentSym,
                         time: loopLast,
                         basal: loopBasal,
                         pump: loopPump,
+                        //predict: predict,
+
 
                     };
                     // send message data to log and to watch
@@ -825,7 +870,7 @@ var MessageQueue = (function() {
 var s = 0;
 setInterval(function() {
     s++;
-    console.log("JavaScript is running for " + s + " seconds.");
+    //console.log("JavaScript is running for " + s + " seconds.");
 }, 1000);
 
 Pebble.addEventListener("appmessage", function(e) {
