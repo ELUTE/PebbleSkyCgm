@@ -118,7 +118,7 @@ uint8_t ClearedOutage = 100;
 uint8_t ClearedBTOutage = 100;
 
 uint32_t current_app_time = 0;
-static char current_bg_delta[6] = {0};
+static char current_bg_delta[8] = {0};
 static char last_calc_raw[6] = {0};
 static char current_symbol[4] = {1};
 static char current_cob[8] = {0};
@@ -1007,14 +1007,15 @@ void bt_handler(bool bt_connected) {
     //APP_LOG(APP_LOG_LEVEL_INFO, "NO BLUETOOTH");
     if (TurnOff_NOBLUETOOTH_Msg == 111) {
         //text_layer_set_text(message_layer, "NO BT\0");
-          window_stack_pop_all(false); //ADDED Oct13
-          set_message_layer("NO BT\0", "", false, text_colour);
+         // window_stack_pop_all(false); //ADDED Oct13
+          set_message_layer("NO BT1\0", "", false, text_colour);
     }
     //}
     else {
         // Bluetooth is on, reset BluetoothAlert
         //APP_LOG(APP_LOG_LEVEL_INFO, "HANDLE BT: BLUETOOTH ON");
        // APP_LOG(APP_LOG_LEVEL_INFO, "BluetoothAlert: %i", BluetoothAlert);
+      window_stack_pop_all(false);
     }
 }
 
@@ -1814,7 +1815,7 @@ static void load_bg() {
             //      Bluetooth is out; set BT message
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
             //if (TurnOff_NOBLUETOOTH_Msg == 100) {
-            set_message_layer("NO BT\0", "", false, text_colour);
+            set_message_layer("NO BT2\0", "", false, text_colour);
 
           //text_layer_set_text(message_layer, "NO BT");
             //} // if turnoff nobluetooth msg
@@ -2719,9 +2720,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //text_layer_set_text(s_layer, last_calc_raw);
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "clrw key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
-
             break; // break for CGM_CLRW_KEY
-
 
         case CGM_BGSX_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BGS X AXIS");
@@ -2851,13 +2850,16 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //load_symbol();
             if (strchr(current_symbol, *"E")){
                 create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LIGHTNING_ICON_INDX]);
+                    text_layer_set_text_color(predict_layer, text_colour);
             } else if (strchr(current_symbol, *"L")){
                 create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[LOOP_ICON_INDX]);
+                text_layer_set_text_color(predict_layer, text_colour);
             }else if (strchr(current_symbol, *"X")){
                 if (LoopOutAlert == 100) {
                     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, ZERO BATTERY, VIBRATE");
                     alert_handler_cgm(NOLOOP_VIBE);
                     LoopOutAlert = 111;
+                    text_layer_set_text_color(predict_layer, GColorOrange);
                 }
                 create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[X_ICON_INDX]);
             } else if (strchr(current_symbol, *"W")){
@@ -2865,6 +2867,9 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
                     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, ZERO BATTERY, VIBRATE");
                     alert_handler_cgm(NOLOOP_VIBE);
                     LoopOutAlert = 111;
+                    layer_set_hidden(text_layer_get_layer(predict_layer), true);
+                    layer_set_hidden(text_layer_get_layer(s_layer), false);
+                    layer_set_hidden(predict_circle_layer, true);
                 }
                 create_update_bitmap(&symbol_bitmap,symbol_layer,SPECIAL_VALUE_ICONS[WARNING_ICON_INDX]);
             }else if (strchr(current_symbol, *"R")){
@@ -2909,6 +2914,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: CALCULATED RAW");
             strncpy(pump_status, new_tuple->value->cstring, sizeof(pump_status));
             text_layer_set_text(s_layer, pump_status);
+            text_layer_set_background_color(s_layer, chart_colour);
 
             //APP_LOG(APP_LOG_LEVEL_INFO, "clrw key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
 
@@ -2948,15 +2954,15 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 static void send_cmd_cgm(void) {
 
   // check bluetooth ADDED JUNE 20 V
-bt_connected = connection_service_peek_pebble_app_connection(); //was bluetooth_connection_service_peek
+/*bt_connected = connection_service_peek_pebble_app_connection(); //was bluetooth_connection_service_peek
 
         if (bt_connected == false) {
             //      Bluetooth is out; set BT message
             //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, BG INIT: NO BT, SET NO BT MESSAGE");
             if (TurnOff_NOBLUETOOTH_Msg == 100) {
-                   text_layer_set_text(message_layer, "NO BT\0");
+                   text_layer_set_text(message_layer, "NO BT3\0");
             } // if turnoff nobluetooth msg
-        }
+        }*/
     DictionaryIterator *iter = NULL;
     AppMessageResult sendcmd_openerr = APP_MSG_OK;
     AppMessageResult sendcmd_senderr = APP_MSG_OK;
@@ -3099,8 +3105,8 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(time_watch_layer, GColorWhite);
 
 // DATE
-#define DATE_APP_LAYER_OFFSET PBL_IF_ROUND_ELSE(GRect(56, 130, 50, 22), GRect(-1, 147, 50, 22))
-    window_cgm_add_text_layer(&date_app_layer,(DATE_APP_LAYER_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
+//#define DATE_APP_LAYER_OFFSET PBL_IF_ROUND_ELSE(GRect(56, 130, 50, 22), GRect(-1, 147, 50, 22))
+    window_cgm_add_text_layer(&date_app_layer,(PBL_IF_ROUND_ELSE(GRect(56, 130, 50, 22), GRect(-1, 147, 50, 22))), FONT_KEY_GOTHIC_18_BOLD);
     text_layer_set_text_color(date_app_layer, GColorWhite);
     draw_date_from_app();
 
@@ -3186,7 +3192,7 @@ void window_load_cgm(Window *window_cgm) {
 // PREDICT
 #define predict_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(111, 124, 60, 25), GRect(97, 115, 60, 24))
         window_cgm_add_text_layer(&predict_layer, (predict_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_24_BOLD),(FONT_KEY_GOTHIC_24_BOLD))));
-        text_layer_set_text_color(predict_layer, text_colour);
+        //text_layer_set_text_color(predict_layer, text_colour);
         layer_set_hidden(text_layer_get_layer(predict_layer), true);
   
 // LOOP TIME AGO

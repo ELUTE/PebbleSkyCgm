@@ -52,7 +52,7 @@ function timeSince(date) {
 	}
 	return Math.floor(seconds) + "s";
 }
-
+//GET DATA FROM LOOP OR OPENAPS
 function getLoopData(opts) {
 	var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
 	endpoint = endpoint.replace("/pebble/", "");
@@ -71,11 +71,12 @@ function getLoopData(opts) {
 			} else {
 				//if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
 				if (loopn['openaps'] === undefined) {
-					if ((loopn.loop.lastLoop.lastOkMoment === null)) {
+					if ((loopn.loop.lastOkMoment === null)) {
 						opts.Last = "null";
-						opts.Symbol = "E";
+						opts.Symbol = "Warning";
 						opts.Predict = " ";
 						opts.lastPredicted = " ";
+						opts.LoopTime = "ERR";
 					} else {
 						opts.Last = loopn.loop.lastLoop.timestamp;
 						opts.Symbol = loopn.loop.display.label;
@@ -91,8 +92,9 @@ function getLoopData(opts) {
 						var PredictCut = [];
 						for (var i = 0; i < Predict.length; i = i + 2) {
 							PredictCut.push(Predict[i]);
-              var items1 = PredictCut.slice(0, 20);
-
+							var items1 = PredictCut.slice(0, 20);
+							var d = new Date(opts.Last);
+							opts.LoopTime = timeSince(d);
 						}
 						opts.Predict = items1.toString();
 					}
@@ -104,10 +106,14 @@ function getLoopData(opts) {
 					console.log("start openaps");
 					if ((loopn.openaps.lastLoopMoment === null)) {
 						opts.Last = "null";
-						opts.Symbol = "X";
-						opts.lastPredicted = "X";
+						opts.Symbol = "Warning";
+						opts.Predict = " ";
+						opts.lastPredicted = " ";
+						opts.LoopTime = "ERR";
 					} else {
 						opts.Last = loopn.openaps.lastLoopMoment;
+						var d2 = new Date(opts.Last);
+						opts.LoopTime = timeSince(d2);
 						var OPENPredict = loopn.openaps.lastEnacted.predBGs.IOB;
 						var lastPredicted2 = OPENPredict.slice(-1)[0];
 						if (opts.radio == "mgdl_form") {
@@ -126,11 +132,10 @@ function getLoopData(opts) {
 						opts.Symbol = loopn.openaps.status.label;
 					}
 				}
-				var d = new Date(opts.Last);
-				opts.LoopTime = timeSince(d);
 				console.log("opts.Last " + opts.Last + "opts.LoopTime" + opts.LoopTime);
 				if ((loopn.pump.pump === undefined)) {
 					opts.Pump = "No Data Available";
+					opts.Raw = " ";
 				} else {
 					var pumpbat = loopn.pump.pump.battery.voltage;
 					var pumpres = (loopn.pump.pump.reservoir + "u");
@@ -434,7 +439,11 @@ function nightscout(opts) {
 					if (formatCalcRaw === null) {
 						loopPump = opts.Pump;
 					} else {
-						loopPump = " Raw:" + formatCalcRaw + " " + opts.Pump;
+						if (opts.Raw = " ") {
+							loopPump = opts.Pump;
+						} else {
+							loopPump = " Raw:" + formatCalcRaw + " " + opts.Pump;
+						}
 					}
 					if (opts.radio == "mgdl_form") {
 						values = "0"; //mgdl selected
@@ -497,7 +506,6 @@ function nightscout(opts) {
 						clrw: formatCalcRaw,
 						cob: currentCOB,
 						bgsx: predict,
-						//bgty: predictTime,
 						sym: currentSym,
 						time: loopLast,
 						basal: loopBasal,
