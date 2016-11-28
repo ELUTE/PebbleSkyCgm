@@ -10,39 +10,26 @@
         "displayName": "Sky Line Loop",
         "enableMultiJS": true,
         "messageKeys": {
-            "basal": 14,
+            "basal": 13,
             "bg": 1,
             "bgsx": 9,
-            "bgty": 10,
             "clrw": 8,
-            "cob": 11,
+            "cob": 10,
             "dlta": 4,
             "icon": 0,
             "name": 6,
-            "pump": 15,
-            "sym": 12,
+            "predict": 15,
+            "pump": 14,
+            "sym": 11,
             "tapp": 3,
             "tcgm": 2,
-            "time": 13,
+            "time": 12,
             "ubat": 5,
             "vals": 7
         },
         "projectType": "native",
         "resources": {
             "media": [
-                {
-                    "file": "images/Loop Symbol",
-                    "menuIcon": true,
-                    "name": "IMAGE_LOOPED",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
-                {
-                    "file": "images/Warning",
-                    "name": "IMAGE_WARNING",
-                    "targetPlatforms": null,
-                    "type": "bitmap"
-                },
                 {
                     "file": "images/x.png",
                     "name": "IMAGE_X",
@@ -210,6 +197,12 @@
                     "type": "bitmap"
                 },
                 {
+                    "file": "images/Warning",
+                    "name": "IMAGE_WARNING",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/Question.png",
                     "name": "IMAGE_QUESTION_MARKS",
                     "targetPlatforms": [
@@ -218,6 +211,13 @@
                         "chalk",
                         "diorite"
                     ],
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/Loop Symbol",
+                    "menuIcon": true,
+                    "name": "IMAGE_LOOPED",
+                    "targetPlatforms": null,
                     "type": "bitmap"
                 },
                 {

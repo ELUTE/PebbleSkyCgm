@@ -37,6 +37,7 @@ TextLayer *cob_layer = NULL;
 TextLayer *basal_layer = NULL;
 TextLayer *time_layer = NULL;
 TextLayer *s_layer =NULL;
+TextLayer *predict_layer =NULL;
 
 // main window layer
 BitmapLayer *icon_layer = NULL;
@@ -54,6 +55,8 @@ GBitmap *symbol_bitmap = NULL;
 static Layer *circle_layer;
 static Layer *cob_circle_layer;
 static Layer *name_circle_layer;
+static Layer *predict_circle_layer;
+
 static Layer *batteryGraphicsLayer;
 
 static GPath *batteryOutlinePath = NULL;
@@ -77,7 +80,7 @@ AppSync sync_cgm;
 uint8_t AppSyncErrAlert = 100;
 
 // BUFFER
-static uint8_t sync_buffer_cgm[408]; //was 560
+static uint8_t sync_buffer_cgm[560]; //was 408
 
 // variables for timers and time
 AppTimer *timer_cgm = NULL;
@@ -120,9 +123,10 @@ static char last_calc_raw[6] = {0};
 static char current_symbol[4] = {1};
 static char current_cob[8] = {0};
 static char current_name[6] = {0};
-static char current_basal[6] = {0};
+static char current_basal[8] = {0};
 static char last_ok_time[6] = {1};
 static char pump_status[60] = {0};
+static char predict[6] = {0};
 
 int color_value = 0;
 GColor top_colour = GColorWhiteInit;
@@ -349,12 +353,13 @@ enum CgmKey {
     CGM_VALS_KEY = 0x7,   // TUPLE_CSTRING, MAX 60 BYTES (0,000,000,000,000,0,0,0,0,0)
     CGM_CLRW_KEY = 0x8,   // TUPLE_CSTRING, MAX 4 BYTES (253 OR 22.2)
     CGM_BGSX_KEY = 0x9, // TUPLE_CSTRING, MAX 28 BYTES
-    CGM_BGTY_KEY = 0xA, // TUPLE_CSTRING, MAX 28 BYTES
-    CGM_COB_KEY = 0xB, // COB MAX 4 BYTES
-    CGM_SYM_KEY = 0xC,
-    CGM_TIME_KEY = 0xD,
-    CGM_BASAL_KEY = 0xE,
-    CGM_PUMP_KEY = 0xF,
+    CGM_COB_KEY = 0xA, // COB MAX 4 BYTES
+    CGM_SYM_KEY = 0xB,
+    CGM_TIME_KEY = 0xC,
+    CGM_BASAL_KEY = 0xD,
+    CGM_PUMP_KEY = 0xE,
+    CGM_PREDICT_KEY = 0xF,
+
 };
 
 // ARRAY OF SPECIAL VALUE ICONS
@@ -1333,9 +1338,7 @@ static void load_icon() {
 #define UP PBL_IF_ROUND_ELSE(GPoint(134, 25), GPoint(118, 20)) 
 
             set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],(UP));
-//#else
-//            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[UP_SM_ICON_INDX],GPoint(118, 20));
-//#endif
+
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
@@ -1343,9 +1346,7 @@ static void load_icon() {
         else if (strcmp(current_icon, UP45_ARROW) == 0) {
 #define UP45 PBL_IF_ROUND_ELSE(GPoint(132, 33), GPoint(98, 5)) 
             set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UP45_SM_ICON_INDX],(UP45));
-//#else
-//            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[UP45_SM_ICON_INDX],GPoint(98, 5));
-//#endif
+
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
@@ -1353,9 +1354,7 @@ static void load_icon() {
         else if (strcmp(current_icon, FLAT_ARROW) == 0) {
 #define FLAT PBL_IF_ROUND_ELSE(GPoint(122, 22), GPoint(105, 23)) 
             set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[FLAT_SM_ICON_INDX],(FLAT));
-//#else
-//            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[FLAT_SM_ICON_INDX],GPoint(105, 23));
-//#endif
+
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
@@ -1363,9 +1362,7 @@ static void load_icon() {
         else if (strcmp(current_icon, DOWN45_ARROW) == 0) {
 #define DOWN45 PBL_IF_ROUND_ELSE(GPoint(129, 30), GPoint(113, 38)) 
             set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],(DOWN45));
-//#else
-//            set_container_image(&icon_bitmap, icon_layer, SM_ARROW_ICONS[DOWN45_SM_ICON_INDX],GPoint(113, 38));
-//#endif
+
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
@@ -1373,9 +1370,7 @@ static void load_icon() {
         else if (strcmp(current_icon, SINGLEDOWN_ARROW) == 0) {
 #define DOWN PBL_IF_ROUND_ELSE(GPoint(133, 32), GPoint(118, 25)) 
             set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWN_SM_ICON_INDX],(DOWN));
-//#else
-//            set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWN_SM_ICON_INDX],GPoint(118, 25));
-//#endif
+
             text_layer_set_background_color(tophalf_layer, top_colour);
             layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             DoubleDownAlert = 100;
@@ -1387,9 +1382,7 @@ static void load_icon() {
                 DoubleDownAlert = 111;
 #define DOUBLEDOWN PBL_IF_ROUND_ELSE(GPoint(129, 23), GPoint(119, 23)) 
                 set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],(DOUBLEDOWN));
-//#else
-//                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[DOWNDOWN_SM_ICON_INDX],GPoint(119, 23));
-//#endif
+
                 text_layer_set_background_color(tophalf_layer, ROUGE);
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
@@ -1404,9 +1397,7 @@ static void load_icon() {
                 // Bluetooth is out; in the loading screen so set logo
 #define LOGO PBL_IF_ROUND_ELSE(GPoint(40, 25), GPoint(25, 25)) 
                 set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],(LOGO));
-//#else
-//                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
-//#endif
+
                 text_layer_set_background_color(tophalf_layer, top_colour);
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
@@ -1414,9 +1405,7 @@ static void load_icon() {
                 // unexpected, set logo icon
 //#ifdef PBL_PLATFORM_CHALK
                 set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],(LOGO));
-//#else
-//                set_container_image(&icon_bitmap,icon_layer,SM_ARROW_ICONS[LOGO_ARROW_ICON_INDX],GPoint(25, 25));
-//#endif
+
                 text_layer_set_background_color(tophalf_layer, top_colour);
                 layer_mark_dirty(text_layer_get_layer(tophalf_layer));
             }
@@ -1773,7 +1762,7 @@ static void load_bg() {
 
     char happymsg_buffer42[26] = "THE MEANING OF LIFE?\0";
     char happymsg_buffer73[26] = "GIMME SOME SUGAH\0";
-    char happymsg_buffer143[26] = "WE \U0001F499 U TOO\0";
+    char happymsg_buffer143[26] = "WE \U0001F499 LOOPING\0";
     //char happymsg_buffer143[26] = "WE <3 U TOO\0";
     char happymsg_buffer109[26] = "THE FORCE IS\n STRONG IN U\0";
     char happymsg_buffer222[26] = "T00 SWEET!\0";
@@ -1868,13 +1857,7 @@ static void load_bg() {
             if (bg_layer != NULL) { text_layer_set_text(bg_layer, ""); }
             set_message_layer("\0", "", false, text_colour);
 #define BLOOD_DROP PBL_IF_ROUND_ELSE(GPoint(73, 30), GPoint(58, 30)) 
-
-//#ifdef PBL_PLATFORM_CHALK
             set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], (BLOOD_DROP));
-//#else
-//            set_container_image(&specialvalue_bitmap,icon_layer,SPECIAL_VALUE_ICONS[BLOOD_DROP_ICON_INDX], GPoint(58, 30));
-//#endif
-
             layer_mark_dirty(bitmap_layer_get_layer(icon_layer));
 
             specvalue_alert = 111;
@@ -2459,17 +2442,6 @@ static void load_bg_delta() {
 static void load_rig_battlevel() {
     //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BATTLEVEL, FUNCTION START");
 
-    // CONSTANTS
-    //June 20const uint8_t BATTLEVEL_LABEL_SIZE = 5;
-    //June 20const uint8_t BATTLEVEL_PERCENT_SIZE = 6;
-
-
-    // VARIABLES
-    //June 20static char formatted_battlevel[10] = {0};
-    //June 20static uint8_t LowBatteryAlert = 100;
-
-    // const uint8_t BATTLEVEL_LABEL_SIZE = 12;
-   // const uint8_t BATTLEVEL_PERCENT_SIZE = 12;
     // VARIABLES
     static char formatted_battlevel[12] = {0};
     static uint8_t LowBatteryAlert = 100;
@@ -2549,9 +2521,9 @@ static void name_circle_update_proc(Layer *this_layer, GContext *ctx) {
 static void cob_circle_update_proc(Layer *this_layer, GContext *ctx) {
 #ifdef PBL_PLATFORM_CHALK
     graphics_context_set_fill_color(ctx, GColorWhite);
-    graphics_fill_radial(ctx, GRect(15, 125, 42, 34), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_fill_radial(ctx, GRect(15, 127, 42, 30), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
     graphics_context_set_fill_color(ctx, text_colour);
-    graphics_fill_radial(ctx, GRect(15, 125, 43, 35), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_fill_radial(ctx, GRect(15, 127, 43, 31), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
 #else
     graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_radial(ctx, GRect(-3, 40, 42, 38), GOvalScaleModeFillCircle, 100 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
@@ -2560,14 +2532,31 @@ static void cob_circle_update_proc(Layer *this_layer, GContext *ctx) {
 #endif
 }//END COB CIRCLE UPDATE PROC
 
+static void predict_circle_update_proc(Layer *this_layer, GContext *ctx) {
+#ifdef PBL_PLATFORM_CHALK
+    graphics_context_set_fill_color(ctx, GColorWhite);
+    graphics_fill_radial(ctx, GRect(123, 123, 38, 34), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_context_set_fill_color(ctx, text_colour);
+    graphics_fill_radial(ctx, GRect(120,123, 42, 38), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+ #else
+  
+    graphics_context_set_fill_color(ctx, GColorWhite);
+    graphics_fill_radial(ctx, GRect(110, 115, 38, 34), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+    graphics_context_set_fill_color(ctx, text_colour);
+    graphics_fill_radial(ctx, GRect(107, 113, 42, 38), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
+
+   #endif
+}//END CIRCLE UPDATE PROC
+
 //CIRCLE update proc
 static void circle_update_proc(Layer *this_layer, GContext *ctx) {
 #ifdef PBL_PLATFORM_CHALK
-    graphics_context_set_fill_color(ctx, GColorWhite);
+      graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_radial(ctx, GRect(48, 7, 85, 69), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
     graphics_context_set_fill_color(ctx, text_colour);
     graphics_fill_radial(ctx, GRect(45, 5, 89, 73), GOvalScaleModeFillCircle, 3 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
-#else
+
+  #else
     graphics_context_set_fill_color(ctx, GColorWhite);
     graphics_fill_radial(ctx, GRect(34, 2, 82, 81), GOvalScaleModeFillCircle, 105 /*thickness*/, DEG_TO_TRIGANGLE(0), DEG_TO_TRIGANGLE(360));
     graphics_context_set_fill_color(ctx, text_colour);
@@ -2581,13 +2570,6 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
     uint8_t need_to_reset_outage_flag = 100;
     uint8_t get_new_cgm_time = 100;
 
-    // CONSTANTS
-    //const uint8_t ICON_MSGSTR_SIZE = 4;
-    //const uint8_t BG_MSGSTR_SIZE = 6;
-    //const uint8_t BGDELTA_MSGSTR_SIZE = 6;
-    //const uint8_t BATTLEVEL_MSGSTR_SIZE = 4;
-    //const uint8_t VALUE_MSGSTR_SIZE = 48;
-    //const uint8_t PUMP_MSGSTR_SIZE = 30;
     // CODE START
     // reset appsync retries counter
     appsyncandmsg_retries_counter = 0;
@@ -2705,17 +2687,11 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             text_layer_set_text(t1dname_layer, current_name);
 
             if ( (strcmp(current_name, " ") == 0) || (strcmp(current_name, "") == 0) ) {
-                //layer_set_hidden((Layer*)name_circle_layer, true);
                   layer_set_hidden(name_circle_layer, true);
                   layer_set_hidden(text_layer_get_layer(t1dname_layer), true);
-
-                //layer_set_hidden((Layer*)t1dname_layer,true);
             }else {
-               layer_set_hidden(name_circle_layer, false);
-                layer_set_hidden(text_layer_get_layer(t1dname_layer), false);
-
-                //layer_set_hidden((Layer*)name_circle_layer, false);
-                //layer_set_hidden((Layer*)t1dname_layer,false);
+                 layer_set_hidden(name_circle_layer, false);
+                 layer_set_hidden(text_layer_get_layer(t1dname_layer), false);
             }
             //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             break; // break for CGM_NAME_KEY
@@ -2794,11 +2770,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CGM_BGSX_KEY counter: %d ", bgsx_array_counter);
             //APP_LOG(APP_LOG_LEVEL_INFO, "bgsx key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
-
-          break;
-
-        case CGM_BGTY_KEY:;
-               if(bgty_array)
+            if(bgty_array)
             {
                 free(bgty_array);
                 bgty_array = NULL;
@@ -2806,7 +2778,8 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
 
           //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG_TIMES Y AXIS");
             char* nonconst1 = (char*)malloc(sizeof(char) * new_tuple->length);
-            strcpy(nonconst1, new_tuple->value->cstring);
+            //strcpy(nonconst1, new_tuple->value->cstring);
+             nonconst1 =  "25, 28, 35, 38, 43, 48, 53, 58, 63, 68, 73, 78, 83, 88, 93, 98, 103, 108, 113, 118";
 
             ProcessingState* state_t = data_processor_create(nonconst1, ',');
             uint8_t num_strings_t = data_processor_count(state_t);
@@ -2822,11 +2795,39 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             if(num_strings_t > 0)
     			      bgty_array_set = true;
 
-            free(nonconst1);
+          break;
+/*
+        case CGM_BGTY_KEY:;
+               if(bgty_array)
+            {
+                free(bgty_array);
+                bgty_array = NULL;
+            }
+
+          //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BG_TIMES Y AXIS");
+            char* nonconst1 = (char*)malloc(sizeof(char) * new_tuple->length);
+            //strcpy(nonconst1, new_tuple->value->cstring);
+             nonconst1 =  "25, 28, 35, 38, 43, 48, 53, 58, 63, 68, 73, 78, 83, 88, 93, 98, 103, 108, 113, 118";
+
+            ProcessingState* state_t = data_processor_create(nonconst1, ',');
+            uint8_t num_strings_t = data_processor_count(state_t);
+            //APP_LOG(APP_LOG_LEVEL_DEBUG, "BG_t num: %i", num_strings_t);
+
+
+            bgty_array = (int*)malloc(num_strings_t*sizeof(int));
+            for (uint8_t n = 0; n < num_strings_t; n += 1) {
+                bgty_array[n] = data_processor_get_int(state_t);
+                //APP_LOG(APP_LOG_LEVEL_DEBUG, "BG_t Split: %i", bgty_array[n]);
+            }
+
+            if(num_strings_t > 0)
+    			      bgty_array_set = true;
+
+//            free(nonconst1);
             //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE, CGM_BGTY_KEY: %s ", new_tuple->value->cstring);
             //APP_LOG(APP_LOG_LEVEL_INFO, "bgty key finished : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
           break;
-
+*/
         case CGM_COB_KEY:;
            // APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: COB: ");
             strncpy(current_cob, new_tuple->value->cstring, sizeof(current_cob));
@@ -2845,7 +2846,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
           break; // break for CGM_COB_KEY
 
           case CGM_SYM_KEY:;
-            APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
+            //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: Loop Symbol");
             strncpy(current_symbol, new_tuple->value->cstring, sizeof(current_symbol));
             //load_symbol();
             if (strchr(current_symbol, *"E")){
@@ -2884,12 +2885,26 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             break; // break for CGM_TIME_KEY
 
           case CGM_BASAL_KEY:;
-            APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BASAL");
+           // APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: BASAL");
             strncpy(current_basal, new_tuple->value->cstring, sizeof(current_basal));
             text_layer_set_text(basal_layer, current_basal);
             //APP_LOG(APP_LOG_LEVEL_INFO, "name key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
             break; // break for CGM_BASAL_KEY
           
+          case CGM_PREDICT_KEY:;
+           // APP_LOG(APP_LOG_LEVEL_INFO, "CGM_PREDICT_KEY: %s", new_tuple->value->cstring);
+            strncpy(predict, new_tuple->value->cstring, sizeof(predict));
+            //APP_LOG(APP_LOG_LEVEL_DEBUG, "SYNC TUPLE,PREDICT: %s ", predict);
+            //APP_LOG(APP_LOG_LEVEL_INFO, "icon key : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
+            text_layer_set_text(predict_layer, predict);
+            if ( (strcmp(predict, " ") == 0) || (strcmp(predict, "X") == 0) ) {
+                  layer_set_hidden(predict_circle_layer, true);
+                  layer_set_hidden(text_layer_get_layer(predict_layer), true);
+            }else {
+                 layer_set_hidden(predict_circle_layer, false);
+                 layer_set_hidden(text_layer_get_layer(predict_layer), false);
+            }
+            break; // break for CGM_ICON_KEY
           case CGM_PUMP_KEY:;
             //APP_LOG(APP_LOG_LEVEL_INFO, "SYNC TUPLE: CALCULATED RAW");
             strncpy(pump_status, new_tuple->value->cstring, sizeof(pump_status));
@@ -3064,8 +3079,8 @@ void window_load_cgm(Window *window_cgm) {
 //CHART LAYER
     chart_layer = chart_layer_create((GRect) {
 #ifdef PBL_PLATFORM_CHALK
-        .origin = { 4, 98},
-            .size = { 173, 38 } });
+        .origin = { 3, 98},
+            .size = { 175, 35 } });
 #else
         .origin = { -1, 104},
             .size = { 145, 43 } });
@@ -3084,7 +3099,7 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(time_watch_layer, GColorWhite);
 
 // DATE
-#define DATE_APP_LAYER_OFFSET PBL_IF_ROUND_ELSE(GRect(58, 130, 50, 22), GRect(-1, 147, 50, 22))
+#define DATE_APP_LAYER_OFFSET PBL_IF_ROUND_ELSE(GRect(56, 130, 50, 22), GRect(-1, 147, 50, 22))
     window_cgm_add_text_layer(&date_app_layer,(DATE_APP_LAYER_OFFSET), FONT_KEY_GOTHIC_18_BOLD);
     text_layer_set_text_color(date_app_layer, GColorWhite);
     draw_date_from_app();
@@ -3098,6 +3113,12 @@ void window_load_cgm(Window *window_cgm) {
     layer_add_child(window_layer_cgm, name_circle_layer);
     layer_set_update_proc(name_circle_layer, name_circle_update_proc);
     layer_set_hidden(name_circle_layer, true);
+
+//PREDICT CIRCLE LAYER
+    predict_circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
+    layer_add_child(window_layer_cgm, predict_circle_layer);
+    layer_set_update_proc(predict_circle_layer, predict_circle_update_proc);
+    layer_set_hidden(predict_circle_layer, true);
 
 //CIRCLE LAYER
     circle_layer = layer_create(GRect(0, 0, window_bounds.size.w, window_bounds.size.h));
@@ -3120,14 +3141,14 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(rig_battlevel_layer, GColorWhite);
 
 //WATCH BATTERY ICON LAYER
-#define BATTERY_GRAPHICS_OFFSET PBL_IF_ROUND_ELSE(GRect(110, 139, 31, 15), GRect(110, 155, 31, 15))
+#define BATTERY_GRAPHICS_OFFSET PBL_IF_ROUND_ELSE(GRect(106, 139, 31, 15), GRect(110, 155, 31, 15))
     batteryGraphicsLayer = layer_create((BATTERY_GRAPHICS_OFFSET));
     layer_set_update_proc( batteryGraphicsLayer, batteryGraphicsLayerDraw );
     layer_add_child( window_get_root_layer(window_cgm), batteryGraphicsLayer );
     batteryOutlinePath = gpath_create(&BATTERY_OUTLINE);
 
 // WATCH CHARGING ICON
-#define BATTERY_OFFSET PBL_IF_ROUND_ELSE(GRect(110, 139, 14, 6), GRect(110, 155, 21, 9))
+#define BATTERY_OFFSET PBL_IF_ROUND_ELSE(GRect(106, 139, 14, 6), GRect(110, 155, 21, 9))
     window_cgm_add_bitmap_layer(&battery_layer, (BATTERY_OFFSET), GAlignCenter);
 
 // COB
@@ -3154,14 +3175,20 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(raw_calc_layer, GColorWhite);
 
 // SYMBOL
-#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(117, 64, 18, 40), GRect(94, 73, 18, 40))
+#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(117, 65, 18, 40), GRect(94, 73, 18, 40))
         window_cgm_add_bitmap_layer(&symbol_layer, (symbol_OFFSET), GAlignCenter);
 
 // BASAL
-#define basal_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(3, 67, 60, 25), GRect(-5, 80, 60, 24))
-        window_cgm_add_text_layer(&basal_layer, (basal_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_24_BOLD),(FONT_KEY_GOTHIC_18_BOLD))));
+#define basal_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(3, 73, 60, 25), GRect(-5, 80, 65, 24))
+        window_cgm_add_text_layer(&basal_layer, (basal_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_18_BOLD),(FONT_KEY_GOTHIC_18_BOLD))));
         text_layer_set_text_color(basal_layer, GColorWhite);
 
+// PREDICT
+#define predict_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(111, 124, 60, 25), GRect(97, 115, 60, 24))
+        window_cgm_add_text_layer(&predict_layer, (predict_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_24_BOLD),(FONT_KEY_GOTHIC_24_BOLD))));
+        text_layer_set_text_color(predict_layer, text_colour);
+        layer_set_hidden(text_layer_get_layer(predict_layer), true);
+  
 // LOOP TIME AGO
 #define time_layer_OFFSET PBL_IF_ROUND_ELSE(GRect(126, 66, 50, 25), GRect(102, 80, 50, 25))
         window_cgm_add_text_layer(&time_layer, (time_layer_OFFSET), (PBL_IF_ROUND_ELSE((FONT_KEY_GOTHIC_24_BOLD),(FONT_KEY_GOTHIC_18_BOLD))));
@@ -3214,12 +3241,14 @@ void window_load_cgm(Window *window_cgm) {
             TupletCString(CGM_VALS_KEY, " "),
             TupletCString(CGM_CLRW_KEY, " "),
             TupletCString(CGM_BGSX_KEY, " "),
-            TupletInteger(CGM_BGTY_KEY, 0),
+            //TupletInteger(CGM_BGTY_KEY, 0),
             TupletCString(CGM_COB_KEY,  " "),
             TupletCString(CGM_SYM_KEY, " "),
             TupletCString(CGM_TIME_KEY, " "),
             TupletCString(CGM_BASAL_KEY, " "),
             TupletCString(CGM_PUMP_KEY, " "),
+            TupletCString(CGM_PREDICT_KEY, " "),
+
         };
 
         //APP_LOG(APP_LOG_LEVEL_INFO, "WINDOW LOAD, ABOUT TO CALL APP SYNC INIT");
@@ -3278,6 +3307,7 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_Layer(&circle_layer);
     destroy_null_Layer(&cob_circle_layer);
     destroy_null_Layer(&name_circle_layer);
+    destroy_null_Layer(&predict_circle_layer);
     destroy_null_Layer(&batteryGraphicsLayer);
 
     chart_layer_destroy(chart_layer);
@@ -3308,6 +3338,7 @@ void window_unload_cgm(Window *window_cgm) {
     destroy_null_TextLayer(&basal_layer);
     destroy_null_TextLayer(&time_layer);
     destroy_null_TextLayer(&s_layer);
+    destroy_null_TextLayer(&predict_layer);
 
 
       //APP_LOG(APP_LOG_LEVEL_INFO, "10 : Memory Used = %d Free = %d", heap_bytes_used(), heap_bytes_free());
