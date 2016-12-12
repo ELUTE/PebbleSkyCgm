@@ -67,10 +67,10 @@ function getLoopData(opts) {
 			if (loopn.length === 0) {
 				sendUnknownError("dataerr");
 				//return loopok;
-				// console.log("Typeof" typeof loopsymbol);
+				console.log("SEND UNKNOWN ERROR1");
 			} else {
-				//if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
-				if (loopn['openaps'] === undefined) {
+				if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
+				//if (loopn['openaps'] === undefined)||(loopn['openaps'] === undefined) {
 					if ((loopn.loop.lastOkMoment === null)) {
 						opts.Last = "null";
 						opts.Symbol = "Warning";
@@ -82,23 +82,26 @@ function getLoopData(opts) {
 						opts.Symbol = loopn.loop.display.label;
 						var Predict = loopn.loop.lastPredicted.values;
 						var lastPredicted = Predict.slice(-1)[0];
+
 						if (opts.radio == "mgdl_form") {
 							opts.lastPredicted = lastPredicted.toString();
 						} else {
 							lastPredicted = (Math.round(lastPredicted / 18.018).toFixed(1));
 							opts.lastPredicted = lastPredicted.toString();
 						}
-						console.log("Predict: " + Predict + "lastPredicted: " + lastPredicted);
+						//console.log("Predict: " + Predict + "lastPredicted: " + lastPredicted);
 						var PredictCut = [];
-						for (var i = 0; i < Predict.length; i = i + 2) {
+						for (var i = 0; i < Predict.length; i = i + 3) {
 							PredictCut.push(Predict[i]);
-							var items1 = PredictCut.slice(0, 20);
+							var items1 = PredictCut.slice(0, 12);
 							var d = new Date(opts.Last);
 							opts.LoopTime = timeSince(d);
 						}
 						opts.Predict = items1.toString();
+            console.log("Predict: " + opts.Predict + "lastPredicted: " + lastPredicted);
+
 					}
-					console.log("predicted: " + opts.Predict);
+					//console.log("predicted: " + opts.Predict);
 					//  var cob = loopn.loop.lastLoop.cob.cob;
 					// opts.Cob = (Math.round(cob).toFixed(1));
 					// console.log("optscob "+opts.Cob);
@@ -110,11 +113,13 @@ function getLoopData(opts) {
 						opts.Predict = " ";
 						opts.lastPredicted = " ";
 						opts.LoopTime = "ERR";
+            				console.log("SEND UNKNOWN ERROR3");
+
 					} else {
 						opts.Last = loopn.openaps.lastLoopMoment;
 						var d2 = new Date(opts.Last);
 						opts.LoopTime = timeSince(d2);
-						var OPENPredict = loopn.openaps.lastEnacted.predBGs.IOB;
+						var OPENPredict = loopn.openaps.lastPredBGs.IOB;
 						var lastPredicted2 = OPENPredict.slice(-1)[0];
 						if (opts.radio == "mgdl_form") {
 							opts.lastPredicted = lastPredicted2.toString();
@@ -137,10 +142,16 @@ function getLoopData(opts) {
 					opts.Pump = "No Data Available";
 					opts.Raw = " ";
 				} else {
+          if (loopn.pump.pump.battery.voltage === undefined){
+					var pumpbat = loopn.pump.pump.battery.percent; 
+            pumpbat = pumpbat + "%";
+          }else{
 					var pumpbat = loopn.pump.pump.battery.voltage;
+            pumpbat = pumpbat + "v";
+          }  
 					var pumpres = (loopn.pump.pump.reservoir + "u");
 					var pumpdat = loopn.pump.data.clock.display;
-					opts.Pump = ("Bat:" + pumpbat + "v" + " " + "Res:" + pumpres + " " + pumpdat);
+					opts.Pump = ("Bat:" + pumpbat + " " + "Res:" + pumpres + " " + pumpdat);
 				}
 				/*if ((loopn.iob.display === null)) {
 				    opts.iob = "null";
@@ -148,22 +159,32 @@ function getLoopData(opts) {
 				  opts.iob = Math.round(loopn.iob.iob).toFixed(1);
 				  }*/
 				console.log("pump info " + opts.Pump);
+        if (loopn['basal'] === undefined){
+          opts.Basal = "BASAL";
+        }else {
 				opts.Basal = loopn.basal.display;
+          }
 				console.log("loop body: " + " " + opts.LoopTime + " " + opts.Symbol + " " + opts.Basal);
 				//opts.predictTime = arr.toString();
 			}
 		}
 	};
 	http.onerror = function() {
+    				console.log("SEND UNKNOWN ERROR4");
+
 		sendServerError();
 	};
 	http.ontimeout = function() {
+    				console.log("SEND UNKNOWN ERROR5");
+
 		sendTimeOutError();
 	};
 	try {
 		http.send();
 	} catch (e) {
 		sendUnknownError("invalidurl");
+    				console.log("SEND UNKNOWN ERROR6");
+
 	}
 } //end GETLOOPDATA
 //get icon, bg, timeago, delta, name, noiz, raw, options
@@ -439,11 +460,7 @@ function nightscout(opts) {
 					if (formatCalcRaw === null) {
 						loopPump = opts.Pump;
 					} else {
-						if (opts.Raw = " ") {
-							loopPump = opts.Pump;
-						} else {
-							loopPump = " Raw:" + formatCalcRaw + " " + opts.Pump;
-						}
+            loopPump = " Raw:" + formatCalcRaw + " " + opts.Pump;
 					}
 					if (opts.radio == "mgdl_form") {
 						values = "0"; //mgdl selected
@@ -489,7 +506,7 @@ function nightscout(opts) {
 							currentSym = "W";
 							break;
 						default:
-							currentSym = " ";
+							currentSym = "W";
 							console.log("CurrentSym" + currentSym);
 					}
 					//var mode_switch = getModeAsInteger(opts);
