@@ -80,7 +80,7 @@ AppSync sync_cgm;
 uint8_t AppSyncErrAlert = 100;
 
 // BUFFER
-static uint8_t sync_buffer_cgm[560]; //was 408
+static uint8_t sync_buffer_cgm[560]; //was 560
 
 // variables for timers and time
 AppTimer *timer_cgm = NULL;
@@ -121,11 +121,11 @@ uint32_t current_app_time = 0;
 static char current_bg_delta[8] = {0};
 static char last_calc_raw[6] = {0};
 static char current_symbol[4] = {0};
-static char current_cob[8] = {0};
+static char current_cob[6] = {0};
 static char current_name[6] = {0};
 static char current_basal[8] = {0};
 static char last_ok_time[6] = {1};
-static char pump_status[60] = {0};
+static char pump_status[40] = {0};
 static char predict[6] = {0};
 
 int color_value = 0;
@@ -143,7 +143,9 @@ int current_calc_raw = 0;
 int current_calc_raw1 = 0;
 uint8_t currentBG_isMMOL = 100;
 int converted_bgDelta = 0;
-static char current_values[40] = {0};
+//static char current_values[40] = {0};
+static char current_values[32] = {0};
+
 uint8_t HaveCalcRaw = 100;
 
 // chart values
@@ -976,7 +978,7 @@ void bt_handler(bool bt_connected) {
         // APP_LOG(APP_LOG_LEVEL_INFO, "Phone is connected!");
         return;
     } else {
-        //  APP_LOG(APP_LOG_LEVEL_INFO, "Phone is not connected!");
+        APP_LOG(APP_LOG_LEVEL_INFO, "Phone is not connected!");
         text_layer_set_text(message_layer, "√PHN\0");
         alert_handler_cgm(BTOUT_VIBE);
         if (BluetoothAlert == 111) {
@@ -1468,7 +1470,7 @@ void perfectbg_animation_started(Animation *animation, void *data) {
 
     // clear out BG and icon
     //text_layer_set_text(bg_layer, " ");
-    text_layer_set_text(message_layer, "HIGH 5!\0");
+    text_layer_set_text(message_layer, "YAY!\0");
 
 } // end perfectbg_animation_started
 
@@ -1785,14 +1787,14 @@ static void load_bg() {
     // DO NOT GO OVER 24 CHARACTERS, INCLUDING SPACES OR YOU WILL CRASH
     // YOU HAVE BEEN WARNED
 
-    char happymsg_buffer42[26] = "THE MEANING OF LIFE?\0";
+    char happymsg_buffer93[26] = "THE MEANING OF LIFE?\0";
     char happymsg_buffer73[26] = "GIMME SOME SUGAH\0";
     char happymsg_buffer143[26] = "WE \U0001F499 LOOPING\0";
     //char happymsg_buffer143[26] = "WE <3 U TOO\0";
-    char happymsg_buffer109[26] = "LOOP DE LOOP\0";
+    char happymsg_buffer200[26] = "LOOP DE LOOP\0";
     char happymsg_buffer222[26] = "T00 SWEET!\0";
     char happymsg_buffer280[26] = "WATCH ME WHIP\0";
-    char happymsg_buffer300[26] = "SUGAR IS SWEET \n & SO R U\0";
+    char happymsg_buffer300[26] = "ROGUE COWBOY\0";
 
     // CODE START
 
@@ -1970,13 +1972,13 @@ static void load_bg() {
 
                     // EVERY TIME YOU DO A NEW MESSAGE, YOU HAVE TO ALLOCATE A NEW HAPPY MSG BUFFER AT THE TOP OF LOAD BG FUNCTION
 
-                    if ( ((currentBG_isMMOL == 100) && (current_bg == 109)) || ((currentBG_isMMOL == 111) && (current_bg == 109)) ) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg == 200)) || ((currentBG_isMMOL == 111) && (current_bg == 88)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer109);
+                        animate_happymsg(happymsg_buffer200);
                     } // animate happy msg layer @ 109 and 6.9
 
-                    if ((currentBG_isMMOL == 100) && (current_bg == 222)) {
+                    if (((currentBG_isMMOL == 100) && (current_bg == 222)) || ((currentBG_isMMOL == 111) && (current_bg == 222)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
                         animate_happymsg(happymsg_buffer222);
@@ -1992,10 +1994,10 @@ static void load_bg() {
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
                         animate_happymsg(happymsg_buffer73);
                     } // animate happy msg layer @ 88
-                    if ( ((currentBG_isMMOL == 100) && (current_bg == 42)) || ((currentBG_isMMOL == 111) && (current_bg == 42)) ) {
+                    if ( ((currentBG_isMMOL == 100) && (current_bg == 93)) || ((currentBG_isMMOL == 111) && (current_bg == 65)) ) {
                         // ANIMATE HAPPY MSG LAYER
                         //APP_LOG(APP_LOG_LEVEL_INFO, "LOAD BG, ANIMATE HAPPY MSG LAYER");
-                        animate_happymsg(happymsg_buffer42);
+                        animate_happymsg(happymsg_buffer93);
                     } // animate happy msg layer @ 42
 
                     if (HardCodeAllAnimations == 111) {
@@ -2804,7 +2806,7 @@ void sync_tuple_changed_callback_cgm(const uint32_t key, const Tuple* new_tuple,
             char* nonconst1 = (char*)malloc(sizeof(char) * new_tuple->length);
             //strcpy(nonconst1, new_tuple->value->cstring);
              //nonconst1 =  "25, 28, 35, 38, 43, 48, 53, 58, 63, 68, 73, 78, 83, 88, 93, 98, 103, 108, 113, 118";
-             nonconst1 =  "23, 28, 33, 38, 43, 48, 53, 58, 63, 68, 73, 78";
+             nonconst1 =  "23, 28, 33, 38, 43, 48, 53, 58, 63, 68, 73, 78, 81";
 
             ProcessingState* state_t = data_processor_create(nonconst1, ',');
             uint8_t num_strings_t = data_processor_count(state_t);
@@ -3178,7 +3180,7 @@ void window_load_cgm(Window *window_cgm) {
     text_layer_set_text_color(raw_calc_layer, GColorWhite);
 
 // SYMBOL
-#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(117, 65, 18, 40), GRect(94, 73, 18, 40))
+#define symbol_OFFSET PBL_IF_ROUND_ELSE(GRect(117, 65, 18, 40), GRect(95, 73, 18, 40))
         window_cgm_add_bitmap_layer(&symbol_layer, (symbol_OFFSET), GAlignCenter);
 
 // BASAL

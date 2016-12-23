@@ -34,13 +34,13 @@ module.exports = [
     "items": [
       {
         "type": "heading",
-        "defaultValue": "More Settings"
+        "defaultValue": "SKYLOOP SETTINGS"
       },
       {
         "type": "toggle",
-        "messageKey": "SecondTick",
-        "label": "Enable Seconds",
-        "defaultValue": false
+        "messageKey": "Loop",
+        "label": "Loop  or OpenAPS",
+        "defaultValue": true
       },
       {
         "type": "toggle",

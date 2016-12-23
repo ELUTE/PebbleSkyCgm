@@ -16,11 +16,6 @@ function fetchCgmData() {
 	// declare local variables for message data
 	var opts = [].slice.call(arguments).pop();
 	opts = JSON.parse(localStorage.getItem('cgmPebble_new'));
-	//console.log("-------- opts 1: " + opts);
-	// switch (opts.mode) {
-	//   case "Nightscout":
-	console.log("Nightscout data to be loaded");
-	//subscribeBy(opts.endpoint);
 	opts.endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
 	opts.endpoint = opts.endpoint.replace("/pebble/", "");
 	opts.endpoint = opts.endpoint.replace("/pebble", "");
@@ -57,6 +52,7 @@ function getLoopData(opts) {
 	var endpoint = opts.endpoint.replace("/pebble?units=mmol", "");
 	endpoint = endpoint.replace("/pebble/", "");
 	endpoint = endpoint.replace("/pebble", "");
+
 	var loopurl = endpoint + "/api/v2/properties/iob,loop,basal,pump,openaps";
 	var http = new XMLHttpRequest();
 	http.open("GET", loopurl, false);
@@ -69,9 +65,15 @@ function getLoopData(opts) {
 				//return loopok;
 				console.log("SEND UNKNOWN ERROR1");
 			} else {
-				if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
+        
+        
+        
+if (opts.loopOpenaps === "0") {
+   console.log("LOADING LOOP: " + opts.loopOpenaps);
+
+					//if ((loopn['openaps'] ===undefined) || (loopn.openaps.lastEnacted === null)){
 				//if (loopn['openaps'] === undefined)||(loopn['openaps'] === undefined) {
-					if ((loopn.loop.lastOkMoment === null)) {
+					if (loopn.loop.lastOkMoment === null) {
 						opts.Last = "null";
 						opts.Symbol = "Warning";
 						opts.Predict = " ";
@@ -106,21 +108,23 @@ function getLoopData(opts) {
 					// opts.Cob = (Math.round(cob).toFixed(1));
 					// console.log("optscob "+opts.Cob);
 				} else {
-					console.log("start openaps");
+          //START OPENAPS
+					console.log("START OPENAPS");
 					if ((loopn.openaps.lastLoopMoment === null)) {
 						opts.Last = "null";
 						opts.Symbol = "Warning";
 						opts.Predict = " ";
 						opts.lastPredicted = " ";
 						opts.LoopTime = "ERR";
-            				console.log("SEND UNKNOWN ERROR3");
+            console.log("No LastLoopMoment");
 
 					} else {
 						opts.Last = loopn.openaps.lastLoopMoment;
 						var d2 = new Date(opts.Last);
 						opts.LoopTime = timeSince(d2);
 						var OPENPredict = loopn.openaps.lastPredBGs.IOB;
-						var lastPredicted2 = OPENPredict.slice(-1)[0];
+						//var OPENPredict = loopn.openaps.lastEnacted.predBGs.IOB;
+            var lastPredicted2 = OPENPredict.slice(-1)[0];
 						if (opts.radio == "mgdl_form") {
 							opts.lastPredicted = lastPredicted2.toString();
 						} else {
@@ -131,26 +135,30 @@ function getLoopData(opts) {
 						var PredictCut2 = [];
 						for (var i = 0; i < OPENPredict.length; i = i + 2) {
 							PredictCut2.push(OPENPredict[i]);
-							var items = PredictCut2.slice(0, 20);
+							var items = PredictCut2.slice(0, 12);
 						}
 						opts.Predict = items.toString();
 						opts.Symbol = loopn.openaps.status.label;
 					}
 				}
-				console.log("opts.Last " + opts.Last + "opts.LoopTime" + opts.LoopTime);
+console.log("opts.Last " + opts.Last + "opts.LoopTime" + opts.LoopTime);
+        //console.log("loopn.pump.pump" + loopn.pump.pump);
 				if ((loopn.pump.pump === undefined)) {
-					opts.Pump = "No Data Available";
-					opts.Raw = " ";
+					    opts.Pump = "No Data Available";
+					    opts.Raw = " ";
 				} else {
-          if (loopn.pump.pump.battery.voltage === undefined){
-					var pumpbat = loopn.pump.pump.battery.percent; 
-            pumpbat = pumpbat + "%";
-          }else{
-					var pumpbat = loopn.pump.pump.battery.voltage;
-            pumpbat = pumpbat + "v";
-          }  
+              if (loopn.pump.pump.battery.voltage === undefined){
+					        var pumpbat = loopn.pump.pump.battery.percent; 
+                  pumpbat = pumpbat + "%";
+              }else{
+					        var volt = loopn.pump.pump.battery.voltage;
+                  pumpbat = volt + "v";
+                  }  
 					var pumpres = (loopn.pump.pump.reservoir + "u");
+          console.log("Pump Res: "+pumpres);
 					var pumpdat = loopn.pump.data.clock.display;
+          console.log("Pump Dat: "+ pumpdat);
+          console.log("Pump Bat: "+ pumpbat);
 					opts.Pump = ("Bat:" + pumpbat + " " + "Res:" + pumpres + " " + pumpdat);
 				}
 				/*if ((loopn.iob.display === null)) {
@@ -158,7 +166,7 @@ function getLoopData(opts) {
 				  }else{
 				  opts.iob = Math.round(loopn.iob.iob).toFixed(1);
 				  }*/
-				console.log("pump info " + opts.Pump);
+        console.log("pump info: " + opts.Pump);
         if (loopn['basal'] === undefined){
           opts.Basal = "BASAL";
         }else {
@@ -283,6 +291,7 @@ function nightscout(opts) {
 						predict = opts.Predict,
 						predictTime = opts.predictTime,
 						lastPredicted = opts.lastPredicted,
+            loopPump = opts.Pump,
 						// get battery level
 						currentBattery = responsebgs[0].battery,
 						//currentBattery = "100",
@@ -303,6 +312,8 @@ function nightscout(opts) {
 						currentSlope = "undefined",
 						currentScale = "undefined",
 						currentRatio = 0;
+                        console.log("loopPump: "+ loopPump);
+
 					// get name of T1D; if iob (case insensitive), use IOB
 					if ((NameofT1DPerson.toUpperCase() === "IOB") && ((typeof currentIOB != "undefined") && (currentIOB !== null))) {
 						// NameofT1DPerson = currentIOB + "u";
@@ -456,11 +467,11 @@ function nightscout(opts) {
 					} // if currentRawUnfilt
 					//predict = predict.tostring();
 					//add raw to pump shake data
-					var loopPump;
 					if (formatCalcRaw === null) {
 						loopPump = opts.Pump;
 					} else {
             loopPump = " Raw:" + formatCalcRaw + " " + opts.Pump;
+            console.log("loopPump: "+ loopPump)
 					}
 					if (opts.radio == "mgdl_form") {
 						values = "0"; //mgdl selected
@@ -762,7 +773,7 @@ Pebble.addEventListener("appmessage", function(e) {
 });
 Pebble.addEventListener("showConfiguration", function(e) {
 	console.log("Showing Configuration", JSON.stringify(e));
-	Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skylineloop.html');
+	Pebble.openURL('http://cgminthecloud.github.io/CGMClassicPebble/skylineloopV2.html');
 });
 Pebble.addEventListener("webviewclosed", function(e) {
 	var opts = JSON.parse(decodeURIComponent(e.response));
