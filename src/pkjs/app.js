@@ -110,7 +110,7 @@ if (opts.loopOpenaps === "0") {
 				} else {
           //START OPENAPS
 					console.log("START OPENAPS");
-					if ((loopn.openaps.lastLoopMoment === null)) {
+					if ((loopn.openaps.lastLoopMoment === null)||(loopn.openaps.lastLoopMoment === undefined)) {
 						opts.Last = "null";
 						opts.Symbol = "Warning";
 						opts.Predict = " ";
